@@ -1,0 +1,84 @@
+/*
+ * Design tokens.
+ *
+ * The palette is lifted from the Old School RuneScape interface and the
+ * oldschool.runescape.wiki tables: stone greys, worn leather browns, and the
+ * classic in-game chat colours. Change a value here and it changes everywhere.
+ */
+
+:root {
+  /* ---- Surfaces: darkest at the page edge, lightest on raised chrome ---- */
+  --c-void: #0b0a07;
+  --c-stone-900: #16130d;
+  --c-stone-800: #1f1a12;
+  --c-stone-700: #2b2419;
+  --c-stone-600: #3a3126;
+  --c-stone-500: #4b3f2f;
+  --c-leather: #453b2c;
+  --c-leather-dark: #29221a;
+
+  /* ---- Borders and bevels: the raised metal frame around every panel ---- */
+  --c-bevel-light: #6f5f45;
+  --c-bevel-dark: #100d09;
+  --c-rule: #5a4c38;
+
+  /* ---- Text: classic RuneScape chat colours ---- */
+  --c-text: #e8dcc0;
+  --c-text-dim: #c3b493;
+  --c-text-muted: #9c8f74;
+  --c-gold: #ff981f;
+  --c-yellow: #ffe000;
+  --c-cyan: #00ffff;
+  --c-green: #00e83e;
+  --c-red: #ff4f4f;
+  --c-blue: #5aa9ff;
+
+  /* ---- Semantics ---- */
+  --c-profit: var(--c-green);
+  --c-loss: var(--c-red);
+  --c-accent: var(--c-gold);
+  --c-focus: #ffd24a;
+
+  /* ---- Textures ---- */
+  --tex-page: url('../assets/background.png');
+  --tex-panel: url('../assets/table_background.png');
+  --tex-header: url('../assets/header_background.png');
+  --tex-button: url('../assets/button.png');
+  --tex-button-active: url('../assets/button_pressed.png');
+  --tex-slot: url('../assets/ge_slot.png');
+
+  /* ---- Type ---- */
+  --font-ui: 'RuneScape', 'Trebuchet MS', 'Segoe UI', sans-serif;
+  --font-body: 'RuneScape', 'Trebuchet MS', 'Segoe UI', sans-serif;
+  --font-mono: 'RuneScape', 'Consolas', monospace;
+
+  --fs-xs: 0.875rem;
+  --fs-sm: 1rem;
+  --fs-md: 1.125rem;
+  --fs-lg: 1.375rem;
+  --fs-xl: 1.75rem;
+  --fs-2xl: 2.25rem;
+
+  /* ---- Spacing (4px scale) ---- */
+  --sp-1: 0.25rem;
+  --sp-2: 0.5rem;
+  --sp-3: 0.75rem;
+  --sp-4: 1rem;
+  --sp-5: 1.5rem;
+  --sp-6: 2rem;
+  --sp-7: 3rem;
+
+  /* ---- Misc ---- */
+  --radius: 3px;
+  --shadow-panel: 0 2px 0 var(--c-bevel-dark), 0 6px 16px rgb(0 0 0 / 45%);
+  --shadow-text: 1px 1px 0 rgb(0 0 0 / 90%);
+  --content-width: 1180px;
+  --transition: 120ms ease-out;
+}
+
+/* The interface is dark by design; respect a reduced-motion preference only. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --transition: 0ms;
+  }
+}

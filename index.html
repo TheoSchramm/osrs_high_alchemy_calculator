@@ -2,88 +2,250 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/x-icon" href="assets/high_level_alchemy.png">
-    <title>OSRS High Alch Calculator</title>
-    <link rel="stylesheet" href="./styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OSRS High Alchemy Calculator</title>
+  <meta name="description"
+    content="Work out High Level Alchemy profit, experience and time using live Old School RuneScape Grand Exchange prices.">
+  <link rel="icon" type="image/png" href="assets/high_level_alchemy.png">
+  <link rel="stylesheet" href="./styles/main.css">
 </head>
 
 <body>
+  <a class="skip-link" href="#main">Skip to content</a>
 
-    <div class="header">
-        <img src="assets/high_level_alchemy.png" class="icon">
-        <h1>OSRS High Alchemy Calculator</h1>
+  <header class="site-header">
+    <img class="site-header__icon" src="assets/high_level_alchemy.png" alt="">
+    <div>
+      <h1 class="site-header__title">High Alchemy Calculator</h1>
+      <p class="site-header__subtitle">Old School RuneScape &middot; live Grand Exchange prices</p>
+    </div>
+  </header>
+
+  <main class="page" id="main">
+
+    <!-- Shown only when the page is opened straight off disk, where ES modules
+         and the price API are both blocked by the browser. -->
+    <div class="notice notice--error" id="protocolWarning" hidden>
+      <div>
+        <strong>Open this page through a local server.</strong>
+        Browsers block modules and network requests on <code>file://</code>.
+        Run <code>npm run serve</code> in the project folder, then visit
+        <code>http://localhost:4173</code>.
+      </div>
     </div>
 
-    <h1 class="special"> Add Item to Calculator</h1>
-    <div class="input-group">
-        <input type="text" class="chat" id="itemName" placeholder="Item name">
-        <input type="number" class="chat" id="vendorPrice" placeholder="Seller price" min="0">
-        <input type="number" class="chat" id="alchPrice" placeholder="High alch price" min="0">
-        <input type="number" class="chat" id="quantity" placeholder="Quantity" min="0">
-        <button id="addItem" class="emphasis" type="button">Add</button>
-    </div>
-    <br>
+    <!-- ============================ Add item ============================ -->
+    <section class="panel" aria-labelledby="addHeading">
+      <h2 class="panel__title" id="addHeading">
+        <img class="panel__title-icon" src="assets/magic.png" alt="">
+        Add an item
+      </h2>
 
-    <table id="itemsTable">
-        <thead>
+      <form class="panel__body toolbar" id="addForm" autocomplete="off" novalidate>
+        <div class="field field--grow">
+          <label class="field__label" for="itemName">Item name</label>
+          <input class="field__input" id="itemName" name="itemName" type="text"
+            placeholder="Start typing, e.g. Adamant platebody" role="combobox" aria-expanded="false"
+            aria-autocomplete="list" aria-controls="itemSuggestions">
+          <ul class="suggestions" id="itemSuggestions" role="listbox" aria-label="Matching items" hidden></ul>
+        </div>
+
+        <div class="field field--price">
+          <label class="field__label" for="buyPrice">Buy price</label>
+          <input class="field__input" id="buyPrice" name="buyPrice" type="text" inputmode="numeric"
+            placeholder="auto">
+        </div>
+
+        <div class="field field--price">
+          <label class="field__label" for="alchPrice">High alch value</label>
+          <input class="field__input" id="alchPrice" name="alchPrice" type="text" inputmode="numeric"
+            placeholder="auto">
+        </div>
+
+        <div class="field field--narrow">
+          <label class="field__label" for="quantity">Quantity</label>
+          <input class="field__input" id="quantity" name="quantity" type="text" inputmode="numeric" value="1">
+        </div>
+
+        <button class="btn btn--primary" id="addButton" type="submit">Add</button>
+      </form>
+
+      <p class="panel__footer">
+        Leave the prices blank to pull them from the Grand Exchange.
+        Shorthand works everywhere: <code>10k</code>, <code>1.5m</code>, <code>1,234</code>.
+      </p>
+    </section>
+
+    <!-- ============================ Item table ========================== -->
+    <section class="panel" aria-labelledby="tableHeading">
+      <h2 class="panel__title" id="tableHeading">
+        <img class="panel__title-icon" src="assets/tool.png" alt="">
+        Alching list
+        <span class="panel__title-note" id="rowCount"></span>
+      </h2>
+
+      <div class="table-scroll">
+        <table class="osrs-table" id="itemsTable">
+          <caption class="sr-only">
+            Items to alch, with cost, profit and experience. Column headers sort the table.
+          </caption>
+          <thead>
             <tr>
-                <th data-field="name" class="emphasis">Item</th>
-                <th data-field="vendor" class="emphasis">Seller Price</th>
-                <th data-field="alch" class="emphasis">High Alch Price</th>
-                <th data-field="quantity" class="emphasis">Quantity</th>
-                <th data-field="spentItems" class="emphasis">Spent on Items</th>
-                <th data-field="spentRunes" class="emphasis">Spent on Runes</th>
-                <th data-field="profit" class="emphasis">Profit</th>
-                <th class="emphasis"></th>
+              <th scope="col" data-sort="name" data-column="name">Item</th>
+              <th scope="col" data-sort="buyPrice" data-column="buyPrice">Buy price</th>
+              <th scope="col" data-sort="alchPrice" data-column="alchPrice">High alch</th>
+              <th scope="col" data-sort="quantity" data-column="quantity">Qty</th>
+              <th scope="col" data-sort="costItems" data-column="costItems">Spent on items</th>
+              <th scope="col" data-sort="costRunes" data-column="costRunes">Spent on runes</th>
+              <th scope="col" data-sort="profitPerCast" data-column="profitPerCast">Profit / cast</th>
+              <th scope="col" data-sort="profit" data-column="profit">Profit</th>
+              <th scope="col" data-column="actions"><span class="sr-only">Actions</span></th>
             </tr>
-        </thead>
-        <tbody></tbody>
-    </table>
+          </thead>
+          <tbody id="itemsBody"></tbody>
+          <tfoot id="itemsFoot" hidden>
+            <tr>
+              <td colspan="4">Total</td>
+              <td data-total="costItems">0</td>
+              <td data-total="costRunes">0</td>
+              <td data-total="profitPerCast">0</td>
+              <td data-total="profit">0</td>
+              <td></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
 
-    <div class="totals-container">
-        <div class="total-card">
-            <img src="assets/coins.png" class="icon">
-            <p class="total-label">Total Profit</p>
-            <p class="total-value" id="totalProfit">0</p>
+      <p class="empty-state" id="emptyState">
+        No items yet. Add one above to see the profit, experience and time it takes.
+      </p>
+    </section>
+
+    <!-- ============================== Totals ============================ -->
+    <section class="stats" aria-label="Totals">
+      <div class="panel stat">
+        <img class="stat__icon" src="assets/coins.png" alt="">
+        <div class="stat__body">
+          <p class="stat__label">Total profit</p>
+          <p class="stat__value" id="totalProfit">0</p>
+          <p class="stat__note" id="totalProfitNote">Nothing spent yet</p>
+        </div>
+      </div>
+
+      <div class="panel stat">
+        <img class="stat__icon" src="assets/xp.png" alt="">
+        <div class="stat__body">
+          <p class="stat__label">Total experience</p>
+          <p class="stat__value" id="totalXp">0</p>
+          <p class="stat__note">65 xp per cast</p>
+        </div>
+      </div>
+
+      <div class="panel stat">
+        <img class="stat__icon" src="assets/giant_stopwatch.png" alt="">
+        <div class="stat__body">
+          <p class="stat__label">Estimated time</p>
+          <p class="stat__value" id="totalTime">0m</p>
+          <p class="stat__note">At 1,200 casts per hour</p>
+        </div>
+      </div>
+
+      <div class="panel stat">
+        <img class="stat__icon" src="assets/nature_rune.png" alt="">
+        <div class="stat__body">
+          <p class="stat__label">Total spend</p>
+          <p class="stat__value" id="totalCost">0</p>
+          <p class="stat__note" id="totalCasts">0 casts</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================= Settings =========================== -->
+    <section class="panel" aria-labelledby="settingsHeading">
+      <h2 class="panel__title" id="settingsHeading">
+        <img class="panel__title-icon" src="assets/nature_rune.png" alt="">
+        Settings
+      </h2>
+
+      <div class="panel__body toolbar toolbar--between">
+        <div class="field field--price">
+          <label class="field__label" for="runePrice">Nature rune price</label>
+          <input class="field__input" id="runePrice" type="text" inputmode="numeric" value="200">
+          <span class="field__hint">Cost of one cast</span>
         </div>
 
-        <div class="total-card">
-            <img src="assets/xp.png" class="icon">
-            <p class="total-label">Total Experience
-            <p class="emphasis">(65xp per cast)</p>
-            </p>
-            <p class="total-value" id="totalXP">0</p>
+        <div class="field field--price">
+          <label class="field__label" for="priceBasis">Buy price basis</label>
+          <select class="field__select" id="priceBasis">
+            <option value="high">Instant buy (realistic)</option>
+            <option value="low">Instant sell (optimistic)</option>
+          </select>
+          <span class="field__hint">Which GE price counts as your cost</span>
         </div>
 
-        <div class="total-card">
-            <img src="assets/giant_stopwatch.png" class="icon">
-            <p class="total-label">Estimated Time
-            <p class="emphasis">(Max. 1200 casts/hour)</p>
-            </p>
-            <p class="total-value" id="totalTime">0h</p>
+        <div class="toolbar">
+          <button class="btn" id="fetchRunePrice" type="button">
+            <img class="btn__icon" src="assets/again.png" alt=""> Update rune price
+          </button>
+          <button class="btn" id="refreshAll" type="button">
+            <img class="btn__icon" src="assets/again.png" alt=""> Refresh all prices
+          </button>
+          <button class="btn btn--ghost btn--danger" id="clearAll" type="button">Clear list</button>
         </div>
-    </div>
+      </div>
 
-    <br><br>
+      <p class="panel__footer" id="dataStatus">Prices come from the OSRS Wiki real-time API.</p>
+    </section>
+  </main>
 
-    
-    <br><br>
-    
-    <div class="header">Settings</div>
-        <div class="rune-input">
-            <img src="assets/nature_rune.png" class="icon">
-            <p for="runePrice" class="emphasis">Nature Rune Price</p>
-            <input type="number" id="runePrice" min="0" value="200">
+  <footer class="site-footer">
+    <p>
+      Price data by the
+      <a href="https://prices.runescape.wiki/osrs/" target="_blank" rel="noopener">OSRS Wiki real-time prices API</a>.
+    </p>
+    <p>Not affiliated with Jagex Ltd. RuneScape is a trademark of Jagex Ltd.</p>
+  </footer>
+
+  <div class="toast-stack" id="toasts" role="status" aria-live="polite"></div>
+
+  <!-- Row markup lives here so rendering never builds HTML from strings. -->
+  <template id="itemRowTemplate">
+    <tr>
+      <td data-column="name">
+        <div class="cell-item">
+          <img class="cell-item__icon" alt="" src="">
+          <span class="cell-item__name cell-edit" data-field="name" contenteditable="true" role="textbox"
+            tabindex="0"></span>
         </div>
+      </td>
+      <td data-column="buyPrice">
+        <span class="cell-edit" data-field="buyPrice" contenteditable="true" role="textbox" tabindex="0"></span>
+      </td>
+      <td data-column="alchPrice">
+        <span class="cell-edit" data-field="alchPrice" contenteditable="true" role="textbox" tabindex="0"></span>
+      </td>
+      <td data-column="quantity">
+        <span class="cell-edit" data-field="quantity" contenteditable="true" role="textbox" tabindex="0"></span>
+      </td>
+      <td data-column="costItems" data-cell="costItems"></td>
+      <td data-column="costRunes" data-cell="costRunes"></td>
+      <td data-column="profitPerCast" data-cell="profitPerCast"></td>
+      <td data-column="profit" data-cell="profit"></td>
+      <td data-column="actions">
+        <div class="cell-actions">
+          <button class="icon-btn" type="button" data-action="refresh" title="Refresh prices">
+            <img src="assets/again.png" alt="Refresh prices">
+          </button>
+          <button class="icon-btn" type="button" data-action="delete" title="Remove item">
+            <img src="assets/trash_bin.png" alt="Remove item">
+          </button>
+        </div>
+      </td>
+    </tr>
+  </template>
 
-    
-    <div class="text">
-        Cast <p class="positive"> High Level Alchemy</p> -> <p class="emphasis">Adamant platebody</p>
-    </div>
-
-    <script src="./script.js"></script>
+  <script type="module" src="./src/main.js"></script>
 </body>
 
 </html>

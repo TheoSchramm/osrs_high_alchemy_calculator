@@ -1,0 +1,491 @@
+/* Reusable interface chrome: panels, fields, buttons, cards, notices, toasts. */
+
+/* ============================================================
+   Panel — the beveled RuneScape interface box
+   ============================================================ */
+
+.panel {
+  background-color: var(--c-leather);
+  background-image: var(--tex-panel);
+  background-repeat: repeat;
+  background-size: 190px 260px;
+  border: 2px solid var(--c-bevel-dark);
+  border-radius: var(--radius);
+  box-shadow:
+    inset 0 0 0 1px var(--c-bevel-light),
+    inset 0 0 40px rgb(0 0 0 / 35%),
+    var(--shadow-panel);
+}
+
+.panel__title {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  margin: 0;
+  padding: var(--sp-3) var(--sp-4);
+  font-size: var(--fs-lg);
+  color: var(--c-gold);
+
+  background-color: var(--c-stone-700);
+  background-image: var(--tex-header);
+  background-repeat: repeat-x;
+  background-size: auto 100%;
+  border-bottom: 2px solid var(--c-bevel-dark);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 8%);
+}
+
+.panel__title-icon {
+  width: 28px;
+  height: 28px;
+  flex: none;
+}
+
+.panel__title-note {
+  margin-left: auto;
+  font-size: var(--fs-xs);
+  color: var(--c-text-muted);
+}
+
+.panel__body {
+  padding: var(--sp-4);
+}
+
+.panel__body--flush {
+  padding: 0;
+}
+
+.panel__footer {
+  padding: var(--sp-3) var(--sp-4);
+  border-top: 1px solid var(--c-rule);
+  font-size: var(--fs-xs);
+  color: var(--c-text-muted);
+}
+
+/* ============================================================
+   Fields
+   ============================================================ */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  min-width: 0;
+}
+
+.field--grow {
+  flex: 1 1 260px;
+  position: relative;
+}
+
+.field--narrow {
+  flex: 0 0 120px;
+}
+
+.field--price {
+  flex: 0 0 160px;
+}
+
+.field__label {
+  font-size: var(--fs-sm);
+  color: var(--c-yellow);
+}
+
+.field__input,
+.field__select {
+  width: 100%;
+  padding: var(--sp-2) var(--sp-3);
+  font-family: var(--font-ui);
+  font-size: var(--fs-md);
+  color: var(--c-cyan);
+  text-shadow: var(--shadow-text);
+
+  background-color: var(--c-stone-800);
+  border: 2px solid var(--c-bevel-dark);
+  border-radius: var(--radius);
+  box-shadow: inset 0 0 0 1px var(--c-rule), inset 0 2px 6px rgb(0 0 0 / 55%);
+}
+
+.field__select {
+  color: var(--c-text);
+  cursor: pointer;
+}
+
+.field__input::placeholder {
+  color: var(--c-text-muted);
+  opacity: 0.75;
+}
+
+.field__input:focus,
+.field__select:focus {
+  outline: none;
+  border-color: var(--c-focus);
+  box-shadow: inset 0 0 0 1px var(--c-focus), inset 0 2px 6px rgb(0 0 0 / 55%);
+}
+
+.field__hint {
+  font-size: var(--fs-xs);
+  color: var(--c-text-muted);
+}
+
+/* Number inputs: strip the spinners, they clash with the pixel type. */
+.field__input[type='number'] {
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+.field__input[type='number']::-webkit-outer-spin-button,
+.field__input[type='number']::-webkit-inner-spin-button {
+  appearance: none;
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* ============================================================
+   Buttons — 9-sliced from the in-game button sprite
+   ============================================================ */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  min-height: 42px;
+  padding: var(--sp-2) var(--sp-4);
+
+  font-family: var(--font-ui);
+  font-size: var(--fs-md);
+  color: var(--c-text);
+  text-shadow: var(--shadow-text);
+  white-space: nowrap;
+
+  background-color: var(--c-stone-600);
+  border: 6px solid transparent;
+  border-image: var(--tex-button) 10 fill stretch;
+  border-radius: var(--radius);
+
+  cursor: pointer;
+  user-select: none;
+  transition: filter var(--transition), transform var(--transition);
+}
+
+.btn:hover:not(:disabled) {
+  filter: brightness(1.18);
+}
+
+.btn:active:not(:disabled) {
+  border-image-source: var(--tex-button-active);
+  transform: translateY(1px);
+}
+
+.btn:disabled {
+  cursor: not-allowed;
+  filter: grayscale(0.6) brightness(0.7);
+}
+
+.btn--primary {
+  color: var(--c-yellow);
+  font-size: var(--fs-lg);
+}
+
+.btn--ghost {
+  border-image: none;
+  background: transparent;
+  border: 2px solid var(--c-rule);
+  color: var(--c-text-dim);
+}
+
+.btn--ghost:hover:not(:disabled) {
+  border-color: var(--c-bevel-light);
+  color: var(--c-text);
+}
+
+.btn--danger {
+  color: var(--c-red);
+}
+
+.btn__icon {
+  width: 22px;
+  height: 22px;
+  flex: none;
+}
+
+/* Compact icon-only button used inside table rows. */
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+
+  background-color: transparent;
+  border: 2px solid transparent;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background var(--transition), border-color var(--transition);
+}
+
+.icon-btn:hover {
+  background: rgb(255 255 255 / 8%);
+  border-color: var(--c-bevel-light);
+}
+
+.icon-btn:active {
+  transform: translateY(1px);
+}
+
+.icon-btn img {
+  width: 22px;
+  height: 22px;
+}
+
+.icon-btn.is-busy {
+  animation: pulse 800ms ease-in-out infinite;
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+/* ============================================================
+   Autocomplete
+   ============================================================ */
+
+.suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 30;
+  max-height: 320px;
+  overflow-y: auto;
+
+  background-color: var(--c-stone-800);
+  border: 2px solid var(--c-bevel-dark);
+  box-shadow: inset 0 0 0 1px var(--c-rule), 0 8px 20px rgb(0 0 0 / 60%);
+}
+
+.suggestions[hidden] {
+  display: none;
+}
+
+.suggestion {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-2) var(--sp-3);
+  cursor: pointer;
+  border-bottom: 1px solid rgb(0 0 0 / 35%);
+}
+
+.suggestion:last-child {
+  border-bottom: none;
+}
+
+.suggestion:hover,
+.suggestion.is-active {
+  background: var(--c-stone-600);
+}
+
+.suggestion__icon {
+  width: 32px;
+  height: 32px;
+  flex: none;
+  object-fit: contain;
+}
+
+.suggestion__name {
+  color: var(--c-text);
+}
+
+.suggestion__meta {
+  margin-left: auto;
+  font-size: var(--fs-xs);
+  color: var(--c-text-muted);
+  white-space: nowrap;
+}
+
+/* ============================================================
+   Stat cards
+   ============================================================ */
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--sp-4);
+}
+
+.stat {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-4);
+}
+
+.stat__icon {
+  width: 44px;
+  height: 44px;
+  flex: none;
+}
+
+.stat__body {
+  min-width: 0;
+}
+
+.stat__label {
+  font-size: var(--fs-sm);
+  color: var(--c-yellow);
+}
+
+.stat__value {
+  font-size: var(--fs-xl);
+  color: var(--c-text);
+  overflow-wrap: anywhere;
+}
+
+.stat__note {
+  font-size: var(--fs-xs);
+  color: var(--c-text-muted);
+}
+
+/* ============================================================
+   Notices, empty states, toasts
+   ============================================================ */
+
+.notice {
+  display: flex;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
+  font-size: var(--fs-sm);
+  background: var(--c-stone-800);
+  border: 2px solid var(--c-rule);
+  border-left-width: 6px;
+  border-radius: var(--radius);
+}
+
+.notice[hidden] {
+  display: none;
+}
+
+.notice--error {
+  border-left-color: var(--c-red);
+  color: var(--c-red);
+}
+
+.notice--warn {
+  border-left-color: var(--c-gold);
+  color: var(--c-gold);
+}
+
+.notice code {
+  font-family: var(--font-mono);
+  color: var(--c-cyan);
+}
+
+.empty-state {
+  padding: var(--sp-6) var(--sp-4);
+  text-align: center;
+  color: var(--c-text-muted);
+}
+
+.empty-state[hidden] {
+  display: none;
+}
+
+.toast-stack {
+  position: fixed;
+  right: var(--sp-4);
+  bottom: var(--sp-4);
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  width: min(360px, calc(100vw - var(--sp-5)));
+  pointer-events: none;
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-3);
+  pointer-events: auto;
+
+  background-color: var(--c-stone-700);
+  background-image: var(--tex-panel);
+  background-size: 190px 260px;
+  border: 2px solid var(--c-bevel-dark);
+  box-shadow: inset 0 0 0 1px var(--c-bevel-light), var(--shadow-panel);
+  animation: toast-in 160ms ease-out;
+}
+
+.toast--error {
+  color: var(--c-red);
+}
+
+.toast--success {
+  color: var(--c-green);
+}
+
+.toast__message {
+  flex: 1;
+  font-size: var(--fs-sm);
+  min-width: 0;
+}
+
+.toast__action {
+  flex: none;
+  padding: var(--sp-1) var(--sp-3);
+  min-height: 32px;
+  font-size: var(--fs-sm);
+  color: var(--c-yellow);
+  background: transparent;
+  border: 2px solid var(--c-bevel-light);
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-family: var(--font-ui);
+}
+
+.toast__action:hover {
+  background: rgb(255 255 255 / 10%);
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toast {
+    animation: none;
+  }
+
+  .icon-btn.is-busy {
+    animation: none;
+    opacity: 0.5;
+  }
+}
+
+/* ============================================================
+   Inline value colouring
+   ============================================================ */
+
+.value-profit {
+  color: var(--c-profit);
+}
+
+.value-loss {
+  color: var(--c-loss);
+}
+
+.value-muted {
+  color: var(--c-text-muted);
+}
+
+.value-gold {
+  color: var(--c-gold);
+}

@@ -1,0 +1,168 @@
+/**
+ * Static integrity checks.
+ *
+ * A broken image path or a typo'd CSS variable does not fail any behavioural
+ * test — it just renders wrong. These tests catch that class of bug without a
+ * browser: every referenced file must exist, and every custom property used
+ * must be defined.
+ */
+
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+
+const read = (relative) => fs.readFileSync(path.join(ROOT, relative), 'utf8');
+const exists = (relative) => fs.existsSync(path.join(ROOT, relative));
+
+const STYLE_FILES = ['tokens.css', 'base.css', 'layout.css', 'components.css', 'table.css', 'main.css']
+  .map((name) => `styles/${name}`);
+
+/** Resolve a URL found inside a file, relative to that file's directory. */
+function resolveReference(fromFile, reference) {
+  const dir = path.dirname(path.join(ROOT, fromFile));
+  return path.relative(ROOT, path.resolve(dir, reference)).replaceAll('\\', '/');
+}
+
+function collectUrls(css) {
+  return [...css.matchAll(/url\(\s*['"]?([^'")]+)['"]?\s*\)/g)].map((match) => match[1]);
+}
+
+/** Blank out comments while keeping line numbers intact. */
+function stripComments(css) {
+  return css.replace(/\/\*[\s\S]*?\*\//g, (comment) => comment.replace(/[^\n]/g, ' '));
+}
+
+test('every asset referenced from CSS exists', () => {
+  const missing = [];
+
+  for (const file of STYLE_FILES) {
+    for (const reference of collectUrls(read(file))) {
+      if (reference.startsWith('http') || reference.startsWith('data:')) continue;
+      const resolved = resolveReference(file, reference);
+      if (!exists(resolved)) missing.push(`${file} -> ${reference}`);
+    }
+  }
+
+  assert.deepEqual(missing, []);
+});
+
+test('every asset referenced from index.html exists', () => {
+  const html = read('index.html');
+  const references = [...html.matchAll(/(?:src|href)="(\.\/|assets\/|fonts\/|styles\/|src\/)([^"]+)"/g)]
+    .map((match) => `${match[1]}${match[2]}`.replace(/^\.\//, ''));
+
+  const missing = references.filter((reference) => !exists(reference));
+
+  assert.deepEqual(missing, []);
+  assert.ok(references.length > 5, 'expected the page to reference several files');
+});
+
+test('main.css imports resolve', () => {
+  const imports = [...read('styles/main.css').matchAll(/@import\s+url\(['"]([^'"]+)['"]\)/g)]
+    .map((match) => resolveReference('styles/main.css', match[1]));
+
+  assert.equal(imports.length, 5);
+  for (const file of imports) {
+    assert.ok(exists(file), `missing stylesheet: ${file}`);
+  }
+});
+
+test('every CSS custom property used is defined in tokens.css', () => {
+  const defined = new Set(
+    [...read('styles/tokens.css').matchAll(/^\s*(--[\w-]+)\s*:/gm)].map((match) => match[1]),
+  );
+
+  const undefinedVars = new Set();
+  for (const file of STYLE_FILES) {
+    for (const match of read(file).matchAll(/var\(\s*(--[\w-]+)/g)) {
+      if (!defined.has(match[1])) undefinedVars.add(`${file}: ${match[1]}`);
+    }
+  }
+
+  assert.deepEqual([...undefinedVars], []);
+  assert.ok(defined.size > 30, 'the token file should define a full palette');
+});
+
+test('no stray non-ASCII characters in CSS declarations', () => {
+  // A stray character inside a hex colour silently kills the declaration and
+  // nothing else in the suite would notice. Comments may say what they like.
+  const printableAscii = /^[\t -~]*$/;
+  const offenders = [];
+
+  for (const file of STYLE_FILES) {
+    stripComments(read(file)).split('\n').forEach((line, index) => {
+      const content = line.replace(/\r$/, '');
+      if (!printableAscii.test(content)) {
+        offenders.push(`${file}:${index + 1}: ${content.trim()}`);
+      }
+    });
+  }
+
+  assert.deepEqual(offenders, []);
+});
+
+test('every stylesheet has balanced braces', () => {
+  for (const file of STYLE_FILES) {
+    const css = stripComments(read(file));
+    const open = (css.match(/{/g) ?? []).length;
+    const close = (css.match(/}/g) ?? []).length;
+    assert.equal(open, close, `${file} has ${open} "{" and ${close} "}"`);
+  }
+});
+
+test('index.html declares every element the app looks up', () => {
+  const html = read('index.html');
+  const required = [
+    'addForm', 'itemName', 'buyPrice', 'alchPrice', 'quantity', 'itemSuggestions',
+    'itemsTable', 'itemsBody', 'itemsFoot', 'itemRowTemplate', 'emptyState', 'rowCount',
+    'totalProfit', 'totalProfitNote', 'totalXp', 'totalTime', 'totalCost', 'totalCasts',
+    'runePrice', 'priceBasis', 'fetchRunePrice', 'refreshAll', 'clearAll', 'dataStatus',
+    'toasts', 'protocolWarning',
+  ];
+
+  const missing = required.filter((id) => !html.includes(`id="${id}"`));
+  assert.deepEqual(missing, []);
+});
+
+test('every sortable header maps to a known sort field', async () => {
+  const { SORT_ACCESSORS } = await import('../src/core/sorting.js');
+  const fields = [...read('index.html').matchAll(/data-sort="([^"]+)"/g)].map((match) => match[1]);
+
+  assert.ok(fields.length >= 6, 'most columns should be sortable');
+  for (const field of fields) {
+    assert.ok(Object.hasOwn(SORT_ACCESSORS, field), `no accessor for sortable column "${field}"`);
+  }
+});
+
+test('the row template carries every cell the table view writes to', () => {
+  const html = read('index.html');
+  const template = html.slice(html.indexOf('<template id="itemRowTemplate">'));
+
+  for (const field of ['name', 'buyPrice', 'alchPrice', 'quantity']) {
+    assert.ok(template.includes(`data-field="${field}"`), `template is missing field ${field}`);
+  }
+  for (const cell of ['costItems', 'costRunes', 'profitPerCast', 'profit']) {
+    assert.ok(template.includes(`data-cell="${cell}"`), `template is missing cell ${cell}`);
+  }
+  for (const action of ['refresh', 'delete']) {
+    assert.ok(template.includes(`data-action="${action}"`), `template is missing action ${action}`);
+  }
+});
+
+test('the totals row covers the same derived columns as the body', () => {
+  const html = read('index.html');
+  for (const cell of ['costItems', 'costRunes', 'profitPerCast', 'profit']) {
+    assert.ok(html.includes(`data-total="${cell}"`), `totals row is missing ${cell}`);
+  }
+});
+
+test('the stylesheet does not reference the deleted v1 entry points', () => {
+  // styles.css and script.js were replaced; nothing should still point at them.
+  const html = read('index.html');
+  assert.equal(html.includes('"./styles.css"'), false);
+  assert.equal(html.includes('"./script.js"'), false);
+});

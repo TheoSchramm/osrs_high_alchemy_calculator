@@ -85,6 +85,29 @@ export class AppStore {
   }
 
   /**
+   * Put an item back at a specific position. Used to undo a delete.
+   *
+   * @param {import('../core/alchemy.js').AlchItem} item
+   * @param {number} [index] appended when out of range
+   */
+  insertItem(item, index) {
+    const normalized = normalizeItem(item);
+    const items = [...this.state.items];
+    const at = Number.isInteger(index) && index >= 0 && index <= items.length
+      ? index
+      : items.length;
+
+    items.splice(at, 0, normalized);
+    this.commit({ items });
+    return normalized;
+  }
+
+  /** Position of an item in the stored list, or -1. */
+  indexOf(id) {
+    return this.state.items.findIndex((item) => item.id === id);
+  }
+
+  /**
    * Shallow-merge a patch into one item.
    * @param {string} id
    * @param {Partial<import('../core/alchemy.js').AlchItem>} patch

@@ -1,0 +1,86 @@
+/* Page shell: banner, content column, footer. */
+
+.site-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-4);
+  padding: var(--sp-5) var(--sp-4);
+  text-align: left;
+
+  background-color: var(--c-leather-dark);
+  background-image: var(--tex-panel);
+  background-repeat: repeat;
+  background-size: 190px 260px;
+  border-bottom: 3px solid var(--c-bevel-dark);
+  box-shadow: inset 0 -2px 0 rgb(0 0 0 / 50%), 0 3px 12px rgb(0 0 0 / 55%);
+}
+
+.site-header__icon {
+  width: 64px;
+  height: 64px;
+  flex: none;
+}
+
+.site-header__title {
+  font-size: var(--fs-2xl);
+  color: var(--c-gold);
+}
+
+.site-header__subtitle {
+  font-size: var(--fs-sm);
+  color: var(--c-text-muted);
+}
+
+.page {
+  width: min(100% - var(--sp-5) * 2, var(--content-width));
+  margin-inline: auto;
+  padding-block: var(--sp-6) var(--sp-7);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+}
+
+.site-footer {
+  padding: var(--sp-5) var(--sp-4);
+  text-align: center;
+  font-size: var(--fs-xs);
+  color: var(--c-text-muted);
+  border-top: 2px solid var(--c-bevel-dark);
+  background: rgb(11 10 7 / 55%);
+}
+
+.site-footer p + p {
+  margin-top: var(--sp-1);
+}
+
+/* A row of controls that wraps on narrow screens. */
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--sp-4);
+}
+
+.toolbar--between {
+  justify-content: space-between;
+}
+
+@media (width <= 720px) {
+  .site-header {
+    flex-direction: column;
+    text-align: center;
+    gap: var(--sp-2);
+  }
+
+  .site-header__icon {
+    width: 48px;
+    height: 48px;
+  }
+
+  .page {
+    width: min(100% - var(--sp-3) * 2, var(--content-width));
+    padding-block: var(--sp-4) var(--sp-6);
+    gap: var(--sp-4);
+  }
+}

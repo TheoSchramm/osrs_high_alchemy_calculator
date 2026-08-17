@@ -1,0 +1,196 @@
+/*
+ * The items table.
+ *
+ * Structurally this is the wiki's `.wikitable`: a header band, ruled rows,
+ * zebra striping and a hover highlight — recoloured for the game interface.
+ */
+
+.table-scroll {
+  /* Wide tables scroll inside the panel; the page itself never scrolls sideways. */
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+}
+
+.osrs-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-md);
+  white-space: nowrap;
+}
+
+.osrs-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+
+  padding: var(--sp-3);
+  font-weight: normal;
+  text-align: right;
+  color: var(--c-yellow);
+
+  background-color: var(--c-stone-600);
+  background-image: var(--tex-header);
+  background-repeat: repeat-x;
+  background-size: auto 100%;
+  border-bottom: 2px solid var(--c-bevel-dark);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 8%);
+}
+
+.osrs-table th:first-child,
+.osrs-table td:first-child {
+  text-align: left;
+}
+
+.osrs-table th:last-child,
+.osrs-table td:last-child {
+  text-align: center;
+}
+
+/* ---- Sortable headers ---- */
+
+.osrs-table th[data-sort] {
+  cursor: pointer;
+  user-select: none;
+}
+
+.osrs-table th[data-sort]:hover {
+  color: var(--c-gold);
+  filter: brightness(1.15);
+}
+
+.osrs-table th[data-sort]::after {
+  content: '\2195'; /* ↕ — the "sortable" affordance, dimmed until used */
+  display: inline-block;
+  width: 1em;
+  margin-left: var(--sp-1);
+  opacity: 0.35;
+}
+
+.osrs-table th[aria-sort='ascending']::after {
+  content: '\25B2'; /* ▲ */
+  opacity: 1;
+}
+
+.osrs-table th[aria-sort='descending']::after {
+  content: '\25BC'; /* ▼ */
+  opacity: 1;
+}
+
+.osrs-table th[aria-sort] {
+  color: var(--c-gold);
+}
+
+/* ---- Body ---- */
+
+.osrs-table tbody td {
+  padding: var(--sp-2) var(--sp-3);
+  text-align: right;
+  border-bottom: 1px solid rgb(0 0 0 / 30%);
+}
+
+.osrs-table tbody tr:nth-child(odd) {
+  background: rgb(0 0 0 / 18%);
+}
+
+.osrs-table tbody tr:hover {
+  background: rgb(255 255 255 / 7%);
+}
+
+.osrs-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* ---- Item name cell ---- */
+
+.cell-item {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  min-width: 220px;
+}
+
+.cell-item__icon {
+  width: 36px;
+  height: 36px;
+  flex: none;
+  object-fit: contain;
+
+  /* Mimic the bank/GE inventory slot the sprite normally sits in. */
+  background-color: var(--c-leather-dark);
+  background-image: var(--tex-slot);
+  background-size: cover;
+  border: 1px solid var(--c-bevel-dark);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 6%);
+}
+
+.cell-item__icon[src=''],
+.cell-item__icon:not([src]) {
+  visibility: hidden;
+}
+
+.cell-item__name {
+  color: var(--c-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cell-item__badge {
+  font-size: var(--fs-xs);
+  color: var(--c-text-muted);
+}
+
+/* ---- Editable cells ---- */
+
+.cell-edit {
+  min-width: 4.5em;
+  border-radius: 2px;
+  transition: background var(--transition), box-shadow var(--transition);
+}
+
+.cell-edit:hover {
+  background: rgb(255 255 255 / 6%);
+  box-shadow: inset 0 0 0 1px var(--c-rule);
+}
+
+.cell-edit:focus {
+  outline: none;
+  background: var(--c-stone-800);
+  box-shadow: inset 0 0 0 2px var(--c-focus);
+  color: var(--c-cyan);
+}
+
+.cell-actions {
+  display: flex;
+  gap: var(--sp-1);
+  justify-content: center;
+}
+
+/* ---- Footer totals row ---- */
+
+.osrs-table tfoot td {
+  padding: var(--sp-3);
+  text-align: right;
+  color: var(--c-yellow);
+  background: var(--c-stone-700);
+  border-top: 2px solid var(--c-bevel-dark);
+}
+
+.osrs-table tfoot td:first-child {
+  text-align: left;
+  color: var(--c-gold);
+}
+
+/* ---- Narrow screens: shed the least important columns ---- */
+
+@media (width <= 900px) {
+  .osrs-table {
+    font-size: var(--fs-sm);
+  }
+
+  .osrs-table th[data-column='costItems'],
+  .osrs-table td[data-column='costItems'],
+  .osrs-table th[data-column='costRunes'],
+  .osrs-table td[data-column='costRunes'] {
+    display: none;
+  }
+}
