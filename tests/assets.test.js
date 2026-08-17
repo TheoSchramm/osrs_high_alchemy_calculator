@@ -116,9 +116,9 @@ test('no stray non-ASCII characters in CSS declarations', () => {
  */
 test('bordered sprites are never tiled', () => {
   const BORDERED = [
-    '--tex-panel', '--tex-banner', '--tex-button', '--tex-button-active',
-    '--tex-icon-button', '--tex-icon-button-hover', '--tex-slot',
-    '--tex-scroll-h', '--tex-scroll-v',
+    '--tex-panel', '--tex-title', '--tex-button', '--tex-button-active',
+    '--tex-button-primary', '--tex-icon-button', '--tex-icon-button-hover',
+    '--tex-slot', '--tex-scroll-h', '--tex-scroll-v',
   ];
   const offenders = [];
 
@@ -140,20 +140,40 @@ test('bordered sprites are never tiled', () => {
   assert.deepEqual(offenders, []);
 });
 
-test('the one seamless tile is the page background', () => {
-  // --tex-page is a 128x128 cobblestone tile and is the only sprite that may
-  // legitimately repeat.
-  const base = read('styles/base.css');
-  assert.match(base, /background-repeat:\s*repeat\s*;/);
-  assert.match(base, /var\(--tex-page\)/);
+test('only the seamless TEXTURE_ sprites are ever repeated', () => {
+  // The inverse of the rule above, stated positively: any rule that repeats a
+  // background must be using one of the two 128x128 seamless tiles.
+  const SEAMLESS = ['--tex-page', '--tex-stone'];
+  const offenders = [];
+
+  for (const file of STYLE_FILES) {
+    for (const block of stripComments(read(file)).split('}')) {
+      if (!/background-repeat:\s*repeat/.test(block)) continue;
+
+      const tokens = [...block.matchAll(/var\((--tex-[\w-]+)\)/g)].map((m) => m[1]);
+      if (tokens.length === 0) continue;
+      if (tokens.every((token) => SEAMLESS.includes(token))) continue;
+
+      const selector = block.trim().split('\n')[0].trim();
+      offenders.push(`${file}: "${selector}" repeats ${tokens.join(', ')}`);
+    }
+  }
+
+  assert.deepEqual(offenders, []);
+  // And the tiles really are used, so the rule is not vacuously true.
+  const allCss = STYLE_FILES.map(read).join('\n');
+  for (const token of SEAMLESS) {
+    assert.ok(allCss.includes(`var(${token})`), `${token} is unused`);
+  }
 });
 
 test('9-slice widths are declared as tokens next to their sprite', () => {
   // Values measured off the sprites themselves: see assets/ui/SPRITES.md.
   const tokens = read('styles/tokens.css');
   assert.match(tokens, /--slice-panel:\s*16;/);
-  assert.match(tokens, /--slice-banner:\s*2 16;/);
+  assert.match(tokens, /--slice-title:\s*4;/);
   assert.match(tokens, /--slice-button:\s*10;/);
+  assert.match(tokens, /--slice-button-primary:\s*4;/);
   assert.match(tokens, /--slice-icon-button:\s*3;/);
 
   // Every border-image must use a slice token rather than a bare number, so
@@ -241,7 +261,8 @@ test('the stat cards keep the original larger icons', () => {
     'assets/coins.png',
     'assets/xp.png',
     'assets/giant_stopwatch.png',
-    'assets/nature_rune.png',
+    // Total spend is the exception: the pack's money bag beats the rune here.
+    'assets/ui/guide_prices.png',
   ]);
 });
 

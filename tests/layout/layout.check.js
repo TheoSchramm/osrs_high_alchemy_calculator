@@ -84,7 +84,9 @@ test('the 9-sliced sprites load and are applied', { timeout: 90_000 }, async () 
   const result = await page.evaluate(`{
     panel: getComputedStyle(document.querySelector('.panel')).borderImageSource,
     banner: getComputedStyle(document.querySelector('.panel__title')).borderImageSource,
-    button: getComputedStyle(document.querySelector('.btn')).borderImageSource,
+    button: getComputedStyle(document.querySelector('.btn:not(.btn--primary)')).borderImageSource,
+    primary: getComputedStyle(document.querySelector('.btn--primary')).borderImageSource,
+    iconButton: getComputedStyle(document.querySelector('.icon-btn')).borderImageSource,
     brokenImages: [...document.images]
       .filter(img => img.src.startsWith(location.origin))
       .filter(img => img.complete && img.naturalWidth === 0)
@@ -92,8 +94,10 @@ test('the 9-sliced sprites load and are applied', { timeout: 90_000 }, async () 
   }`);
 
   assert.match(result.panel, /panel_parchment\.png/);
-  assert.match(result.banner, /banner_scroll\.png/);
-  assert.match(result.button, /button\.png/);
+  assert.match(result.banner, /title_bar\.png/);
+  assert.match(result.button, /assets\/button\.png/);
+  assert.match(result.primary, /button_primary\.png/);
+  assert.match(result.iconButton, /icon_button\.png/);
   // Only local images: whether the wiki's CDN is reachable is not our bug.
   assert.deepEqual(result.brokenImages, [], 'some local images failed to load');
   await page.close();
@@ -108,7 +112,9 @@ test('no sprite with a baked-in border is tiled', { timeout: 90_000 }, async () 
       .map(el => ({ el, s: getComputedStyle(el) }))
       .filter(({ s }) =>
         s.backgroundImage !== 'none' &&
+        // stone_wall and stone_texture are the seamless TEXTURE_* sprites.
         !s.backgroundImage.includes('stone_wall') &&
+        !s.backgroundImage.includes('stone_texture') &&
         !s.backgroundImage.includes('gradient') &&
         s.backgroundRepeat.startsWith('repeat'))
       .slice(0, 6)
@@ -136,6 +142,26 @@ test('the parchment keeps text readable', { timeout: 90_000 }, async () => {
   assert.ok(luminance(result.panelBg) > 0.5, `panel should be light, got ${result.panelBg}`);
   assert.ok(luminance(result.bodyText) < 0.3, `text should be dark, got ${result.bodyText}`);
   assert.ok(luminance(result.profit) < 0.5, `profit green must be dark enough on parchment, got ${result.profit}`);
+  await page.close();
+});
+
+test('the totals row still distinguishes profit from loss', { timeout: 90_000 }, async () => {
+  // The stone background on tfoot outranks the plain tone classes, so without
+  // an explicit override every figure renders the same colour and a loss stops
+  // reading as a loss.
+  const page = await pageAt(1400);
+  const result = await page.evaluate(`(() => {
+    const foot = document.querySelector('#itemsFoot');
+    const base = getComputedStyle(foot.querySelector('td')).color;
+    const toned = [...foot.querySelectorAll('.value-profit, .value-loss')]
+      .map(td => getComputedStyle(td).color);
+    return { base, toned };
+  })()`);
+
+  assert.ok(result.toned.length > 0, 'the fixture should produce a toned total');
+  for (const color of result.toned) {
+    assert.notEqual(color, result.base, 'a toned total must not fall back to the row colour');
+  }
   await page.close();
 });
 

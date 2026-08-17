@@ -23,17 +23,16 @@
   align-items: center;
   gap: var(--sp-3);
   margin: 0 0 var(--sp-3);
-  padding: var(--sp-1) var(--sp-3);
-  min-height: 43px;
+  padding: var(--sp-2) var(--sp-4);
+  min-height: 40px;
   font-size: var(--fs-lg);
-  color: var(--c-ink-strong);
+  color: var(--c-on-marble);
+  text-shadow: var(--shadow-on-stone);
 
-  /* The message-of-the-week scroll (sprite 436): rolled ends at 16px stay
-     native, the flat middle stretches. */
-  border-style: solid;
-  border-width: var(--border-banner);
-  border-color: transparent;
-  border-image: var(--tex-banner) var(--slice-banner) fill stretch;
+  /* Marble plaque with a 4px light rim, 9-sliced so the rim stays native and
+     only the mottled field stretches. */
+  border: var(--border-title) solid transparent;
+  border-image: var(--tex-title) var(--slice-title) fill stretch;
 }
 
 .panel__title-icon {
@@ -45,7 +44,7 @@
 .panel__title-note {
   margin-left: auto;
   font-size: var(--fs-xs);
-  color: var(--c-ink-muted);
+  color: var(--c-on-marble-muted);
 }
 
 .panel__body {
@@ -196,9 +195,20 @@
   filter: grayscale(0.6) brightness(0.75);
 }
 
+/* The one call to action gets the welcome screen's red button, so it reads as
+   the primary action rather than another brown control. */
 .btn--primary {
   color: var(--c-banner);
   font-size: var(--fs-lg);
+  background-color: #5a1a14;
+  border-width: var(--border-title);
+  border-image: var(--tex-button-primary) var(--slice-button-primary) fill stretch;
+}
+
+.btn--primary:active:not(:disabled) {
+  /* Keep the red field; the brown pressed sprite would swap the colour. */
+  border-image-source: var(--tex-button-primary);
+  filter: brightness(0.85);
 }
 
 .btn--ghost {

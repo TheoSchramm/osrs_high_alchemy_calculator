@@ -14,6 +14,10 @@
   --c-parchment-sunken: #a89771;
   --c-banner: #ffe39b;
 
+  /* Text sitting on the marble title bar and the stone table header. */
+  --c-on-marble: #ffe08a;
+  --c-on-marble-muted: #c9bd93;
+
   /* ---- Stone: the page surround, behind the parchment ---- */
   --c-stone-deep: #14130f;
   --c-stone: #2a2823;
@@ -38,6 +42,9 @@
   /* ---- Semantics ---- */
   --c-profit: #0f6b1c;
   --c-loss: #9c1010;
+  /* Brighter variants for the stone totals row, where the dark ones vanish. */
+  --c-profit-on-dark: #52d94f;
+  --c-loss-on-dark: #ff6b6b;
   --c-link: #14418c;
   --c-focus: #33240d;
 
@@ -47,10 +54,12 @@
    * border and must be 9-sliced with `border-image`. See assets/ui/SPRITES.md.
    */
   --tex-page: url('../assets/ui/stone_wall.png'); /* 533 TEXTURE_ROOF_TILES_SLATE_GREY, 128x128, seamless */
+  --tex-stone: url('../assets/ui/stone_texture.png'); /* 457 TEXTURE_STONE, 128x128, seamless */
   --tex-panel: url('../assets/ui/panel_parchment.png'); /* 1017 CHATBOX, 519x142 */
-  --tex-banner: url('../assets/ui/banner_scroll.png'); /* 436 scroll, 503x47 */
+  --tex-title: url('../assets/ui/title_bar.png'); /* welcome_screen/button_marble, 229x90 */
   --tex-button: url('../assets/button.png');
   --tex-button-active: url('../assets/button_pressed.png');
+  --tex-button-primary: url('../assets/ui/button_primary.png'); /* welcome_screen/button_click_here_to_play */
   --tex-icon-button: url('../assets/ui/icon_button.png'); /* ge/button, cropped */
   --tex-icon-button-hover: url('../assets/ui/icon_button_hovered.png');
   --tex-slot: url('../assets/ui/item_slot.png'); /* ge/selected_item_box */
@@ -60,14 +69,15 @@
 
   /* ---- 9-slice geometry, measured from the sprites themselves ---- */
   --slice-panel: 16; /* uniform bevel, flat parchment from 16px in */
-  --slice-banner: 2 16; /* black rule top/bottom, rolled ends 16px wide */
+  --slice-title: 4; /* 4px light rim around the marble */
   --slice-button: 10;
+  --slice-button-primary: 4; /* 4px light rim around the red field */
   --slice-icon-button: 3; /* 1px black rule plus a 2px bevel */
   --slice-scroll-h: 0 5; /* left and right caps are 5px wide */
   --slice-scroll-v: 5 0; /* top and bottom caps are 5px tall */
 
   --border-panel: 16px;
-  --border-banner: 2px 16px;
+  --border-title: 4px;
 
   /* ---- Type ---- */
   --font-ui: 'RuneScape', 'Trebuchet MS', 'Segoe UI', sans-serif;
