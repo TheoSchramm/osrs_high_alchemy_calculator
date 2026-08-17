@@ -17,6 +17,12 @@
   --c-leather: #453b2c;
   --c-leather-dark: #29221a;
 
+  /* Slate band, sampled from the middle of the header plaque sprite so the
+     CSS-drawn table header matches the 9-sliced panel titles above it. */
+  --c-band: #3d3f49;
+  --c-band-light: #4a4d58;
+  --c-band-dark: #2b2d34;
+
   /* ---- Borders and bevels: the raised metal frame around every panel ---- */
   --c-bevel-light: #6f5f45;
   --c-bevel-dark: #100d09;
@@ -39,13 +45,24 @@
   --c-accent: var(--c-gold);
   --c-focus: #ffd24a;
 
-  /* ---- Textures ---- */
+  /* ---- Textures ----
+   * Only `--tex-page` is a seamless tile (128x128 cobblestone). The others are
+   * self-contained widgets with baked-in borders, so they are 9-sliced with
+   * `border-image` or stretched once — never `background-repeat: repeat`.
+   *   table_background 190x261 — dark vignette down the left and right edges
+   *   header_background 360x200 — rounded plaque, transparent corners, ~46px radius
+   *   button / ge_slot          — discrete widgets with their own frame
+   */
   --tex-page: url('../assets/background.png');
   --tex-panel: url('../assets/table_background.png');
   --tex-header: url('../assets/header_background.png');
   --tex-button: url('../assets/button.png');
   --tex-button-active: url('../assets/button_pressed.png');
   --tex-slot: url('../assets/ge_slot.png');
+
+  /* 9-slice geometry, kept next to the sprites they describe. */
+  --slice-header: 46;
+  --slice-button: 10;
 
   /* ---- Type ---- */
   --font-ui: 'RuneScape', 'Trebuchet MS', 'Segoe UI', sans-serif;

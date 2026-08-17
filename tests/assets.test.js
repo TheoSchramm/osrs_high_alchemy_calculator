@@ -105,6 +105,61 @@ test('no stray non-ASCII characters in CSS declarations', () => {
   assert.deepEqual(offenders, []);
 });
 
+/**
+ * Sprites with a baked-in border must never be tiled.
+ *
+ * `header_background.png` is a rounded plaque with transparent corners and
+ * `table_background.png` has a dark vignette down its left and right edges.
+ * Repeating either one stamps its border across the middle of the element —
+ * which is exactly the bug this rule exists to prevent. They may only be
+ * 9-sliced with `border-image` or stretched once with `background-size: 100%`.
+ */
+test('bordered sprites are never tiled', () => {
+  const BORDERED = ['--tex-panel', '--tex-header', '--tex-button', '--tex-button-active', '--tex-slot'];
+  const offenders = [];
+
+  for (const file of STYLE_FILES) {
+    // Split into declaration blocks so a `repeat` in one rule cannot be
+    // blamed on a sprite used in another.
+    for (const block of stripComments(read(file)).split('}')) {
+      const usesBorderedSprite = BORDERED.some((token) => block.includes(`var(${token})`));
+      if (!usesBorderedSprite) continue;
+
+      const repeat = /background-repeat:\s*(repeat|repeat-x|repeat-y)\s*;/.exec(block);
+      if (repeat) {
+        const selector = block.trim().split('\n')[0].trim();
+        offenders.push(`${file}: "${selector}" uses ${repeat[1]}`);
+      }
+    }
+  }
+
+  assert.deepEqual(offenders, []);
+});
+
+test('the one seamless tile is the page background', () => {
+  // --tex-page is a 128x128 cobblestone tile and is the only sprite that may
+  // legitimately repeat.
+  const base = read('styles/base.css');
+  assert.match(base, /background-repeat:\s*repeat\s*;/);
+  assert.match(base, /var\(--tex-page\)/);
+});
+
+test('9-slice widths are declared as tokens next to their sprite', () => {
+  const tokens = read('styles/tokens.css');
+  assert.match(tokens, /--slice-header:\s*46;/);
+  assert.match(tokens, /--slice-button:\s*10;/);
+
+  // Every border-image must use a slice token rather than a bare number, so
+  // the value stays next to the sprite dimensions that justify it.
+  for (const file of STYLE_FILES) {
+    for (const match of stripComments(read(file)).matchAll(/border-image:\s*([^;]+);/g)) {
+      const value = match[1].trim();
+      if (value === 'none') continue;
+      assert.match(value, /var\(--slice-[\w-]+\)/, `${file}: hard-coded slice in "${value}"`);
+    }
+  }
+});
+
 test('every stylesheet has balanced braces', () => {
   for (const file of STYLE_FILES) {
     const css = stripComments(read(file));

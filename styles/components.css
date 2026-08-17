@@ -5,15 +5,17 @@
    ============================================================ */
 
 .panel {
+  /* The parchment sprite carries its own vignette down the left and right
+     edges, so it is stretched to fill exactly once. Tiling it banded the panel
+     with a dark stripe every 190px. */
   background-color: var(--c-leather);
   background-image: var(--tex-panel);
-  background-repeat: repeat;
-  background-size: 190px 261px;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
   border: 2px solid var(--c-bevel-dark);
   border-radius: var(--radius);
   box-shadow:
     inset 0 0 0 1px var(--c-bevel-light),
-    inset 0 0 40px rgb(0 0 0 / 35%),
     var(--shadow-panel);
 }
 
@@ -22,16 +24,14 @@
   align-items: center;
   gap: var(--sp-3);
   margin: 0;
-  padding: var(--sp-3) var(--sp-4);
+  padding: var(--sp-1) var(--sp-3);
   font-size: var(--fs-lg);
   color: var(--c-gold);
 
-  background-color: var(--c-stone-700);
-  background-image: var(--tex-header);
-  background-repeat: repeat-x;
-  background-size: auto 100%;
-  border-bottom: 2px solid var(--c-bevel-dark);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 8%);
+  /* A rounded plaque with a baked border and transparent corners: 9-sliced so
+     the frame stays intact and only the middle stretches. */
+  border: 14px solid transparent;
+  border-image: var(--tex-header) var(--slice-header) fill stretch;
 }
 
 .panel__title-icon {
@@ -160,7 +160,7 @@
 
   background-color: var(--c-stone-600);
   border: 6px solid transparent;
-  border-image: var(--tex-button) 10 fill stretch;
+  border-image: var(--tex-button) var(--slice-button) fill stretch;
   border-radius: var(--radius);
 
   cursor: pointer;
@@ -415,7 +415,8 @@
 
   background-color: var(--c-stone-700);
   background-image: var(--tex-panel);
-  background-size: 190px 261px;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
   border: 2px solid var(--c-bevel-dark);
   box-shadow: inset 0 0 0 1px var(--c-bevel-light), var(--shadow-panel);
   animation: toast-in 160ms ease-out;

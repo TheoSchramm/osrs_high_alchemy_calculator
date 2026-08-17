@@ -28,12 +28,15 @@
   text-align: right;
   color: var(--c-yellow);
 
-  background-color: var(--c-stone-600);
-  background-image: var(--tex-header);
-  background-repeat: repeat-x;
-  background-size: auto 100%;
+  /* Drawn in CSS rather than from the plaque sprite: the header is a run of
+     narrow cells, and one bordered plaque per cell reads as a broken row.
+     The colours are sampled from the plaque so the band still matches it. */
+  background-color: var(--c-band);
+  background-image: linear-gradient(var(--c-band-light), var(--c-band-dark));
   border-bottom: 2px solid var(--c-bevel-dark);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 8%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 10%),
+    inset -1px 0 0 rgb(0 0 0 / 30%);
 }
 
 .osrs-table th:first-child,
