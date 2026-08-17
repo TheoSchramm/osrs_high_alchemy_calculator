@@ -295,6 +295,32 @@ test('the settings actions sit in their own ruled row', () => {
   assert.equal(html.includes('btn--ghost'), false, 'the odd-one-out ghost style is gone');
 });
 
+test('only flat outline icons get the ink filter', () => {
+  // brightness(0) is a silhouette. It suits the refresh sprite, which is a thin
+  // outline, and destroys the trash sprite, which is a shaded bin: it rendered
+  // as a solid black blob. So the filter is opt-in per icon, never on .btn__icon.
+  const html = read('index.html');
+  const css = stripComments(read('styles/components.css'));
+
+  const base = css.split('}').find((rule) => /^\s*\.btn__icon\s*\{/.test(rule));
+  assert.ok(base, 'no .btn__icon rule found');
+  assert.equal(/filter:/.test(base), false, '.btn__icon must not filter every icon');
+
+  const ink = css.split('}').find((rule) => /\.btn__icon--ink\s*\{/.test(rule));
+  assert.ok(ink && /brightness\(0\)/.test(ink), '.btn__icon--ink should ink the sprite');
+
+  // The refresh outlines are inked; the shaded trash bin is left alone.
+  const icons = [...html.matchAll(/<img class="(btn__icon[^"]*)" src="([^"]+)"/g)];
+  assert.ok(icons.length >= 3, 'expected several button icons');
+  for (const [, classes, src] of icons) {
+    assert.equal(
+      classes.includes('btn__icon--ink'),
+      src.includes('refresh.png'),
+      `${src}: ink filter applied incorrectly`,
+    );
+  }
+});
+
 test('the totals row covers the same derived columns as the body', () => {
   const html = read('index.html');
   for (const cell of ['costItems', 'costRunes', 'profitPerCast', 'profit']) {

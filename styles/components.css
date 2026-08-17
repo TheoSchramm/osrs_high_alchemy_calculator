@@ -248,8 +248,13 @@
   width: 20px;
   height: 20px;
   flex: none;
-  /* The pack's icons are white for dark interface buttons; these sit on light
-     parchment, so knock them to ink. */
+}
+
+/* Only for flat outline sprites. The pack draws them white for dark interface
+   buttons, and these sit on light parchment, so knock them to ink. Never use
+   this on a shaded sprite: brightness(0) is a silhouette, which turns anything
+   with fill into a black blob. */
+.btn__icon--ink {
   filter: brightness(0);
   opacity: 0.75;
 }
