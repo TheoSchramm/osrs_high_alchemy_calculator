@@ -14,10 +14,8 @@ Two sources, both Jagex assets:
 | File | Sprite id | RuneLite constant | Size | How it may be used |
 |---|---|---|---|---|
 | `panel_parchment.png` | 1017 | `CHATBOX` | 519x142 | **9-slice, inset 16.** Uniform bevel around flat parchment. |
-| `title_bar.png` | — | resource pack `welcome_screen/button_marble` | 229x90 | **9-slice, inset 4.** Panel titles. |
 | `button_primary.png` | — | resource pack `welcome_screen/button_click_here_to_play` | 229x90 | **9-slice, inset 4.** The one call to action. |
 | `stone_wall.png` | 533 | `TEXTURE_ROOF_TILES_SLATE_GREY` | 128x128 | **Tileable.** Seamless, safe to `repeat`. |
-| `stone_texture.png` | 457 | `TEXTURE_STONE` | 128x128 | **Tileable.** Table header and totals row. |
 | `icon_button.png` | — | resource pack `ge/button` | 35x25 | **9-slice, inset 3.** Body of the row icon buttons. |
 | `icon_button_hovered.png` | — | resource pack `ge/button_hovered` | 35x25 | Hover state of the above. |
 | `item_slot.png` | — | resource pack `ge/selected_item_box` | 40x36 | Drawn once behind each item icon. |
@@ -42,17 +40,24 @@ pack's small interface glyphs. Pack versions of all four were tried and
 reverted; they are in git history at `ea206f3`. Total spend is the exception and
 uses the pack's money bag.
 
-## The table header is textured, not flat
+## Title bars and the table header are drawn in CSS
 
-The header band and totals row tile `stone_texture.png`, which is safe because
-it is a `TEXTURE_*` sprite and therefore seamless: a bordered sprite tiled
-across a run of `th` cells would stamp its frame between every column. The band
-is darkened with a gradient so the gold labels have contrast.
+Both were tried as sprites and both were reverted. The marble plaque
+(`welcome_screen/button_marble`) and the stone texture look right at their
+native size, but a title bar stretches them to roughly five times their width
+and a fraction of their height. Their mottling *is* the texture, so stretching
+smears it into mud — the same mistake as tiling a bordered sprite, in the
+opposite direction.
 
-Because that background outranks the plain `.value-profit` / `.value-loss`
-classes, `table.css` restates them for `tfoot` using the `*-on-dark` tokens.
-Without it the totals row renders every figure gold and a loss stops reading as
-a loss; `tests/layout/layout.check.js` guards this.
+The rule that follows: a sprite survives stretching only when the stretched part
+is uniform. `panel_parchment` works because its border is a plain bevel and its
+field is near-flat. A mottled field does not.
+
+So the panel titles, table header and totals row are flat parchment bands with a
+bevel and a dark rule. Because the totals row sets its own colour, which
+outranks `.value-profit` / `.value-loss`, `table.css` restates those for
+`tfoot`; without it a loss stops reading as a loss, and
+`tests/layout/layout.check.js` guards it.
 
 ## The rule
 

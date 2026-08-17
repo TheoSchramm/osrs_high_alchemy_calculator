@@ -116,7 +116,7 @@ test('no stray non-ASCII characters in CSS declarations', () => {
  */
 test('bordered sprites are never tiled', () => {
   const BORDERED = [
-    '--tex-panel', '--tex-title', '--tex-button', '--tex-button-active',
+    '--tex-panel', '--tex-button', '--tex-button-active',
     '--tex-button-primary', '--tex-icon-button', '--tex-icon-button-hover',
     '--tex-slot', '--tex-scroll-h', '--tex-scroll-v',
   ];
@@ -143,7 +143,7 @@ test('bordered sprites are never tiled', () => {
 test('only the seamless TEXTURE_ sprites are ever repeated', () => {
   // The inverse of the rule above, stated positively: any rule that repeats a
   // background must be using one of the two 128x128 seamless tiles.
-  const SEAMLESS = ['--tex-page', '--tex-stone'];
+  const SEAMLESS = ['--tex-page'];
   const offenders = [];
 
   for (const file of STYLE_FILES) {
@@ -171,7 +171,6 @@ test('9-slice widths are declared as tokens next to their sprite', () => {
   // Values measured off the sprites themselves: see assets/ui/SPRITES.md.
   const tokens = read('styles/tokens.css');
   assert.match(tokens, /--slice-panel:\s*16;/);
-  assert.match(tokens, /--slice-title:\s*4;/);
   assert.match(tokens, /--slice-button:\s*10;/);
   assert.match(tokens, /--slice-button-primary:\s*4;/);
   assert.match(tokens, /--slice-icon-button:\s*3;/);

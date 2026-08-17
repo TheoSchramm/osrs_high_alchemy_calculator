@@ -83,7 +83,7 @@ test('the 9-sliced sprites load and are applied', { timeout: 90_000 }, async () 
   const page = await pageAt(1400);
   const result = await page.evaluate(`{
     panel: getComputedStyle(document.querySelector('.panel')).borderImageSource,
-    banner: getComputedStyle(document.querySelector('.panel__title')).borderImageSource,
+    titleBg: getComputedStyle(document.querySelector('.panel__title')).backgroundColor,
     button: getComputedStyle(document.querySelector('.btn:not(.btn--primary)')).borderImageSource,
     primary: getComputedStyle(document.querySelector('.btn--primary')).borderImageSource,
     iconButton: getComputedStyle(document.querySelector('.icon-btn')).borderImageSource,
@@ -94,7 +94,9 @@ test('the 9-sliced sprites load and are applied', { timeout: 90_000 }, async () 
   }`);
 
   assert.match(result.panel, /panel_parchment\.png/);
-  assert.match(result.banner, /title_bar\.png/);
+  // The title bar is drawn in CSS on purpose: a mottled sprite smears when
+  // stretched across a full-width bar. It only has to be a painted band.
+  assert.notEqual(result.titleBg, 'rgba(0, 0, 0, 0)');
   assert.match(result.button, /assets\/button\.png/);
   assert.match(result.primary, /button_primary\.png/);
   assert.match(result.iconButton, /icon_button\.png/);
@@ -112,9 +114,8 @@ test('no sprite with a baked-in border is tiled', { timeout: 90_000 }, async () 
       .map(el => ({ el, s: getComputedStyle(el) }))
       .filter(({ s }) =>
         s.backgroundImage !== 'none' &&
-        // stone_wall and stone_texture are the seamless TEXTURE_* sprites.
+        // stone_wall is the one seamless TEXTURE_* sprite.
         !s.backgroundImage.includes('stone_wall') &&
-        !s.backgroundImage.includes('stone_texture') &&
         !s.backgroundImage.includes('gradient') &&
         s.backgroundRepeat.startsWith('repeat'))
       .slice(0, 6)
@@ -146,7 +147,7 @@ test('the parchment keeps text readable', { timeout: 90_000 }, async () => {
 });
 
 test('the totals row still distinguishes profit from loss', { timeout: 90_000 }, async () => {
-  // The stone background on tfoot outranks the plain tone classes, so without
+  // The tfoot colour rule outranks the plain tone classes, so without
   // an explicit override every figure renders the same colour and a loss stops
   // reading as a loss.
   const page = await pageAt(1400);
