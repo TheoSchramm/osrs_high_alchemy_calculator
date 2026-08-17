@@ -7,7 +7,7 @@
   <title>OSRS High Alchemy Calculator</title>
   <meta name="description"
     content="Work out High Level Alchemy profit, experience and time using live Old School RuneScape Grand Exchange prices.">
-  <link rel="icon" type="image/png" href="assets/high_level_alchemy.png">
+  <link rel="icon" type="image/png" href="assets/ui/high_alchemy.png">
   <link rel="stylesheet" href="./styles/main.css">
 </head>
 
@@ -15,7 +15,7 @@
   <a class="skip-link" href="#main">Skip to content</a>
 
   <header class="site-header">
-    <img class="site-header__icon" src="assets/high_level_alchemy.png" alt="">
+    <img class="site-header__icon" src="assets/ui/high_alchemy.png" alt="">
     <div>
       <h1 class="site-header__title">High Alchemy Calculator</h1>
       <p class="site-header__subtitle">Old School RuneScape &middot; live Grand Exchange prices</p>
@@ -38,7 +38,7 @@
     <!-- ============================ Add item ============================ -->
     <section class="panel" aria-labelledby="addHeading">
       <h2 class="panel__title" id="addHeading">
-        <img class="panel__title-icon" src="assets/magic.png" alt="">
+        <img class="panel__title-icon" src="assets/ui/search.png" alt="">
         Add an item
       </h2>
 
@@ -80,7 +80,7 @@
     <!-- ============================ Item table ========================== -->
     <section class="panel" aria-labelledby="tableHeading">
       <h2 class="panel__title" id="tableHeading">
-        <img class="panel__title-icon" src="assets/tool.png" alt="">
+        <img class="panel__title-icon" src="assets/ui/high_alchemy.png" alt="">
         Alching list
         <span class="panel__title-note" id="rowCount"></span>
       </h2>
@@ -125,7 +125,7 @@
     <!-- ============================== Totals ============================ -->
     <section class="stats" aria-label="Totals">
       <div class="panel stat">
-        <img class="stat__icon" src="assets/coins.png" alt="">
+        <img class="stat__icon" src="assets/ui/coins.png" alt="">
         <div class="stat__body">
           <p class="stat__label">Total profit</p>
           <p class="stat__value" id="totalProfit">0</p>
@@ -134,7 +134,7 @@
       </div>
 
       <div class="panel stat">
-        <img class="stat__icon" src="assets/xp.png" alt="">
+        <img class="stat__icon" src="assets/ui/xp_orb.png" alt="">
         <div class="stat__body">
           <p class="stat__label">Total experience</p>
           <p class="stat__value" id="totalXp">0</p>
@@ -143,7 +143,7 @@
       </div>
 
       <div class="panel stat">
-        <img class="stat__icon" src="assets/giant_stopwatch.png" alt="">
+        <img class="stat__icon" src="assets/ui/clock.png" alt="">
         <div class="stat__body">
           <p class="stat__label">Estimated time</p>
           <p class="stat__value" id="totalTime">0m</p>
@@ -152,7 +152,7 @@
       </div>
 
       <div class="panel stat">
-        <img class="stat__icon" src="assets/nature_rune.png" alt="">
+        <img class="stat__icon" src="assets/ui/gold_pouch.png" alt="">
         <div class="stat__body">
           <p class="stat__label">Total spend</p>
           <p class="stat__value" id="totalCost">0</p>
@@ -164,7 +164,7 @@
     <!-- ============================= Settings =========================== -->
     <section class="panel" aria-labelledby="settingsHeading">
       <h2 class="panel__title" id="settingsHeading">
-        <img class="panel__title-icon" src="assets/nature_rune.png" alt="">
+        <img class="panel__title-icon" src="assets/ui/settings_wrench.png" alt="">
         Settings
       </h2>
 
@@ -186,10 +186,10 @@
 
         <div class="toolbar">
           <button class="btn" id="fetchRunePrice" type="button">
-            <img class="btn__icon" src="assets/again.png" alt=""> Update rune price
+            <img class="btn__icon" src="assets/ui/refresh.png" alt=""> Update rune price
           </button>
           <button class="btn" id="refreshAll" type="button">
-            <img class="btn__icon" src="assets/again.png" alt=""> Refresh all prices
+            <img class="btn__icon" src="assets/ui/refresh.png" alt=""> Refresh all prices
           </button>
           <button class="btn btn--ghost btn--danger" id="clearAll" type="button">Clear list</button>
         </div>
@@ -235,10 +235,10 @@
       <td data-column="actions">
         <div class="cell-actions">
           <button class="icon-btn" type="button" data-action="refresh" title="Refresh prices">
-            <img src="assets/again.png" alt="Refresh prices">
+            <img src="assets/ui/refresh.png" alt="Refresh prices">
           </button>
           <button class="icon-btn" type="button" data-action="delete" title="Remove item">
-            <img src="assets/trash_bin.png" alt="Remove item">
+            <img src="assets/ui/trash.png" alt="Remove item">
           </button>
         </div>
       </td>

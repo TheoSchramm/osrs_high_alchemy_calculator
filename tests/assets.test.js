@@ -115,7 +115,11 @@ test('no stray non-ASCII characters in CSS declarations', () => {
  * See assets/ui/SPRITES.md.
  */
 test('bordered sprites are never tiled', () => {
-  const BORDERED = ['--tex-panel', '--tex-banner', '--tex-button', '--tex-button-active', '--tex-slot'];
+  const BORDERED = [
+    '--tex-panel', '--tex-banner', '--tex-button', '--tex-button-active',
+    '--tex-icon-button', '--tex-icon-button-hover', '--tex-slot',
+    '--tex-scroll-h', '--tex-scroll-v',
+  ];
   const offenders = [];
 
   for (const file of STYLE_FILES) {
@@ -150,6 +154,7 @@ test('9-slice widths are declared as tokens next to their sprite', () => {
   assert.match(tokens, /--slice-panel:\s*16;/);
   assert.match(tokens, /--slice-banner:\s*2 16;/);
   assert.match(tokens, /--slice-button:\s*10;/);
+  assert.match(tokens, /--slice-icon-button:\s*3;/);
 
   // Every border-image must use a slice token rather than a bare number, so
   // the value stays next to the sprite dimensions that justify it.
@@ -208,6 +213,41 @@ test('the row template carries every cell the table view writes to', () => {
   for (const action of ['refresh', 'delete']) {
     assert.ok(template.includes(`data-action="${action}"`), `template is missing action ${action}`);
   }
+});
+
+test('each panel title carries the icon that matches its job', () => {
+  // Pinned because these were chosen deliberately and are easy to shuffle by
+  // accident: search for adding, the alchemy spell for the list, a tool for
+  // settings. See assets/ui/SPRITES.md.
+  const html = read('index.html');
+  const titleIcon = (heading) => {
+    const start = html.indexOf(`id="${heading}"`);
+    assert.notEqual(start, -1, `no heading ${heading}`);
+    const slice = html.slice(start, start + 300);
+    return /panel__title-icon" src="([^"]+)"/.exec(slice)?.[1];
+  };
+
+  assert.equal(titleIcon('addHeading'), 'assets/ui/search.png');
+  assert.equal(titleIcon('tableHeading'), 'assets/ui/high_alchemy.png');
+  assert.equal(titleIcon('settingsHeading'), 'assets/ui/settings_wrench.png');
+});
+
+test('the row action buttons use the pack icons', () => {
+  const html = read('index.html');
+  const template = html.slice(html.indexOf('<template id="itemRowTemplate">'));
+
+  assert.match(template, /data-action="refresh"[\s\S]{0,120}assets\/ui\/refresh\.png/);
+  assert.match(template, /data-action="delete"[\s\S]{0,120}assets\/ui\/trash\.png/);
+});
+
+test('the icon buttons have a sprite body so they read on parchment', () => {
+  // The row icons are pale; without a button behind them they vanish into the
+  // parchment. Enforced here so the background cannot be dropped silently.
+  const css = stripComments(read('styles/components.css'));
+  const block = css.split('}').find((rule) => /^\s*\.icon-btn\s*\{/.test(rule));
+
+  assert.ok(block, 'no .icon-btn rule found');
+  assert.match(block, /border-image:\s*var\(--tex-icon-button\)/);
 });
 
 test('the totals row covers the same derived columns as the body', () => {

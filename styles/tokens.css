@@ -51,12 +51,20 @@
   --tex-banner: url('../assets/ui/banner_scroll.png'); /* 436 scroll, 503x47 */
   --tex-button: url('../assets/button.png');
   --tex-button-active: url('../assets/button_pressed.png');
-  --tex-slot: url('../assets/ge_slot.png');
+  --tex-icon-button: url('../assets/ui/icon_button.png'); /* ge/button, cropped */
+  --tex-icon-button-hover: url('../assets/ui/icon_button_hovered.png');
+  --tex-slot: url('../assets/ui/item_slot.png'); /* ge/selected_item_box */
+  /* Scrollbar thumbs, each composed from the pack's three cap/middle pieces. */
+  --tex-scroll-h: url('../assets/ui/scroll_thumb_h.png');
+  --tex-scroll-v: url('../assets/ui/scroll_thumb_v.png');
 
   /* ---- 9-slice geometry, measured from the sprites themselves ---- */
   --slice-panel: 16; /* uniform bevel, flat parchment from 16px in */
   --slice-banner: 2 16; /* black rule top/bottom, rolled ends 16px wide */
   --slice-button: 10;
+  --slice-icon-button: 3; /* 1px black rule plus a 2px bevel */
+  --slice-scroll-h: 0 5; /* left and right caps are 5px wide */
+  --slice-scroll-v: 5 0; /* top and bottom caps are 5px tall */
 
   --border-panel: 16px;
   --border-banner: 2px 16px;

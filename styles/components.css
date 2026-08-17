@@ -222,39 +222,44 @@
   flex: none;
 }
 
-/* Compact icon-only button used inside table rows. */
+/* Compact icon-only button used inside table rows.
+   The Grand Exchange button sprite gives it a dark, recessed body, which the
+   pale row icons need to read against the parchment. */
 .icon-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 32px;
-  height: 32px;
+  height: 30px;
   padding: 0;
 
-  background-color: transparent;
-  border: 2px solid transparent;
+  background-color: var(--c-stone-light);
+  border: var(--slice-icon-button) solid transparent;
+  border-image: var(--tex-icon-button) var(--slice-icon-button) fill stretch;
   border-radius: var(--radius);
   cursor: pointer;
-  transition: background var(--transition), border-color var(--transition);
+  transition: filter var(--transition);
 }
 
 .icon-btn:hover:not(:disabled) {
-  background: rgb(43 33 21 / 12%);
-  border-color: var(--c-rule);
+  border-image-source: var(--tex-icon-button-hover);
+  filter: brightness(1.15);
 }
 
-.icon-btn:active {
+.icon-btn:active:not(:disabled) {
   transform: translateY(1px);
+  filter: brightness(0.9);
 }
 
 .icon-btn:disabled {
   cursor: not-allowed;
-  opacity: 0.35;
+  filter: grayscale(0.7) brightness(0.75);
+  opacity: 0.5;
 }
 
 .icon-btn img {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
 }
 
 .icon-btn.is-busy {
@@ -265,6 +270,68 @@
   50% {
     opacity: 0.35;
   }
+}
+
+/* ============================================================
+   Scrollbars
+   ============================================================
+   The default OS scrollbar looks wrong against parchment. WebKit gets the
+   pack's thumb sprite, 9-sliced so its end caps stay crisp; Firefox has no
+   image support here, so it gets matching colours instead. */
+
+/* Firefox has no ::-webkit-scrollbar, so it gets matching colours instead.
+   These must NOT be set unconditionally: in Chromium, specifying the standard
+   `scrollbar-width` makes it ignore every ::-webkit-scrollbar rule, which
+   silently replaced the sprite with a 2px overlay bar. */
+@supports not selector(::-webkit-scrollbar) {
+  html {
+    scrollbar-width: thin;
+    scrollbar-color: var(--c-parchment-dark) var(--c-stone);
+  }
+
+  .table-scroll,
+  .suggestions {
+    scrollbar-width: thin;
+    scrollbar-color: var(--c-parchment-dark) var(--c-parchment-sunken);
+  }
+}
+
+::-webkit-scrollbar {
+  width: 14px;
+  height: 16px;
+}
+
+/* The page scroller sits on the stone surround, not on parchment. */
+::-webkit-scrollbar-track {
+  background: var(--c-stone);
+  box-shadow: inset 0 0 3px rgb(0 0 0 / 60%);
+}
+
+.table-scroll::-webkit-scrollbar-track,
+.suggestions::-webkit-scrollbar-track {
+  background: var(--c-parchment-sunken);
+  box-shadow: inset 0 1px 3px rgb(43 33 21 / 40%);
+}
+
+::-webkit-scrollbar-thumb:vertical {
+  border: 5px solid transparent;
+  border-image: var(--tex-scroll-v) var(--slice-scroll-v) fill stretch;
+}
+
+::-webkit-scrollbar-thumb:horizontal {
+  border: 5px solid transparent;
+  border-image: var(--tex-scroll-h) var(--slice-scroll-h) fill stretch;
+}
+
+.table-scroll::-webkit-scrollbar-thumb:horizontal {
+  border: 5px solid transparent;
+  border-image: var(--tex-scroll-h) var(--slice-scroll-h) fill stretch;
+}
+
+.table-scroll::-webkit-scrollbar-thumb:vertical,
+.suggestions::-webkit-scrollbar-thumb:vertical {
+  border: 5px solid transparent;
+  border-image: var(--tex-scroll-v) var(--slice-scroll-v) fill stretch;
 }
 
 /* ============================================================
