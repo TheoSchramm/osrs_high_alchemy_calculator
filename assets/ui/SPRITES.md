@@ -9,7 +9,11 @@ constants.
 | `panel_parchment.png` | 1017 | `CHATBOX` | 519x142 | **9-slice, inset 16.** Uniform bevel frame around flat parchment. |
 | `banner_scroll.png` | 436 | `WELCOME_SCREEN_SCROLL_MESSAGE_OF_THE_WEEK` | 503x47 | **9-slice, inset 2 16.** Rolled ends at 16px, black rule top and bottom. |
 | `stone_wall.png` | 533 | `TEXTURE_ROOF_TILES_SLATE_GREY` | 128x128 | **Tileable.** Seamless, safe to `repeat`. |
-| `tab_strip.png` | 1032 | `FIXED_MODE_TABS_ROW_BOTTOM` | 246x37 | 9-slice only. Currently unused. |
+
+Other sprites worth knowing about if you extend the interface, all 9-slice only:
+`1032` `FIXED_MODE_TABS_ROW_BOTTOM` and `1173`/`1174` (stone tab strips),
+`500` `LOGIN_SCREEN_BUTTON_BACKGROUND`, `1035`/`1175`/`1176` (side pillars).
+Other seamless textures: `457` `TEXTURE_STONE`, `469` `TEXTURE_BRICKS_STONE_DIRTY`.
 
 ## The rule
 
