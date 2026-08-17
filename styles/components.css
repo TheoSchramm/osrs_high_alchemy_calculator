@@ -8,7 +8,7 @@
   background-color: var(--c-leather);
   background-image: var(--tex-panel);
   background-repeat: repeat;
-  background-size: 190px 260px;
+  background-size: 190px 261px;
   border: 2px solid var(--c-bevel-dark);
   border-radius: var(--radius);
   box-shadow:
@@ -415,7 +415,7 @@
 
   background-color: var(--c-stone-700);
   background-image: var(--tex-panel);
-  background-size: 190px 260px;
+  background-size: 190px 261px;
   border: 2px solid var(--c-bevel-dark);
   box-shadow: inset 0 0 0 1px var(--c-bevel-light), var(--shadow-panel);
   animation: toast-in 160ms ease-out;
