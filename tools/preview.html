@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Seeding preview data</title>
+</head>
+
+<body>
+  <p>Seeding sample data, then opening the calculator...</p>
+
+  <!--
+    Development helper only. Open /tools/preview.html to load the app with a
+    few representative rows already in it, which is handy for eyeballing the
+    layout and for taking screenshots. It is not referenced by the app.
+  -->
+  <script>
+    localStorage.setItem('osrs-alch:state:v2', JSON.stringify({
+      version: 2,
+      runePrice: 158,
+      priceBasis: 'high',
+      sort: { field: null, direction: 1 },
+      items: [
+        {
+          id: 'preview-1',
+          itemId: 1201,
+          name: 'Rune kiteshield',
+          buyPrice: 32095,
+          alchPrice: 32640,
+          quantity: 100,
+          icon: 'https://oldschool.runescape.wiki/images/Rune_kiteshield.png',
+          updatedAt: Date.now(),
+        },
+        {
+          id: 'preview-2',
+          itemId: 1149,
+          name: 'Dragon med helm',
+          buyPrice: 58509,
+          alchPrice: 60000,
+          quantity: 100,
+          icon: 'https://oldschool.runescape.wiki/images/Dragon_med_helm.png',
+          updatedAt: Date.now(),
+        },
+        {
+          id: 'preview-3',
+          itemId: 1123,
+          name: 'Adamant platebody',
+          buyPrice: 9375,
+          alchPrice: 9984,
+          quantity: 100,
+          icon: 'https://oldschool.runescape.wiki/images/Adamant_platebody.png',
+          updatedAt: Date.now(),
+        },
+        {
+          id: 'preview-4',
+          name: 'Hand-entered item',
+          buyPrice: 12000,
+          alchPrice: 9000,
+          quantity: 25,
+          icon: null,
+          updatedAt: null,
+        },
+      ],
+    }));
+    location.replace('/index.html');
+  </script>
+</body>
+
+</html>

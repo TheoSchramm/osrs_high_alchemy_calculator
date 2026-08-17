@@ -108,14 +108,14 @@ test('no stray non-ASCII characters in CSS declarations', () => {
 /**
  * Sprites with a baked-in border must never be tiled.
  *
- * `header_background.png` is a rounded plaque with transparent corners and
- * `table_background.png` has a dark vignette down its left and right edges.
- * Repeating either one stamps its border across the middle of the element —
- * which is exactly the bug this rule exists to prevent. They may only be
- * 9-sliced with `border-image` or stretched once with `background-size: 100%`.
+ * In the OSRS cache only the sprites whose RuneLite constant starts with
+ * `TEXTURE_` are seamless. Everything else is a self-contained widget with its
+ * frame painted into the image, so repeating it stamps that frame across the
+ * middle of the element. Those may only be 9-sliced with `border-image`.
+ * See assets/ui/SPRITES.md.
  */
 test('bordered sprites are never tiled', () => {
-  const BORDERED = ['--tex-panel', '--tex-header', '--tex-button', '--tex-button-active', '--tex-slot'];
+  const BORDERED = ['--tex-panel', '--tex-banner', '--tex-button', '--tex-button-active', '--tex-slot'];
   const offenders = [];
 
   for (const file of STYLE_FILES) {
@@ -145,8 +145,10 @@ test('the one seamless tile is the page background', () => {
 });
 
 test('9-slice widths are declared as tokens next to their sprite', () => {
+  // Values measured off the sprites themselves: see assets/ui/SPRITES.md.
   const tokens = read('styles/tokens.css');
-  assert.match(tokens, /--slice-header:\s*46;/);
+  assert.match(tokens, /--slice-panel:\s*16;/);
+  assert.match(tokens, /--slice-banner:\s*2 16;/);
   assert.match(tokens, /--slice-button:\s*10;/);
 
   // Every border-image must use a slice token rather than a bare number, so

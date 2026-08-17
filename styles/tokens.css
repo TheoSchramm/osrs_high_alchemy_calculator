@@ -1,68 +1,65 @@
 /*
  * Design tokens.
  *
- * The palette is lifted from the Old School RuneScape interface and the
- * oldschool.runescape.wiki tables: stone greys, worn leather browns, and the
- * classic in-game chat colours. Change a value here and it changes everywhere.
+ * The look is the Old School RuneScape scroll interface: parchment panels
+ * floating on a stone wall, which is also how oldschool.runescape.wiki reads.
+ * Change a value here and it changes everywhere.
  */
 
 :root {
-  /* ---- Surfaces: darkest at the page edge, lightest on raised chrome ---- */
-  --c-void: #0b0a07;
-  --c-stone-900: #16130d;
-  --c-stone-800: #1f1a12;
-  --c-stone-700: #2b2419;
-  --c-stone-600: #3a3126;
-  --c-stone-500: #4b3f2f;
-  --c-leather: #453b2c;
-  --c-leather-dark: #29221a;
+  /* ---- Parchment: the surface almost all content sits on ---- */
+  --c-parchment: #cbba95;
+  --c-parchment-light: #e0d2b0;
+  --c-parchment-dark: #b0a07c;
+  --c-parchment-sunken: #a89771;
+  --c-banner: #ffe39b;
 
-  /* Slate band, sampled from the middle of the header plaque sprite so the
-     CSS-drawn table header matches the 9-sliced panel titles above it. */
-  --c-band: #3d3f49;
-  --c-band-light: #4a4d58;
-  --c-band-dark: #2b2d34;
+  /* ---- Stone: the page surround, behind the parchment ---- */
+  --c-stone-deep: #14130f;
+  --c-stone: #2a2823;
+  --c-stone-light: #46433a;
 
-  /* ---- Borders and bevels: the raised metal frame around every panel ---- */
-  --c-bevel-light: #6f5f45;
-  --c-bevel-dark: #100d09;
-  --c-rule: #5a4c38;
+  /* ---- Ink: text on parchment ---- */
+  --c-ink: #2b2115;
+  --c-ink-strong: #1c1509;
+  --c-ink-muted: #6a5a41;
+  --c-ink-label: #4a3617;
 
-  /* ---- Text: classic RuneScape chat colours ---- */
-  --c-text: #e8dcc0;
-  --c-text-dim: #c3b493;
-  --c-text-muted: #9c8f74;
+  /* ---- Text on stone (site header, footer) ---- */
+  --c-on-stone: #e8dcc0;
+  --c-on-stone-muted: #9c8f74;
   --c-gold: #ff981f;
-  --c-yellow: #ffe000;
-  --c-cyan: #00ffff;
-  --c-green: #00e83e;
-  --c-red: #ff4f4f;
-  --c-blue: #5aa9ff;
+
+  /* ---- Rules and bevels ---- */
+  --c-rule: rgb(43 33 21 / 30%);
+  --c-rule-strong: rgb(43 33 21 / 55%);
+  --c-bevel-dark: #100d09;
 
   /* ---- Semantics ---- */
-  --c-profit: var(--c-green);
-  --c-loss: var(--c-red);
-  --c-accent: var(--c-gold);
-  --c-focus: #ffd24a;
+  --c-profit: #0f6b1c;
+  --c-loss: #9c1010;
+  --c-link: #14418c;
+  --c-focus: #33240d;
 
   /* ---- Textures ----
-   * Only `--tex-page` is a seamless tile (128x128 cobblestone). The others are
-   * self-contained widgets with baked-in borders, so they are 9-sliced with
-   * `border-image` or stretched once — never `background-repeat: repeat`.
-   *   table_background 190x261 — dark vignette down the left and right edges
-   *   header_background 360x200 — rounded plaque, transparent corners, ~46px radius
-   *   button / ge_slot          — discrete widgets with their own frame
+   * Only sprites whose RuneLite constant starts with TEXTURE_ are seamless and
+   * may be repeated. Everything else is a self-contained widget with a baked-in
+   * border and must be 9-sliced with `border-image`. See assets/ui/SPRITES.md.
    */
-  --tex-page: url('../assets/background.png');
-  --tex-panel: url('../assets/table_background.png');
-  --tex-header: url('../assets/header_background.png');
+  --tex-page: url('../assets/ui/stone_wall.png'); /* 533 TEXTURE_ROOF_TILES_SLATE_GREY, 128x128, seamless */
+  --tex-panel: url('../assets/ui/panel_parchment.png'); /* 1017 CHATBOX, 519x142 */
+  --tex-banner: url('../assets/ui/banner_scroll.png'); /* 436 scroll, 503x47 */
   --tex-button: url('../assets/button.png');
   --tex-button-active: url('../assets/button_pressed.png');
   --tex-slot: url('../assets/ge_slot.png');
 
-  /* 9-slice geometry, kept next to the sprites they describe. */
-  --slice-header: 46;
+  /* ---- 9-slice geometry, measured from the sprites themselves ---- */
+  --slice-panel: 16; /* uniform bevel, flat parchment from 16px in */
+  --slice-banner: 2 16; /* black rule top/bottom, rolled ends 16px wide */
   --slice-button: 10;
+
+  --border-panel: 16px;
+  --border-banner: 2px 16px;
 
   /* ---- Type ---- */
   --font-ui: 'RuneScape', 'Trebuchet MS', 'Segoe UI', sans-serif;
@@ -87,13 +84,13 @@
 
   /* ---- Misc ---- */
   --radius: 3px;
-  --shadow-panel: 0 2px 0 var(--c-bevel-dark), 0 6px 16px rgb(0 0 0 / 45%);
-  --shadow-text: 1px 1px 0 rgb(0 0 0 / 90%);
+  --shadow-panel: 0 3px 10px rgb(0 0 0 / 55%);
+  --shadow-ink: none;
+  --shadow-on-stone: 1px 1px 0 rgb(0 0 0 / 90%);
   --content-width: 1180px;
   --transition: 120ms ease-out;
 }
 
-/* The interface is dark by design; respect a reduced-motion preference only. */
 @media (prefers-reduced-motion: reduce) {
   :root {
     --transition: 0ms;

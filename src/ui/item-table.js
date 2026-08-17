@@ -167,9 +167,15 @@ export class ItemTableView {
 
   _updateRow(tr, item, derived) {
     const icon = qs(tr, '.cell-item__icon');
-    const iconSrc = item.icon ?? '';
-    if (icon.getAttribute('src') !== iconSrc) icon.setAttribute('src', iconSrc);
-    icon.alt = item.icon ? `${item.name} icon` : '';
+    // An empty `src` resolves to the page URL, so the browser would re-request
+    // the whole document for every icon-less row. Drop the attribute instead.
+    if (item.icon) {
+      if (icon.getAttribute('src') !== item.icon) icon.setAttribute('src', item.icon);
+      icon.alt = `${item.name} icon`;
+    } else {
+      icon.removeAttribute('src');
+      icon.alt = '';
+    }
 
     this._updateEditableCell(tr, 'name', item.name, item.name);
     this._updateEditableCell(tr, 'buyPrice', formatNumber(item.buyPrice), item.name);

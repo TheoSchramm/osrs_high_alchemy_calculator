@@ -18,18 +18,36 @@ npm run serve    # http://localhost:4173
 ## Testing
 
 ```bash
-npm test         # the full offline suite — no network, safe to run anywhere
+npm test            # the full offline suite — no network, safe to run anywhere
 npm run test:watch
 npm run test:live   # hits the real price API; run when you suspect API drift
+npm run test:layout # real headless browser; catches layout and sprite bugs
 ```
 
 `npm test` is the regression suite. It covers the maths, the storage format
 (including migration from the old save file), the API client against recorded
 fixtures, and the rendered DOM driven through the real `index.html` in jsdom.
 
-`npm run test:live` is deliberately separate: it asserts that the live API still
-matches the shape the fixtures assume. If those fail but `npm test` passes, the
-API changed and `tests/helpers/fake-api.js` needs updating.
+Two suites are deliberately kept out of it:
+
+- `npm run test:live` asserts that the live API still matches the shape the
+  fixtures assume. If it fails but `npm test` passes, the API changed and
+  `tests/helpers/fake-api.js` needs updating.
+- `npm run test:layout` drives a real headless browser over the DevTools
+  Protocol. jsdom has no layout engine, so it cannot see an element overflowing
+  the viewport, a control being clipped, or a 9-sliced sprite failing to apply.
+  Needs Edge or Chrome installed, and takes a few minutes.
+
+To poke at the running page yourself:
+
+```bash
+npm run serve
+node tools/inspect.js http://localhost:4173/ "document.title"
+WIDTH=500 node tools/inspect.js http://localhost:4173/ "innerWidth"
+```
+
+`tools/preview.html` loads the app with a few sample rows already in it, which
+is handy for eyeballing the layout and taking screenshots.
 
 ## Layout
 

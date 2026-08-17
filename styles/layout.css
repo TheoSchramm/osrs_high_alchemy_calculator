@@ -8,12 +8,10 @@
   padding: var(--sp-5) var(--sp-4);
   text-align: left;
 
-  background-color: var(--c-leather-dark);
-  background-image: var(--tex-panel);
-  background-repeat: no-repeat;
-  background-size: 100% 100%;
+  /* Deliberately left on the stone: a dark band frames the parchment below it. */
+  background: rgb(10 9 7 / 55%);
   border-bottom: 3px solid var(--c-bevel-dark);
-  box-shadow: inset 0 -2px 0 rgb(0 0 0 / 50%), 0 3px 12px rgb(0 0 0 / 55%);
+  box-shadow: inset 0 -2px 0 rgb(0 0 0 / 50%);
 }
 
 .site-header__icon {
@@ -29,7 +27,7 @@
 
 .site-header__subtitle {
   font-size: var(--fs-sm);
-  color: var(--c-text-muted);
+  color: var(--c-on-stone-muted);
 }
 
 .page {
@@ -45,9 +43,9 @@
   padding: var(--sp-5) var(--sp-4);
   text-align: center;
   font-size: var(--fs-xs);
-  color: var(--c-text-muted);
+  color: var(--c-on-stone-muted);
   border-top: 2px solid var(--c-bevel-dark);
-  background: rgb(11 10 7 / 55%);
+  background: rgb(10 9 7 / 55%);
 }
 
 .site-footer p + p {

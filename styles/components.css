@@ -1,53 +1,55 @@
 /* Reusable interface chrome: panels, fields, buttons, cards, notices, toasts. */
 
 /* ============================================================
-   Panel — the beveled RuneScape interface box
+   Panel - the parchment chatbox frame (sprite 1017)
    ============================================================ */
 
 .panel {
-  /* The parchment sprite carries its own vignette down the left and right
-     edges, so it is stretched to fill exactly once. Tiling it banded the panel
-     with a dark stripe every 190px. */
-  background-color: var(--c-leather);
-  background-image: var(--tex-panel);
-  background-repeat: no-repeat;
-  background-size: 100% 100%;
-  border: 2px solid var(--c-bevel-dark);
-  border-radius: var(--radius);
-  box-shadow:
-    inset 0 0 0 1px var(--c-bevel-light),
-    var(--shadow-panel);
+  /* 9-sliced: the bevel stays at native size on the edges and only the flat
+     middle stretches. The border is a uniform bevel, so stretching it along
+     its own length is invisible. */
+  padding: var(--sp-2);
+  color: var(--c-ink);
+  text-shadow: var(--shadow-ink);
+
+  background-color: var(--c-parchment);
+  border: var(--border-panel) solid transparent;
+  border-image: var(--tex-panel) var(--slice-panel) fill stretch;
+  box-shadow: var(--shadow-panel);
 }
 
 .panel__title {
   display: flex;
   align-items: center;
   gap: var(--sp-3);
-  margin: 0;
+  margin: 0 0 var(--sp-3);
   padding: var(--sp-1) var(--sp-3);
+  min-height: 43px;
   font-size: var(--fs-lg);
-  color: var(--c-gold);
+  color: var(--c-ink-strong);
 
-  /* A rounded plaque with a baked border and transparent corners: 9-sliced so
-     the frame stays intact and only the middle stretches. */
-  border: 14px solid transparent;
-  border-image: var(--tex-header) var(--slice-header) fill stretch;
+  /* The message-of-the-week scroll (sprite 436): rolled ends at 16px stay
+     native, the flat middle stretches. */
+  border-style: solid;
+  border-width: var(--border-banner);
+  border-color: transparent;
+  border-image: var(--tex-banner) var(--slice-banner) fill stretch;
 }
 
 .panel__title-icon {
-  width: 28px;
-  height: 28px;
+  width: 26px;
+  height: 26px;
   flex: none;
 }
 
 .panel__title-note {
   margin-left: auto;
   font-size: var(--fs-xs);
-  color: var(--c-text-muted);
+  color: var(--c-ink-muted);
 }
 
 .panel__body {
-  padding: var(--sp-4);
+  padding: var(--sp-2) var(--sp-2) var(--sp-3);
 }
 
 .panel__body--flush {
@@ -55,10 +57,19 @@
 }
 
 .panel__footer {
-  padding: var(--sp-3) var(--sp-4);
+  margin-top: var(--sp-3);
+  padding: var(--sp-2) var(--sp-2) 0;
   border-top: 1px solid var(--c-rule);
   font-size: var(--fs-xs);
-  color: var(--c-text-muted);
+  color: var(--c-ink-muted);
+}
+
+.panel code {
+  font-family: var(--font-mono);
+  color: var(--c-ink-strong);
+  background: rgb(43 33 21 / 12%);
+  padding: 0 var(--sp-1);
+  border-radius: 2px;
 }
 
 /* ============================================================
@@ -85,9 +96,14 @@
   flex: 0 0 160px;
 }
 
+/* Wide enough for the longest option label without truncating it. */
+.field--select {
+  flex: 0 0 250px;
+}
+
 .field__label {
   font-size: var(--fs-sm);
-  color: var(--c-yellow);
+  color: var(--c-ink-label);
 }
 
 .field__input,
@@ -96,38 +112,36 @@
   padding: var(--sp-2) var(--sp-3);
   font-family: var(--font-ui);
   font-size: var(--fs-md);
-  color: var(--c-cyan);
-  text-shadow: var(--shadow-text);
+  color: var(--c-ink-strong);
 
-  background-color: var(--c-stone-800);
-  border: 2px solid var(--c-bevel-dark);
+  /* A recessed slot cut into the parchment. */
+  background-color: var(--c-parchment-light);
+  border: 2px solid var(--c-rule-strong);
   border-radius: var(--radius);
-  box-shadow: inset 0 0 0 1px var(--c-rule), inset 0 2px 6px rgb(0 0 0 / 55%);
+  box-shadow: inset 0 2px 4px rgb(43 33 21 / 28%);
 }
 
 .field__select {
-  color: var(--c-text);
   cursor: pointer;
 }
 
 .field__input::placeholder {
-  color: var(--c-text-muted);
-  opacity: 0.75;
+  color: var(--c-ink-muted);
+  opacity: 0.8;
 }
 
 .field__input:focus,
 .field__select:focus {
   outline: none;
   border-color: var(--c-focus);
-  box-shadow: inset 0 0 0 1px var(--c-focus), inset 0 2px 6px rgb(0 0 0 / 55%);
+  box-shadow: inset 0 2px 4px rgb(43 33 21 / 28%), 0 0 0 2px rgb(51 36 13 / 35%);
 }
 
 .field__hint {
   font-size: var(--fs-xs);
-  color: var(--c-text-muted);
+  color: var(--c-ink-muted);
 }
 
-/* Number inputs: strip the spinners, they clash with the pixel type. */
 .field__input[type='number'] {
   appearance: textfield;
   -moz-appearance: textfield;
@@ -141,7 +155,7 @@
 }
 
 /* ============================================================
-   Buttons — 9-sliced from the in-game button sprite
+   Buttons - 9-sliced from the in-game button sprite
    ============================================================ */
 
 .btn {
@@ -154,11 +168,11 @@
 
   font-family: var(--font-ui);
   font-size: var(--fs-md);
-  color: var(--c-text);
-  text-shadow: var(--shadow-text);
+  color: var(--c-on-stone);
+  text-shadow: var(--shadow-on-stone);
   white-space: nowrap;
 
-  background-color: var(--c-stone-600);
+  background-color: var(--c-stone-light);
   border: 6px solid transparent;
   border-image: var(--tex-button) var(--slice-button) fill stretch;
   border-radius: var(--radius);
@@ -169,7 +183,7 @@
 }
 
 .btn:hover:not(:disabled) {
-  filter: brightness(1.18);
+  filter: brightness(1.15);
 }
 
 .btn:active:not(:disabled) {
@@ -179,28 +193,27 @@
 
 .btn:disabled {
   cursor: not-allowed;
-  filter: grayscale(0.6) brightness(0.7);
+  filter: grayscale(0.6) brightness(0.75);
 }
 
 .btn--primary {
-  color: var(--c-yellow);
+  color: var(--c-banner);
   font-size: var(--fs-lg);
 }
 
 .btn--ghost {
-  border-image: none;
   background: transparent;
-  border: 2px solid var(--c-rule);
-  color: var(--c-text-dim);
+  border: 2px solid var(--c-rule-strong);
+  color: var(--c-ink);
+  text-shadow: none;
 }
 
 .btn--ghost:hover:not(:disabled) {
-  border-color: var(--c-bevel-light);
-  color: var(--c-text);
+  background: rgb(43 33 21 / 10%);
 }
 
 .btn--danger {
-  color: var(--c-red);
+  color: var(--c-loss);
 }
 
 .btn__icon {
@@ -214,8 +227,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 34px;
-  height: 34px;
+  width: 32px;
+  height: 32px;
   padding: 0;
 
   background-color: transparent;
@@ -225,18 +238,23 @@
   transition: background var(--transition), border-color var(--transition);
 }
 
-.icon-btn:hover {
-  background: rgb(255 255 255 / 8%);
-  border-color: var(--c-bevel-light);
+.icon-btn:hover:not(:disabled) {
+  background: rgb(43 33 21 / 12%);
+  border-color: var(--c-rule);
 }
 
 .icon-btn:active {
   transform: translateY(1px);
 }
 
+.icon-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.35;
+}
+
 .icon-btn img {
-  width: 22px;
-  height: 22px;
+  width: 20px;
+  height: 20px;
 }
 
 .icon-btn.is-busy {
@@ -262,9 +280,9 @@
   max-height: 320px;
   overflow-y: auto;
 
-  background-color: var(--c-stone-800);
+  background-color: var(--c-parchment-light);
   border: 2px solid var(--c-bevel-dark);
-  box-shadow: inset 0 0 0 1px var(--c-rule), 0 8px 20px rgb(0 0 0 / 60%);
+  box-shadow: 0 8px 18px rgb(0 0 0 / 45%);
 }
 
 .suggestions[hidden] {
@@ -277,7 +295,8 @@
   gap: var(--sp-3);
   padding: var(--sp-2) var(--sp-3);
   cursor: pointer;
-  border-bottom: 1px solid rgb(0 0 0 / 35%);
+  color: var(--c-ink);
+  border-bottom: 1px solid var(--c-rule);
 }
 
 .suggestion:last-child {
@@ -286,7 +305,7 @@
 
 .suggestion:hover,
 .suggestion.is-active {
-  background: var(--c-stone-600);
+  background: var(--c-parchment-dark);
 }
 
 .suggestion__icon {
@@ -296,14 +315,10 @@
   object-fit: contain;
 }
 
-.suggestion__name {
-  color: var(--c-text);
-}
-
 .suggestion__meta {
   margin-left: auto;
   font-size: var(--fs-xs);
-  color: var(--c-text-muted);
+  color: var(--c-ink-muted);
   white-space: nowrap;
 }
 
@@ -321,12 +336,12 @@
   display: flex;
   align-items: center;
   gap: var(--sp-3);
-  padding: var(--sp-4);
+  padding: var(--sp-1);
 }
 
 .stat__icon {
-  width: 44px;
-  height: 44px;
+  width: 42px;
+  height: 42px;
   flex: none;
 }
 
@@ -336,18 +351,18 @@
 
 .stat__label {
   font-size: var(--fs-sm);
-  color: var(--c-yellow);
+  color: var(--c-ink-label);
 }
 
 .stat__value {
   font-size: var(--fs-xl);
-  color: var(--c-text);
+  color: var(--c-ink-strong);
   overflow-wrap: anywhere;
 }
 
 .stat__note {
   font-size: var(--fs-xs);
-  color: var(--c-text-muted);
+  color: var(--c-ink-muted);
 }
 
 /* ============================================================
@@ -359,8 +374,10 @@
   gap: var(--sp-3);
   padding: var(--sp-3) var(--sp-4);
   font-size: var(--fs-sm);
-  background: var(--c-stone-800);
-  border: 2px solid var(--c-rule);
+  color: var(--c-ink);
+  text-shadow: none;
+  background: var(--c-parchment-light);
+  border: 2px solid var(--c-rule-strong);
   border-left-width: 6px;
   border-radius: var(--radius);
 }
@@ -370,24 +387,22 @@
 }
 
 .notice--error {
-  border-left-color: var(--c-red);
-  color: var(--c-red);
+  border-left-color: var(--c-loss);
 }
 
 .notice--warn {
   border-left-color: var(--c-gold);
-  color: var(--c-gold);
 }
 
 .notice code {
   font-family: var(--font-mono);
-  color: var(--c-cyan);
+  color: var(--c-link);
 }
 
 .empty-state {
   padding: var(--sp-6) var(--sp-4);
   text-align: center;
-  color: var(--c-text-muted);
+  color: var(--c-ink-muted);
 }
 
 .empty-state[hidden] {
@@ -402,7 +417,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--sp-2);
-  width: min(360px, calc(100vw - var(--sp-5)));
+  width: min(380px, calc(100vw - var(--sp-5)));
   pointer-events: none;
 }
 
@@ -410,24 +425,24 @@
   display: flex;
   align-items: center;
   gap: var(--sp-3);
-  padding: var(--sp-3);
+  padding: var(--sp-1) var(--sp-2);
   pointer-events: auto;
+  color: var(--c-ink);
+  text-shadow: none;
 
-  background-color: var(--c-stone-700);
-  background-image: var(--tex-panel);
-  background-repeat: no-repeat;
-  background-size: 100% 100%;
-  border: 2px solid var(--c-bevel-dark);
-  box-shadow: inset 0 0 0 1px var(--c-bevel-light), var(--shadow-panel);
+  background-color: var(--c-parchment);
+  border: var(--border-panel) solid transparent;
+  border-image: var(--tex-panel) var(--slice-panel) fill stretch;
+  box-shadow: var(--shadow-panel);
   animation: toast-in 160ms ease-out;
 }
 
 .toast--error {
-  color: var(--c-red);
+  color: var(--c-loss);
 }
 
 .toast--success {
-  color: var(--c-green);
+  color: var(--c-profit);
 }
 
 .toast__message {
@@ -439,18 +454,18 @@
 .toast__action {
   flex: none;
   padding: var(--sp-1) var(--sp-3);
-  min-height: 32px;
+  min-height: 30px;
+  font-family: var(--font-ui);
   font-size: var(--fs-sm);
-  color: var(--c-yellow);
-  background: transparent;
-  border: 2px solid var(--c-bevel-light);
+  color: var(--c-ink-strong);
+  background: var(--c-parchment-light);
+  border: 2px solid var(--c-rule-strong);
   border-radius: var(--radius);
   cursor: pointer;
-  font-family: var(--font-ui);
 }
 
 .toast__action:hover {
-  background: rgb(255 255 255 / 10%);
+  background: var(--c-parchment-dark);
 }
 
 @keyframes toast-in {
@@ -484,9 +499,9 @@
 }
 
 .value-muted {
-  color: var(--c-text-muted);
+  color: var(--c-ink-muted);
 }
 
 .value-gold {
-  color: var(--c-gold);
+  color: var(--c-ink-label);
 }

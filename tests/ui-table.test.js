@@ -258,6 +258,31 @@ test('icons render with the item name as alt text', (t) => {
   assert.equal(icon.alt, 'Adamant platebody icon');
 });
 
+test('an item with no icon has no src attribute at all', (t) => {
+  // An empty src resolves to the page URL, so the browser would re-request the
+  // whole document for every icon-less row.
+  const ctx = mountWith([{ id: 'manual', name: 'Hand-entered', buyPrice: 1, alchPrice: 2, quantity: 3 }]);
+  t.after(ctx.cleanup);
+
+  const icon = ctx.document.querySelector('.cell-item__icon');
+  assert.equal(icon.hasAttribute('src'), false);
+  assert.equal(icon.alt, '');
+});
+
+test('gaining and losing an icon toggles the src attribute', (t) => {
+  const ctx = mountWith([{ id: 'x', name: 'Thing', buyPrice: 1, alchPrice: 2, quantity: 1 }]);
+  t.after(ctx.cleanup);
+
+  const icon = () => ctx.document.querySelector('.cell-item__icon');
+  assert.equal(icon().hasAttribute('src'), false);
+
+  ctx.store.updateItem('x', { icon: 'https://example.test/i.png' });
+  assert.equal(icon().getAttribute('src'), 'https://example.test/i.png');
+
+  ctx.store.updateItem('x', { icon: null });
+  assert.equal(icon().hasAttribute('src'), false, 'the stale src must be removed');
+});
+
 test('editable cells are labelled for screen readers', (t) => {
   const ctx = mountWith([PLATEBODY]);
   t.after(ctx.cleanup);

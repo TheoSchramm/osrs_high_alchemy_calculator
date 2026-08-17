@@ -149,7 +149,8 @@ export class AddItemForm {
 
       const icon = doc.createElement('img');
       icon.className = 'suggestion__icon';
-      icon.src = entry.icon ?? '';
+      // Only set src when there is one: an empty src re-requests the page.
+      if (entry.icon) icon.src = entry.icon;
       icon.alt = '';
       icon.loading = 'lazy';
 
