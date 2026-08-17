@@ -29,12 +29,14 @@ Two sources, both Jagex assets:
 | `high_alchemy.png` | `normal_spell/high_level_alchemy` | Favicon, site header, "Alching list" |
 | `search.png` | `bank/search` | "Add an item" |
 | `settings_wrench.png` | `tab/options` | "Settings" |
-| `coins.png` | `welcome_screen/coins` | Total profit |
-| `xp_orb.png` | `other/minimap_orb_xp` | Total experience |
-| `clock.png` | `sailing/trials_clock` | Estimated time |
-| `gold_pouch.png` | `bonds_pouch/gold_pouch` | Total spend |
 | `refresh.png` | `other/refresh_icon` | Refresh buttons |
 | `trash.png` | `bank/send_to_trash` | Remove item |
+
+The four **stat cards** deliberately keep the original icons from `assets/`
+(`coins`, `xp`, `giant_stopwatch`, `nature_rune`) rather than pack equivalents.
+They are larger and more detailed, which suits a 42px card icon better than the
+pack's small interface glyphs. Pack versions were tried and reverted; they are
+in git history at `ea206f3` if that judgement ever changes.
 
 ## The rule
 

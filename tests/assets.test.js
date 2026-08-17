@@ -232,6 +232,19 @@ test('each panel title carries the icon that matches its job', () => {
   assert.equal(titleIcon('settingsHeading'), 'assets/ui/settings_wrench.png');
 });
 
+test('the stat cards keep the original larger icons', () => {
+  // Deliberately not the resource-pack equivalents: at 42px the pack's small
+  // interface glyphs look thin next to these. See assets/ui/SPRITES.md.
+  const icons = [...read('index.html').matchAll(/stat__icon" src="([^"]+)"/g)].map((m) => m[1]);
+
+  assert.deepEqual(icons, [
+    'assets/coins.png',
+    'assets/xp.png',
+    'assets/giant_stopwatch.png',
+    'assets/nature_rune.png',
+  ]);
+});
+
 test('the row action buttons use the pack icons', () => {
   const html = read('index.html');
   const template = html.slice(html.indexOf('<template id="itemRowTemplate">'));
