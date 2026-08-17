@@ -49,8 +49,6 @@
    */
   --tex-page: url('../assets/ui/stone_wall.png'); /* 533 TEXTURE_ROOF_TILES_SLATE_GREY, 128x128, seamless */
   --tex-panel: url('../assets/ui/panel_parchment.png'); /* 1017 CHATBOX, 519x142 */
-  --tex-button: url('../assets/button.png');
-  --tex-button-active: url('../assets/button_pressed.png');
   --tex-button-primary: url('../assets/ui/button_primary.png'); /* welcome_screen/button_click_here_to_play */
   --tex-icon-button: url('../assets/ui/icon_button.png'); /* ge/button, cropped */
   --tex-icon-button-hover: url('../assets/ui/icon_button_hovered.png');
@@ -61,7 +59,6 @@
 
   /* ---- 9-slice geometry, measured from the sprites themselves ---- */
   --slice-panel: 16; /* uniform bevel, flat parchment from 16px in */
-  --slice-button: 10;
   --slice-button-primary: 4; /* 4px light rim around the red field */
   --slice-icon-button: 3; /* 1px black rule plus a 2px bevel */
   --slice-scroll-h: 0 5; /* left and right caps are 5px wide */

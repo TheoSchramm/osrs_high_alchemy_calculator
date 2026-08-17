@@ -60,10 +60,6 @@
   gap: var(--sp-4);
 }
 
-.toolbar--between {
-  justify-content: space-between;
-}
-
 @media (width <= 720px) {
   .site-header {
     flex-direction: column;

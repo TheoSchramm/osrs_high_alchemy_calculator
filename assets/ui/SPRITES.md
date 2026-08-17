@@ -40,7 +40,7 @@ pack's small interface glyphs. Pack versions of all four were tried and
 reverted; they are in git history at `ea206f3`. Total spend is the exception and
 uses the pack's money bag.
 
-## Title bars and the table header are drawn in CSS
+## Title bars, the table header and standard buttons are drawn in CSS
 
 Both were tried as sprites and both were reverted. The marble plaque
 (`welcome_screen/button_marble`) and the stone texture look right at their
@@ -53,8 +53,13 @@ The rule that follows: a sprite survives stretching only when the stretched part
 is uniform. `panel_parchment` works because its border is a plain bevel and its
 field is near-flat. A mottled field does not.
 
-So the panel titles, table header and totals row are flat parchment bands with a
-bevel and a dark rule. Because the totals row sets its own colour, which
+The brown button sprite (`assets/button.png`, 35x35) failed the same way for a
+different reason: stretched to five times its width it lost its rounding and
+read as a plain dark box. Standard buttons are now a CSS bevel, which holds its
+shape at any width.
+
+So the panel titles, table header, totals row and standard buttons are flat
+parchment with a bevel and a dark rule. Because the totals row sets its own colour, which
 outranks `.value-profit` / `.value-loss`, `table.css` restates those for
 `tfoot`; without it a loss stops reading as a loss, and
 `tests/layout/layout.check.js` guards it.

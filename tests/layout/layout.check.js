@@ -84,7 +84,7 @@ test('the 9-sliced sprites load and are applied', { timeout: 90_000 }, async () 
   const result = await page.evaluate(`{
     panel: getComputedStyle(document.querySelector('.panel')).borderImageSource,
     titleBg: getComputedStyle(document.querySelector('.panel__title')).backgroundColor,
-    button: getComputedStyle(document.querySelector('.btn:not(.btn--primary)')).borderImageSource,
+    buttonBg: getComputedStyle(document.querySelector('.btn:not(.btn--primary)')).backgroundColor,
     primary: getComputedStyle(document.querySelector('.btn--primary')).borderImageSource,
     iconButton: getComputedStyle(document.querySelector('.icon-btn')).borderImageSource,
     brokenImages: [...document.images]
@@ -97,7 +97,9 @@ test('the 9-sliced sprites load and are applied', { timeout: 90_000 }, async () 
   // The title bar is drawn in CSS on purpose: a mottled sprite smears when
   // stretched across a full-width bar. It only has to be a painted band.
   assert.notEqual(result.titleBg, 'rgba(0, 0, 0, 0)');
-  assert.match(result.button, /assets\/button\.png/);
+  // Standard buttons are drawn in CSS: the brown sprite is 35x35 and flattened
+  // into a plain box at five times that width. They only need a painted face.
+  assert.notEqual(result.buttonBg, 'rgba(0, 0, 0, 0)');
   assert.match(result.primary, /button_primary\.png/);
   assert.match(result.iconButton, /icon_button\.png/);
   // Only local images: whether the wiki's CDN is reachable is not our bug.

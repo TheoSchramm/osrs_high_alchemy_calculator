@@ -171,7 +171,6 @@ test('9-slice widths are declared as tokens next to their sprite', () => {
   // Values measured off the sprites themselves: see assets/ui/SPRITES.md.
   const tokens = read('styles/tokens.css');
   assert.match(tokens, /--slice-panel:\s*16;/);
-  assert.match(tokens, /--slice-button:\s*10;/);
   assert.match(tokens, /--slice-button-primary:\s*4;/);
   assert.match(tokens, /--slice-icon-button:\s*3;/);
 
@@ -281,6 +280,19 @@ test('the icon buttons have a sprite body so they read on parchment', () => {
 
   assert.ok(block, 'no .icon-btn rule found');
   assert.match(block, /border-image:\s*var\(--tex-icon-button\)/);
+});
+
+test('the settings actions sit in their own ruled row', () => {
+  // They used to share a line with the fields, which left a dead gap in the
+  // middle and put the destructive action next to two harmless ones.
+  const html = read('index.html');
+  const bar = html.slice(html.indexOf('class="action-bar"'));
+
+  assert.ok(bar.includes('id="fetchRunePrice"'));
+  assert.ok(bar.includes('id="refreshAll"'));
+  assert.match(bar, /id="clearAll"[^>]*|class="[^"]*action-bar__end/);
+  assert.ok(html.includes('btn--danger'), 'clear list stays marked destructive');
+  assert.equal(html.includes('btn--ghost'), false, 'the odd-one-out ghost style is gone');
 });
 
 test('the totals row covers the same derived columns as the body', () => {

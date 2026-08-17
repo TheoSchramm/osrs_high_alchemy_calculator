@@ -168,30 +168,36 @@
         Settings
       </h2>
 
-      <div class="panel__body toolbar toolbar--between">
-        <div class="field field--price">
-          <label class="field__label" for="runePrice">Nature rune price</label>
-          <input class="field__input" id="runePrice" type="text" inputmode="numeric" value="200">
-          <span class="field__hint">Cost of one cast</span>
-        </div>
-
-        <div class="field field--select">
-          <label class="field__label" for="priceBasis">Buy price basis</label>
-          <select class="field__select" id="priceBasis">
-            <option value="high">Instant buy (realistic)</option>
-            <option value="low">Instant sell (optimistic)</option>
-          </select>
-          <span class="field__hint">Which GE price counts as your cost</span>
-        </div>
-
+      <div class="panel__body">
         <div class="toolbar">
+          <div class="field field--price">
+            <label class="field__label" for="runePrice">Nature rune price</label>
+            <input class="field__input" id="runePrice" type="text" inputmode="numeric" value="200">
+            <span class="field__hint">Cost of one cast</span>
+          </div>
+
+          <div class="field field--select">
+            <label class="field__label" for="priceBasis">Buy price basis</label>
+            <select class="field__select" id="priceBasis">
+              <option value="high">Instant buy (realistic)</option>
+              <option value="low">Instant sell (optimistic)</option>
+            </select>
+            <span class="field__hint">Which GE price counts as your cost</span>
+          </div>
+        </div>
+
+        <!-- Actions get their own ruled row so they stop competing with the
+             fields for the same line, and the destructive one sits apart. -->
+        <div class="action-bar">
           <button class="btn" id="fetchRunePrice" type="button">
             <img class="btn__icon" src="assets/ui/refresh.png" alt=""> Update rune price
           </button>
           <button class="btn" id="refreshAll" type="button">
             <img class="btn__icon" src="assets/ui/refresh.png" alt=""> Refresh all prices
           </button>
-          <button class="btn btn--ghost btn--danger" id="clearAll" type="button">Clear list</button>
+          <button class="btn btn--danger action-bar__end" id="clearAll" type="button">
+            <img class="btn__icon" src="assets/ui/trash.png" alt=""> Clear list
+          </button>
         </div>
       </div>
 
