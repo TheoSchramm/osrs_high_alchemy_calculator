@@ -1,0 +1,295 @@
+@font-face {
+    font-family: 'Runescape';
+    src: url('fonts/runescape.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+
+* {
+    box-sizing: border-box;
+    font-family: 'RuneScape';
+}
+
+body {
+    background: #2E2C29;
+    color: #f0f0f0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+}
+
+.input-group,
+.rune-input {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 1.5rem;
+    background: #1e1e1e;
+    padding: 1rem;
+    margin-bottom: 1.3rem;
+    font-size: 1.3rem;
+    outline: 0.3rem solid #474745;
+    color: #fff;
+}
+
+input {
+    background: #2a2a2a;
+    border: none;
+    color: #fff;
+    padding: 0.5rem;
+    width: 150px;
+    font-size: 1.3rem;
+    outline: 0.15rem solid #474745;
+}
+
+input:focus {
+    outline: 2px solid #474745;
+}
+
+button {
+    width: 80px;                     /* SET PNG WIDTH */
+    height: 80px;                     /* SET PNG HEIGHT */
+    display: inline-block;
+    background-color: transparent;
+    background-image: url("assets/button.png");
+    background-size: 100% 100%;        /* forces full image without whitespace */
+    background-repeat: no-repeat;
+    background-position: center;
+
+    border: none;
+    outline: none;
+
+    color: white;
+    font-weight: bold;
+    font-size: 1.2rem;
+
+    cursor: pointer;
+    padding: 0;                        /* remove spacing that causes white gaps */
+    margin: 0.3rem;
+
+    user-select: none;
+}
+
+/* PRESSED STATE */
+button:active {
+    background-image: url("assets/button_pressed.png");
+    transform: translateY(2px);        /* optional "press" animation */
+}
+
+
+table {
+    width: 85%;
+    border-collapse: collapse;
+    background: #1e1e1e;
+    overflow: hidden;
+    margin-bottom: 1rem;
+    font-size: 1.3rem;
+    outline: 0.3rem solid #474745;
+}
+
+th,
+td {
+    text-align: center;
+    padding: 0.75rem;
+    
+}
+td:last-child {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+
+}
+th {
+    background: #46433A;
+    color: #FFCF3F;
+}
+
+tr:nth-child(even) {
+    background: #242424;
+}
+
+tr:hover {
+    background: #333;
+}
+
+.profit-positive {
+    color: #00FF00;
+    font-weight: bold;
+}
+
+.profit-negative {
+    color: #ff6c6c;
+    font-weight: bold;
+}
+
+.total {
+    font-weight: bold;
+    background: #2a2a2a;
+    color: #FFCF3F;
+}
+
+.action-btn {
+    margin: 0 0.2rem;
+    background: #444;
+    color: #fff;
+    padding: 0.3rem 0.6rem;
+    font-size: 1.3rem;
+    transition: all 0.2s;
+}
+
+
+td[contenteditable="true"] {
+    transition: background 0.3s;
+}
+
+td[contenteditable="true"]:focus {
+    background: #333;
+    outline: 2px solid #474745;
+}
+
+tfoot td {
+    font-weight: bold;
+    background: #2a2a2a;
+    color: #FFCF3F;
+}
+
+#xpStats {
+    width: 100%;
+    max-width: 800px;
+    background: #1e1e1e;
+    padding: 1rem;
+    color: #9be9a8;
+    text-align: center;
+}
+
+.totals-container {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+}
+
+.total-card {
+    display: block;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    background: #1e1e1e;
+    padding: 1rem 1.3rem;
+    text-align: center;
+    min-width: 150px;
+    border-color: pink;
+    outline: 0.3rem solid #474745;
+}
+
+
+.total-label {
+    font-size: 1.3rem;
+    color: #FFCF3F;
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+}
+
+.total-value {
+    font-size: 1.3rem;
+    font-weight: bold;
+    color: #00FF00;
+    /* profit/XP green */
+}
+
+.header {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    background-color: #46433A;
+    color: #FFCF3F;
+    text-align: center;
+    margin: 0px 0px 2rem 0px;
+    font-size: 2rem;
+
+    .icon {
+        min-width: 5rem;
+        min-height: 5rem;
+        margin-right: 3rem;
+    }
+}
+
+.icon {
+    min-width: 2.5rem;
+    min-height: 2.5rem;
+}
+
+
+
+.frame {
+    margin: 0px;
+    padding: 0px;
+}
+.chat {
+    color: #00FFFF;
+}
+
+.emphasis {
+    color: #E6A519;
+}
+
+.positive {
+    color: #00FF00;
+}
+
+.negative {
+    color: #FF0000;
+}
+
+.special {
+    color: #0088FF;
+}
+
+.text {
+  display: flex;
+  align-items: center;
+  gap: 0.3em;
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+    /* display: none; <- Crashes Chrome on hover */
+    -webkit-appearance: none;
+    margin: 0; /* <-- Apparently some margin are still there even though it's hidden */
+}
+
+input[type=number] {
+    -moz-appearance:textfield; /* Firefox */
+}
+
+.item-icon {
+    min-width: 4rem;
+    min-height: 4rem;
+}
+
+
+th.sorted-asc::after,
+th.sorted-desc::after {
+  margin-left: 6px;
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+th.sorted-asc::after {
+  content: "^";
+}
+
+th.sorted-desc::after {
+  content: "v";
+}
+
+

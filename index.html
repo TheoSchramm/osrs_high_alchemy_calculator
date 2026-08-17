@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="assets/high_level_alchemy.png">
+    <title>OSRS High Alch Calculator</title>
+    <link rel="stylesheet" href="./styles.css">
+</head>
+
+<body>
+
+    <div class="header">
+        <img src="assets/high_level_alchemy.png" class="icon">
+        <h1>OSRS High Alchemy Calculator</h1>
+    </div>
+
+    <h1 class="special"> Add Item to Calculator</h1>
+    <div class="input-group">
+        <input type="text" class="chat" id="itemName" placeholder="Item name">
+        <input type="number" class="chat" id="vendorPrice" placeholder="Seller price" min="0">
+        <input type="number" class="chat" id="alchPrice" placeholder="High alch price" min="0">
+        <input type="number" class="chat" id="quantity" placeholder="Quantity" min="0">
+        <button id="addItem" class="emphasis" type="button">Add</button>
+    </div>
+    <br>
+
+    <table id="itemsTable">
+        <thead>
+            <tr>
+                <th data-field="name" class="emphasis">Item</th>
+                <th data-field="vendor" class="emphasis">Seller Price</th>
+                <th data-field="alch" class="emphasis">High Alch Price</th>
+                <th data-field="quantity" class="emphasis">Quantity</th>
+                <th data-field="spentItems" class="emphasis">Spent on Items</th>
+                <th data-field="spentRunes" class="emphasis">Spent on Runes</th>
+                <th data-field="profit" class="emphasis">Profit</th>
+                <th class="emphasis"></th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <div class="totals-container">
+        <div class="total-card">
+            <img src="assets/coins.png" class="icon">
+            <p class="total-label">Total Profit</p>
+            <p class="total-value" id="totalProfit">0</p>
+        </div>
+
+        <div class="total-card">
+            <img src="assets/xp.png" class="icon">
+            <p class="total-label">Total Experience
+            <p class="emphasis">(65xp per cast)</p>
+            </p>
+            <p class="total-value" id="totalXP">0</p>
+        </div>
+
+        <div class="total-card">
+            <img src="assets/giant_stopwatch.png" class="icon">
+            <p class="total-label">Estimated Time
+            <p class="emphasis">(Max. 1200 casts/hour)</p>
+            </p>
+            <p class="total-value" id="totalTime">0h</p>
+        </div>
+    </div>
+
+    <br><br>
+
+    
+    <br><br>
+    
+    <div class="header">Settings</div>
+        <div class="rune-input">
+            <img src="assets/nature_rune.png" class="icon">
+            <p for="runePrice" class="emphasis">Nature Rune Price</p>
+            <input type="number" id="runePrice" min="0" value="200">
+        </div>
+
+    
+    <div class="text">
+        Cast <p class="positive"> High Level Alchemy</p> -> <p class="emphasis">Adamant platebody</p>
+    </div>
+
+    <script src="./script.js"></script>
+</body>
+
+</html>
