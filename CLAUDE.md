@@ -39,8 +39,9 @@ Dependencies flow one way: `ui` → `state` → `data` → `core`.
   `mergeSnapshot` skips it unless `force` is passed, and only an action the
   user explicitly triggered may pass it.
 - **Know which fields are market data.** Only `buyPrice` moves with the market.
-  `alchPrice` is a fixed game property: `mergeSnapshot` fills it when a row
-  has none and never rewrites it, not even with `force`.
+  `alchPrice` is a fixed game property: it is not in `EDITABLE_FIELDS`, its
+  cell is plain rather than `contenteditable`, and `mergeSnapshot` fills it
+  only when a row has none and never rewrites it, not even with `force`.
 - **`src/ui/`** renders and reports intent through handler callbacks. Async work
   belongs in `src/ui/app.js`, not in a view.
 - **`src/main.js`** is the only file allowed to touch `document`,

@@ -121,10 +121,12 @@ it should be sortable, a field to the return value of `computeItem` in
 - **The Updated column** shows how long ago each price was fetched, colour
   banded from fresh to stale. Items added by hand show a dash: they have no
   Grand Exchange price to age.
-- **Only the buy price ever changes on a refresh.** High alch is a fixed
-  property of the item, not a market price, so nothing rewrites it once the row
-  has one. It is filled in only when a row does not have a value yet, which is
-  how a hand-added item picks one up after it is matched to the Grand Exchange.
+- **High alch is read-only.** It is a constant the game assigns to the item, so
+  there is no different correct value to type and the cell cannot be edited.
+  Nothing rewrites it once the row has one either; it is filled in only when a
+  row has no value yet, which is how a hand-added item picks one up after it is
+  matched to the Grand Exchange. Editable fields are name, buy price and
+  quantity.
 - **Typing a buy price pins it.** Auto-refresh will not touch it again: a timer
   you did not trigger must never discard your work. The cell is shown italic
   with a dotted underline, and its tooltip gives the market price. An explicit

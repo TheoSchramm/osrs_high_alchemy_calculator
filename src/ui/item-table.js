@@ -22,8 +22,15 @@ const DERIVED_CELLS = {
 const FIELD_LABELS = {
   name: 'Name',
   buyPrice: 'Buy price',
-  alchPrice: 'High alch value',
   quantity: 'Quantity',
+};
+
+/**
+ * Cells rendered straight from the item rather than from derived figures, and
+ * which the user cannot edit. High alch is a constant the game assigns.
+ */
+const ITEM_CELLS = {
+  alchPrice: formatNumber,
 };
 
 export class ItemTableView {
@@ -183,8 +190,12 @@ export class ItemTableView {
 
     this._updateEditableCell(tr, 'name', item.name, item.name);
     this._updateEditableCell(tr, 'buyPrice', formatNumber(item.buyPrice), item.name);
-    this._updateEditableCell(tr, 'alchPrice', formatNumber(item.alchPrice), item.name);
     this._updateEditableCell(tr, 'quantity', formatNumber(item.quantity), item.name);
+
+    for (const [key, format] of Object.entries(ITEM_CELLS)) {
+      const cell = tr.querySelector(`[data-cell="${key}"]`);
+      if (cell) setText(cell, format(item[key]));
+    }
     this._markOverrides(tr, item);
 
     for (const [key, { format, tone }] of Object.entries(DERIVED_CELLS)) {

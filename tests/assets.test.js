@@ -223,10 +223,12 @@ test('the row template carries every cell the table view writes to', () => {
   const html = read('index.html');
   const template = html.slice(html.indexOf('<template id="itemRowTemplate">'));
 
-  for (const field of ['name', 'buyPrice', 'alchPrice', 'quantity']) {
+  for (const field of ['name', 'buyPrice', 'quantity']) {
     assert.ok(template.includes(`data-field="${field}"`), `template is missing field ${field}`);
   }
-  for (const cell of ['costItems', 'costRunes', 'profitPerCast', 'profit']) {
+  // High alch is read-only, so it is a plain cell rather than an editable one.
+  assert.equal(template.includes('data-field="alchPrice"'), false);
+  for (const cell of ['alchPrice', 'costItems', 'costRunes', 'profitPerCast', 'profit']) {
     assert.ok(template.includes(`data-cell="${cell}"`), `template is missing cell ${cell}`);
   }
   for (const action of ['refresh', 'delete']) {

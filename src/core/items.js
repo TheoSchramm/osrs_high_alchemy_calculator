@@ -8,16 +8,20 @@
 
 import { parseAmount, toNonNegativeInt } from './format.js';
 
-/** Fields the user may edit inline in the table. */
-export const EDITABLE_FIELDS = Object.freeze(['name', 'buyPrice', 'alchPrice', 'quantity']);
+/**
+ * Fields the user may edit inline in the table.
+ *
+ * High alch is not among them: it is a constant the game assigns to the item,
+ * so there is no such thing as a different correct value to type.
+ */
+export const EDITABLE_FIELDS = Object.freeze(['name', 'buyPrice', 'quantity']);
 
 /**
  * Fields a refresh can overwrite, and which therefore need pinning when the
  * user types over them.
  *
- * Only the buy price. High alch is a fixed property of the item rather than a
- * market price, so a refresh never changes it and it needs no pin. Quantity
- * and name have no market value to conflict with either.
+ * Only the buy price. High alch is read-only and a refresh never rewrites it,
+ * so it needs no pin. Quantity and name have no market value to conflict with.
  */
 export const OVERRIDABLE_FIELDS = Object.freeze(['buyPrice']);
 

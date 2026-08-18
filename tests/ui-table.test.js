@@ -445,3 +445,38 @@ test('editing quantity does not pin the price', async (t) => {
   assert.equal(ctx.store.getItem('plate').buyPrice, 4200, 'the price still tracks the market');
   assert.equal(ctx.store.getItem('plate').quantity, 250, 'and the quantity is untouched');
 });
+
+test('the high alch cell is not editable', (t) => {
+  const ctx = mountWith([PLATEBODY]);
+  t.after(ctx.cleanup);
+
+  // Scoped to the body: the header shares the same data-column.
+  const cell = ctx.document.querySelector('#itemsBody [data-column="alchPrice"]');
+  assert.equal(cell.textContent.trim(), '9,600', 'it still shows the value');
+  // jsdom does not implement isContentEditable, so check the attribute itself.
+  assert.equal(cell.hasAttribute('contenteditable'), false);
+  assert.equal(cell.querySelector('[contenteditable]'), null, 'and holds no editable child');
+  assert.equal(ctx.document.querySelector('[data-field="alchPrice"]'), null);
+});
+
+test('a stray edit event cannot change the alch value', (t) => {
+  const ctx = mountWith([PLATEBODY]);
+  t.after(ctx.cleanup);
+
+  // Even if something forged the event the table listens for, the store refuses.
+  ctx.store.editItemField('plate', 'alchPrice', '999999');
+
+  assert.equal(ctx.store.getItem('plate').alchPrice, 9600);
+});
+
+test('the alch cell still updates when the value is filled in', async (t) => {
+  const ctx = mountWith([{ ...PLATEBODY, alchPrice: 0 }]);
+  t.after(ctx.cleanup);
+
+  assert.equal(rowCells(rows(ctx.document)[0]).alchPrice, '0');
+
+  click(rows(ctx.document)[0].querySelector('[data-action="refresh"]'));
+  await flush();
+
+  assert.equal(rowCells(rows(ctx.document)[0]).alchPrice, '5,760');
+});

@@ -119,7 +119,16 @@ test('applyFieldEdit ignores unknown fields and blank names', () => {
 });
 
 test('EDITABLE_FIELDS is the documented set', () => {
-  assert.deepEqual([...EDITABLE_FIELDS], ['name', 'buyPrice', 'alchPrice', 'quantity']);
+  // High alch is absent on purpose: it is a constant the game assigns.
+  assert.deepEqual([...EDITABLE_FIELDS], ['name', 'buyPrice', 'quantity']);
+});
+
+test('the alch value cannot be edited', () => {
+  const item = normalizeItem({ name: 'Adamant platebody', alchPrice: 5760 });
+  const attempted = applyFieldEdit(item, 'alchPrice', '999999');
+
+  assert.equal(attempted, item, 'the edit is refused outright');
+  assert.equal(attempted.alchPrice, 5760);
 });
 
 test('mergeSnapshot updates the buy price but not the alch value', () => {
@@ -186,12 +195,11 @@ test('a new item pins nothing', () => {
 });
 
 test('only the buy price needs pinning', () => {
-  // Alch is never overwritten by a refresh, so it has nothing to be pinned
-  // against; only the buy price tracks the market.
+  // It is the one field that both tracks the market and can be typed over.
   const item = normalizeItem({ name: 'Rune axe', buyPrice: 100, alchPrice: 200 });
 
   assert.deepEqual(applyFieldEdit(item, 'buyPrice', '3000').overrides, { buyPrice: true });
-  assert.deepEqual(applyFieldEdit(item, 'alchPrice', '9000').overrides, { buyPrice: false });
+  assert.deepEqual(applyFieldEdit(item, 'quantity', '5').overrides, { buyPrice: false });
 });
 
 test('editing quantity or name pins nothing', () => {
@@ -238,17 +246,12 @@ test('a forced merge replaces a pinned price and unpins it', () => {
   assert.equal(merged.overrides.buyPrice, false, 'the row tracks the market again');
 });
 
-test('a hand-typed alch value is never rewritten', () => {
+test('an existing alch value is never rewritten', () => {
   // No pin required: a refresh leaves any alch value it finds alone.
-  const item = applyFieldEdit(
-    normalizeItem({ name: 'x', buyPrice: 100, alchPrice: 200 }),
-    'alchPrice',
-    '9999',
-  );
-
+  const item = normalizeItem({ name: 'x', buyPrice: 100, alchPrice: 200 });
   const merged = mergeSnapshot(item, { itemId: 1, name: 'x', highAlch: 5760, buyPrice: 4200 });
 
-  assert.equal(merged.alchPrice, 9999, 'the typed alch value survives');
+  assert.equal(merged.alchPrice, 200, 'the value already on the row survives');
   assert.equal(merged.buyPrice, 4200, 'the buy price still tracks the market');
 });
 
