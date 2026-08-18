@@ -5,3 +5,4 @@ Thumbs.db
 *.local
 .cache/
 coverage/
+osrs_high_alchemy_calculator/

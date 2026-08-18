@@ -217,7 +217,7 @@ export class ItemTableView {
     // Only items the API recognises can be refreshed.
     refreshButton.disabled = !item.itemId;
     refreshButton.title = item.itemId
-      ? `Refresh prices for ${item.name}`
+      ? `Update prices for "${item.name}"`
       : 'Added manually';
   }
 

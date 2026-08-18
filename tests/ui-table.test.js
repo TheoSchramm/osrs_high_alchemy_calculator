@@ -449,7 +449,7 @@ test('the refresh tooltip names the item', (t) => {
   const titleOf = (index) =>
     rows(ctx.document)[index].querySelector('[data-action="refresh"]').title;
 
-  assert.match(titleOf(0), /Refresh prices for Adamant platebody/);
+  assert.match(titleOf(0), /Update prices for "Adamant platebody"/);
   assert.match(titleOf(1), /Added manually/, 'a row with no Grand Exchange match says so');
 });
 
