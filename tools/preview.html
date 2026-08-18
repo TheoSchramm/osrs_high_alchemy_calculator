@@ -65,7 +65,9 @@
         },
       ],
     }));
-    location.replace('/index.html');
+    // Relative, not absolute: GitHub Pages serves a project site from a
+    // subpath, where '/index.html' would leave the site entirely.
+    location.replace('../index.html');
   </script>
 </body>
 

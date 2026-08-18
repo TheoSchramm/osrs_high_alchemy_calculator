@@ -15,6 +15,39 @@ npm install      # only needed for the tests (jsdom)
 npm run serve    # http://localhost:4173
 ```
 
+## Publishing
+
+The site is static with no build step, so GitHub Pages can serve the repository
+as-is. `.github/workflows/pages.yml` runs the offline test suite and then
+deploys on every push to `main`.
+
+To set it up once:
+
+```bash
+gh repo create <name> --public --source=. --remote=origin --push
+```
+
+Then in the repository, **Settings > Pages > Build and deployment**, set the
+source to **GitHub Actions**. The next push publishes to
+`https://<user>.github.io/<name>/`.
+
+Two things that were checked rather than assumed:
+
+- **Every path is relative**, so the app works from a project subpath rather
+  than only at a domain root. Verified by serving it from `/high-alchemy/`.
+- **The price API sends `Access-Control-Allow-Origin: *`**, so fetching it
+  from a `github.io` origin is fine.
+
+`.nojekyll` stops GitHub running the published files through Jekyll.
+
+### Before making the repository public
+
+`assets/` and `fonts/` contain Jagex artwork and the RuneScape font, taken
+from the game cache and the vanilla resource pack. Publishing the repository
+redistributes them. Fan sites do this routinely and `assets/ui/SPRITES.md`
+records the provenance, but it is a deliberate choice rather than a detail:
+Jagex owns those files, not this project.
+
 ## Testing
 
 ```bash
