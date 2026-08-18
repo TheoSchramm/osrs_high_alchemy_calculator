@@ -103,6 +103,46 @@ test('the table scroller shows no scrollbar', { timeout: 90_000 }, async () => {
   await page.close();
 });
 
+test('the sort chevron never wraps off the label line', { timeout: 90_000 }, async () => {
+  // Header labels wrap on purpose - that is what keeps the table narrow enough
+  // to need no scrollbar - and an in-flow chevron is an atomic inline, so the
+  // browser was free to break it onto its own line under a long label.
+  const page = await pageAt(1400);
+  const result = await page.evaluate(`(() => {
+    const rowHeight = () =>
+      Math.round(document.querySelector('#itemsTable thead tr').getBoundingClientRect().height);
+
+    const unsorted = rowHeight();
+    const measurements = [];
+
+    for (const th of document.querySelectorAll('#itemsTable th[data-sort]')) {
+      th.click();
+      const after = getComputedStyle(th, '::after');
+      measurements.push({
+        column: th.dataset.column,
+        rowHeight: rowHeight(),
+        position: after.position,
+      });
+    }
+
+    return { unsorted, measurements };
+  })()`);
+
+  for (const measurement of result.measurements) {
+    assert.equal(
+      measurement.position,
+      'absolute',
+      `${measurement.column}: the chevron must be out of flow so it cannot wrap`,
+    );
+    assert.equal(
+      measurement.rowHeight,
+      result.unsorted,
+      `${measurement.column}: sorting must not grow the header row`,
+    );
+  }
+  await page.close();
+});
+
 test('the 9-sliced sprites load and are applied', { timeout: 90_000 }, async () => {
   const page = await pageAt(1400);
   const result = await page.evaluate(`{
