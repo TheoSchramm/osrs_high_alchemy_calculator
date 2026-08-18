@@ -211,8 +211,8 @@ test('the refresh button is disabled for manually added items', (t) => {
   assert.equal(apiRow.querySelector('[data-action="refresh"]').disabled, false);
 });
 
-test('refreshing a row pulls new prices from the API', async (t) => {
-  const ctx = mountWith([{ ...PLATEBODY, buyPrice: 1, alchPrice: 1 }]);
+test('refreshing a row pulls a new buy price but leaves alch alone', async (t) => {
+  const ctx = mountWith([{ ...PLATEBODY, buyPrice: 1, alchPrice: 9600 }]);
   t.after(ctx.cleanup);
 
   click(rows(ctx.document)[0].querySelector('[data-action="refresh"]'));
@@ -220,9 +220,19 @@ test('refreshing a row pulls new prices from the API', async (t) => {
 
   const item = ctx.store.getItem('plate');
   assert.equal(item.buyPrice, 4200, 'instant-buy price from the fixture');
-  assert.equal(item.alchPrice, 5760);
+  assert.equal(item.alchPrice, 9600, 'high alch is fixed by the game, not the market');
   assert.equal(item.icon, 'https://oldschool.runescape.wiki/images/Adamant_platebody.png');
   assert.ok(toastMessages(ctx.document).some((message) => message.includes('updated')));
+});
+
+test('refreshing fills in an alch value the row never had', async (t) => {
+  const ctx = mountWith([{ ...PLATEBODY, buyPrice: 1, alchPrice: 0 }]);
+  t.after(ctx.cleanup);
+
+  click(rows(ctx.document)[0].querySelector('[data-action="refresh"]'));
+  await flush();
+
+  assert.equal(ctx.store.getItem('plate').alchPrice, 5760);
 });
 
 test('rows are reused across renders so editing does not lose focus', (t) => {

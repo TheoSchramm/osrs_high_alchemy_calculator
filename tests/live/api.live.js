@@ -110,7 +110,8 @@ test('the auto-refresher updates real items end to end', { timeout: TIMEOUT_MS }
           itemId: ADAMANT_PLATEBODY_ID,
           name: 'Adamant platebody',
           buyPrice: 1,
-          alchPrice: 1,
+          // Left empty so the refresh has to fill it in from the mapping.
+          alchPrice: 0,
           quantity: 1,
         },
       ],
@@ -124,6 +125,18 @@ test('the auto-refresher updates real items end to end', { timeout: TIMEOUT_MS }
 
   const item = store.getItem('live-1');
   assert.ok(item.buyPrice > 1, 'a real price replaced the placeholder');
-  assert.ok(item.alchPrice > 1, 'the high alch value came from the mapping');
+  assert.ok(item.alchPrice > 0, 'the missing high alch value was filled from the mapping');
   assert.ok(Date.now() - item.updatedAt < TIMEOUT_MS, 'updatedAt was stamped just now');
+
+  // A second poll must move the buy price only, never the alch value.
+  const alchAfterFirst = item.alchPrice;
+  store.editItemField('live-1', 'alchPrice', '424242');
+  await refresher.poll();
+
+  assert.equal(
+    store.getItem('live-1').alchPrice,
+    424_242,
+    'a real refresh never rewrites the alch value',
+  );
+  assert.notEqual(alchAfterFirst, 424_242, 'the fixture actually changed it');
 });

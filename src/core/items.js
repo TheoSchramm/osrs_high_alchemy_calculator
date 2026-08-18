@@ -12,18 +12,18 @@ import { parseAmount, toNonNegativeInt } from './format.js';
 export const EDITABLE_FIELDS = Object.freeze(['name', 'buyPrice', 'alchPrice', 'quantity']);
 
 /**
- * Fields that come from the Grand Exchange and can therefore be overridden by
- * a hand edit. Quantity and name have no market value to conflict with.
+ * Fields a refresh can overwrite, and which therefore need pinning when the
+ * user types over them.
+ *
+ * Only the buy price. High alch is a fixed property of the item rather than a
+ * market price, so a refresh never changes it and it needs no pin. Quantity
+ * and name have no market value to conflict with either.
  */
-export const OVERRIDABLE_FIELDS = Object.freeze(['buyPrice', 'alchPrice']);
+export const OVERRIDABLE_FIELDS = Object.freeze(['buyPrice']);
 
-/** @returns {{buyPrice: boolean, alchPrice: boolean}} */
+/** @returns {{buyPrice: boolean}} */
 function normalizeOverrides(raw) {
-  const source = raw ?? {};
-  return {
-    buyPrice: Boolean(source.buyPrice),
-    alchPrice: Boolean(source.alchPrice),
-  };
+  return { buyPrice: Boolean((raw ?? {}).buyPrice) };
 }
 
 let idCounter = 0;
@@ -128,9 +128,11 @@ export function applyFieldEdit(item, field, value) {
 /**
  * Merge an API snapshot into an item without clobbering data the API lacks.
  *
- * Fields the user has typed over are left alone unless `force` is set. That is
+ * The buy price the user has typed is left alone unless `force` is set. That is
  * the difference between a background poll, which must never discard someone's
  * work, and an explicit Refresh, which was asked for and should win.
+ *
+ * The high alch value is never changed either way; see below.
  *
  * @param {import('./alchemy.js').AlchItem} item
  * @param {import('../data/prices-api.js').ItemSnapshot|null} snapshot
@@ -146,19 +148,23 @@ export function mergeSnapshot(item, snapshot, options = {}) {
   const marketBuy = Number.isFinite(snapshot.buyPrice) && snapshot.buyPrice > 0
     ? snapshot.buyPrice
     : item.marketBuyPrice;
-  const marketAlch = Number.isFinite(snapshot.highAlch) && snapshot.highAlch > 0
-    ? snapshot.highAlch
-    : item.alchPrice;
+
+  // High alch is set by the game, not by the market: it is the same number
+  // every time we ask. Fill it only when the row does not have one yet, so a
+  // refresh can complete a hand-added item without ever rewriting a value that
+  // is already correct.
+  const alchPrice = item.alchPrice > 0
+    ? item.alchPrice
+    : (Number.isFinite(snapshot.highAlch) ? Math.max(0, snapshot.highAlch) : 0);
 
   const keepBuy = overrides.buyPrice && !force;
-  const keepAlch = overrides.alchPrice && !force;
 
   return {
     ...item,
     itemId: snapshot.itemId ?? item.itemId,
     name: snapshot.name || item.name,
     icon: snapshot.icon || item.icon,
-    alchPrice: keepAlch ? item.alchPrice : marketAlch,
+    alchPrice,
     buyPrice: keepBuy ? item.buyPrice : (marketBuy ?? item.buyPrice),
     marketBuyPrice: marketBuy ?? null,
     // An explicit refresh hands the row back to the market.

@@ -122,8 +122,8 @@ test('EDITABLE_FIELDS is the documented set', () => {
   assert.deepEqual([...EDITABLE_FIELDS], ['name', 'buyPrice', 'alchPrice', 'quantity']);
 });
 
-test('mergeSnapshot overwrites prices but keeps the quantity', () => {
-  const item = normalizeItem({ name: 'Adamant platebody', quantity: 40, buyPrice: 1, alchPrice: 1 });
+test('mergeSnapshot updates the buy price but not the alch value', () => {
+  const item = normalizeItem({ name: 'Adamant platebody', quantity: 40, buyPrice: 1, alchPrice: 5760 });
   const merged = mergeSnapshot(
     item,
     {
@@ -137,10 +137,31 @@ test('mergeSnapshot overwrites prices but keeps the quantity', () => {
   );
 
   assert.equal(merged.itemId, 1123);
-  assert.equal(merged.alchPrice, 9600);
-  assert.equal(merged.buyPrice, 4200);
+  assert.equal(merged.buyPrice, 4200, 'the market price is what moves');
+  assert.equal(merged.alchPrice, 5760, 'high alch is fixed by the game, not the market');
   assert.equal(merged.quantity, 40, 'user-entered quantity survives a refresh');
   assert.equal(merged.updatedAt, 1000);
+});
+
+test('mergeSnapshot fills in a missing alch value', () => {
+  // A hand-added row can be matched to the Grand Exchange later, and only then
+  // does it learn its alch value.
+  const item = normalizeItem({ name: 'Adamant platebody', buyPrice: 1, alchPrice: 0 });
+  const merged = mergeSnapshot(item, { itemId: 1123, name: 'Adamant platebody', highAlch: 5760, buyPrice: 4200 });
+
+  assert.equal(merged.alchPrice, 5760);
+});
+
+test('a forced refresh still does not rewrite the alch value', () => {
+  const item = normalizeItem({ name: 'x', buyPrice: 1, alchPrice: 5760 });
+  const merged = mergeSnapshot(
+    item,
+    { itemId: 1, name: 'x', highAlch: 9999, buyPrice: 4200 },
+    { force: true },
+  );
+
+  assert.equal(merged.alchPrice, 5760);
+  assert.equal(merged.buyPrice, 4200);
 });
 
 test('mergeSnapshot keeps existing values when the API has none', () => {
@@ -160,18 +181,17 @@ test('mergeSnapshot with no snapshot is a no-op', () => {
 
 test('a new item pins nothing', () => {
   const item = normalizeItem({ name: 'Rune axe', buyPrice: 100 });
-  assert.deepEqual(item.overrides, { buyPrice: false, alchPrice: false });
+  assert.deepEqual(item.overrides, { buyPrice: false });
   assert.equal(item.marketBuyPrice, null);
 });
 
-test('editing a price pins that field only', () => {
+test('only the buy price needs pinning', () => {
+  // Alch is never overwritten by a refresh, so it has nothing to be pinned
+  // against; only the buy price tracks the market.
   const item = normalizeItem({ name: 'Rune axe', buyPrice: 100, alchPrice: 200 });
 
-  const edited = applyFieldEdit(item, 'buyPrice', '3000');
-  assert.deepEqual(edited.overrides, { buyPrice: true, alchPrice: false });
-
-  const both = applyFieldEdit(edited, 'alchPrice', '9000');
-  assert.deepEqual(both.overrides, { buyPrice: true, alchPrice: true });
+  assert.deepEqual(applyFieldEdit(item, 'buyPrice', '3000').overrides, { buyPrice: true });
+  assert.deepEqual(applyFieldEdit(item, 'alchPrice', '9000').overrides, { buyPrice: false });
 });
 
 test('editing quantity or name pins nothing', () => {
@@ -218,7 +238,8 @@ test('a forced merge replaces a pinned price and unpins it', () => {
   assert.equal(merged.overrides.buyPrice, false, 'the row tracks the market again');
 });
 
-test('a pinned alch value is independent of a pinned buy price', () => {
+test('a hand-typed alch value is never rewritten', () => {
+  // No pin required: a refresh leaves any alch value it finds alone.
   const item = applyFieldEdit(
     normalizeItem({ name: 'x', buyPrice: 100, alchPrice: 200 }),
     'alchPrice',
@@ -228,7 +249,7 @@ test('a pinned alch value is independent of a pinned buy price', () => {
   const merged = mergeSnapshot(item, { itemId: 1, name: 'x', highAlch: 5760, buyPrice: 4200 });
 
   assert.equal(merged.alchPrice, 9999, 'the typed alch value survives');
-  assert.equal(merged.buyPrice, 4200, 'the un-pinned buy price still updates');
+  assert.equal(merged.buyPrice, 4200, 'the buy price still tracks the market');
 });
 
 test('overrides survive being saved and reloaded', () => {
