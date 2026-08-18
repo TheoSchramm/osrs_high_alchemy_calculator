@@ -9,6 +9,35 @@
 const DEFAULT_TIMEOUT_MS = 6000;
 
 /**
+ * Build a toast's text.
+ *
+ * A message is either a plain string, or a list of segments where a segment
+ * may be `{ name }` to mark an item name. Names are rendered into their own
+ * span so they can be coloured, which a single interpolated string could not
+ * do without building HTML from user-supplied text.
+ *
+ * @param {Document} doc
+ * @param {string | Array<string | {name: string}>} message
+ * @returns {DocumentFragment}
+ */
+function buildMessage(doc, message) {
+  const fragment = doc.createDocumentFragment();
+
+  for (const segment of Array.isArray(message) ? message : [message]) {
+    if (segment && typeof segment === 'object' && 'name' in segment) {
+      const span = doc.createElement('span');
+      span.className = 'toast__name';
+      span.textContent = String(segment.name);
+      fragment.append(span);
+    } else {
+      fragment.append(doc.createTextNode(String(segment ?? '')));
+    }
+  }
+
+  return fragment;
+}
+
+/**
  * @param {HTMLElement} container the `.toast-stack` element
  * @param {{ timeoutMs?: number, timers?: { setTimeout: Function, clearTimeout: Function } }} [options]
  */
@@ -24,7 +53,7 @@ export function createToaster(container, options = {}) {
   }
 
   /**
-   * @param {string} message
+   * @param {string | Array<string | {name: string}>} message
    * @param {object} [config]
    * @param {'info'|'success'|'error'} [config.tone]
    * @param {string} [config.actionLabel] renders a button when provided
@@ -39,7 +68,7 @@ export function createToaster(container, options = {}) {
 
     const text = doc.createElement('span');
     text.className = 'toast__message';
-    text.textContent = message;
+    text.append(buildMessage(doc, message));
     toast.append(text);
 
     let handle = null;

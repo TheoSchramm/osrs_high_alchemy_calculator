@@ -382,11 +382,13 @@
   }
 }
 
-/* The chain is a control, not decoration: clicking it gives the row back to
-   the market. Styled as bare as possible so it still reads as a marker. */
+/* The padlock is a control, not decoration: clicking it gives the row back to
+   the market. Styled as bare as possible so it still reads as a marker.
+
+   It needs a real hit target, which looked oversized while the sprite still
+   carried 7px of transparent margin down its left: the artwork sat off centre
+   and appeared cut off. The sprite is cropped on the way in now. */
 button.cell-pin {
-  /* The icon stays 20px, but as a control it needs a real hit target, so the
-     button carries padding around it rather than growing the artwork. */
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -394,12 +396,20 @@ button.cell-pin {
   min-width: 28px;
   min-height: 28px;
   padding: 0;
+  /* It sits before the value, so the gap belongs on the trailing edge. */
+  margin-inline-end: var(--sp-1);
   background: none;
   border: none;
   border-radius: var(--radius);
   cursor: pointer;
   line-height: 0;
+
+  /* Same correction as the sort chevron: vertical-align: middle centres on the
+     x-height, and this font's x-height sits below the optical centre of its
+     caps, so the icon reads low against the figure beside it. */
   vertical-align: middle;
+  position: relative;
+  top: -2px;
 }
 
 button.cell-pin:hover {
@@ -407,8 +417,10 @@ button.cell-pin:hover {
 }
 
 button.cell-pin img {
-  width: 20px;
+  /* Sized by height with the width left to follow: the sprite is 17x21, and
+     forcing it square squashed it. */
   height: 20px;
+  width: auto;
 }
 
 button.cell-pin:hover img,

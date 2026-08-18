@@ -7,10 +7,8 @@
 
 const SUFFIX_MULTIPLIERS = { k: 1e3, m: 1e6, b: 1e9 };
 
-/** Matches "1,234", "12,345,678" — comma used as a thousands separator. */
-const COMMA_GROUPED = /^\d{1,3}(,\d{3})+$/;
-/** Matches "1.234", "12.345.678" — dot used as a thousands separator. */
-const DOT_GROUPED = /^\d{1,3}(\.\d{3})+$/;
+/** Separators that group digits rather than mark a fraction. */
+const GROUPING = /[.,]/g;
 
 /**
  * Parse a user-typed amount into a whole number of gp.
@@ -18,6 +16,9 @@ const DOT_GROUPED = /^\d{1,3}(\.\d{3})+$/;
  * Accepts the shorthand players actually type: `10k`, `1.5m`, `2b`, `1,234`,
  * `1.234` (dot-grouped thousands), `250 gp`. Anything unparseable becomes 0 so
  * a bad keystroke can never poison the stored state with NaN.
+ *
+ * Dots and commas group digits; only a k/m/b suffix gives them a fractional
+ * reading. See {@link normalizeSeparators}.
  *
  * @param {unknown} input
  * @returns {number} a finite integer (may be negative)
@@ -63,26 +64,21 @@ export function parseAmount(input) {
 }
 
 /**
- * Decide whether `.` and `,` are grouping or decimal separators, and return a
- * string that `Number.parseFloat` understands.
+ * Strip the separators from an amount written without a k/m/b suffix.
+ *
+ * Without a suffix these are always grouping, never decimal points. Guessing
+ * used to be worse than useless: the guess had to look at whether the digits
+ * formed clean groups of three, so editing a value that the app itself had
+ * formatted broke it. Typing a digit into "9,500" gave "9,5100", which is not
+ * a clean grouping, so the comma was read as a decimal point and 95,100 gp
+ * collapsed to 10. Deleting a digit did the same in reverse: "9,50" became 10.
+ *
+ * These are whole gp, and the field renders them with commas, so treating a
+ * separator as anything but grouping cannot be right here. A fraction is still
+ * available where it means something, against a multiplier: "1.5m".
  */
 function normalizeSeparators(text) {
-  const hasComma = text.includes(',');
-  const hasDot = text.includes('.');
-
-  if (hasComma && hasDot) {
-    // Whichever appears last is the decimal separator.
-    return text.lastIndexOf(',') > text.lastIndexOf('.')
-      ? text.replace(/\./g, '').replace(',', '.')
-      : text.replace(/,/g, '');
-  }
-  if (hasComma) {
-    return COMMA_GROUPED.test(text) ? text.replace(/,/g, '') : text.replace(',', '.');
-  }
-  if (hasDot) {
-    return DOT_GROUPED.test(text) ? text.replace(/\./g, '') : text;
-  }
-  return text;
+  return text.replace(GROUPING, '');
 }
 
 /**

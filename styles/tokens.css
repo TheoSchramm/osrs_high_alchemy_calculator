@@ -40,6 +40,8 @@
   --c-profit: #0f6b1c;
   --c-loss: #9c1010;
   --c-link: #14418c;
+  /* Item names, wherever they are called out in running text. */
+  --c-item-name: #0088ff;
   --c-focus: #33240d;
 
   /* ---- Textures ----

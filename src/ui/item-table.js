@@ -216,10 +216,9 @@ export class ItemTableView {
     const refreshButton = qs(tr, '[data-action="refresh"]');
     // Only items the API recognises can be refreshed.
     refreshButton.disabled = !item.itemId;
-    const pinned = Object.values(item.overrides ?? {}).some(Boolean);
     refreshButton.title = item.itemId
-      ? `Refresh prices for ${item.name}${pinned ? ' (your own price is kept)' : ''}`
-      : 'Added manually — no Grand Exchange match to refresh';
+      ? `Refresh prices for ${item.name}`
+      : 'Added manually';
   }
 
   /**
@@ -246,12 +245,12 @@ export class ItemTableView {
         continue;
       }
 
-      // Short enough to read at a glance: what the chain means, then the way
+      // Short enough to read at a glance: what the pin means, then the way
       // out of it.
       const market = Number.isFinite(item.marketBuyPrice) && item.marketBuyPrice > 0
-        ? ` Click to use ${formatNumber(item.marketBuyPrice)} gp.`
+        ? `\n(Current GE price: ${formatNumber(item.marketBuyPrice)} gp)`
         : '';
-      const explanation = `Your price, kept on refresh.${market}`;
+      const explanation = `Custom price enabled, this item will not be updated when refreshing prices.${market}`;
       cell.title = explanation;
       if (badge) badge.title = explanation;
     }

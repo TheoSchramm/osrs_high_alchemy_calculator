@@ -29,10 +29,25 @@ test('parseAmount: dot-grouped thousands (EU style)', () => {
   assert.equal(parseAmount('12.345.678'), 12345678);
 });
 
-test('parseAmount: a lone decimal point still means a decimal', () => {
-  // "1.5" is not a thousands group (needs exactly 3 digits), so it rounds.
-  assert.equal(parseAmount('1.5'), 2);
-  assert.equal(parseAmount('0.4'), 0);
+test('parseAmount: separators group digits, they never mark a fraction', () => {
+  // These are whole gp and the field renders them with commas, so a separator
+  // can only be grouping. A fraction still works where it means something,
+  // against a multiplier: see the k/m/b cases below.
+  assert.equal(parseAmount('1.5'), 15);
+  assert.equal(parseAmount('0.4'), 4);
+});
+
+test('parseAmount: editing a formatted value does not collapse it', () => {
+  // Typing a digit into "9,500" gives "9,5100", which is not a clean grouping.
+  // Guessing at the separator used to read the comma as a decimal point and
+  // turn 95,100 gp into 10; deleting a digit did the same in reverse.
+  assert.equal(parseAmount('9,500'), 9500, 'the value as the field renders it');
+  assert.equal(parseAmount('9,5100'), 95_100, 'a digit typed in the middle');
+  assert.equal(parseAmount('9,50'), 950, 'a digit deleted from the middle');
+  assert.equal(parseAmount('9.5100'), 95_100, 'and the same with dot grouping');
+
+  // Whatever the separators end up looking like mid-edit, the digits win.
+  assert.equal(parseAmount('9,510,0'), 95_100);
 });
 
 test('parseAmount: k/m/b shorthand', () => {

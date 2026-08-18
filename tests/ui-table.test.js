@@ -439,18 +439,18 @@ test('a pinned cell is marked and explains itself', (t) => {
   editCell(cell(), '3,000');
 
   assert.equal(cell().dataset.overridden, 'true');
-  assert.match(cell().title, /Your price, kept on refresh/);
+  assert.match(cell().title, /Custom price enabled/);
 });
 
-test('the refresh tooltip says a typed price is safe', (t) => {
-  const ctx = mountWith([PLATEBODY]);
+test('the refresh tooltip names the item', (t) => {
+  const ctx = mountWith([PLATEBODY, { id: 'manual', name: 'Hand-entered', buyPrice: 1, alchPrice: 2, quantity: 3 }]);
   t.after(ctx.cleanup);
 
-  const button = () => rows(ctx.document)[0].querySelector('[data-action="refresh"]');
-  assert.equal(/your own price/.test(button().title), false);
+  const titleOf = (index) =>
+    rows(ctx.document)[index].querySelector('[data-action="refresh"]').title;
 
-  editCell(ctx.document.querySelector('[data-field="buyPrice"]'), '3,000');
-  assert.match(button().title, /your own price is kept/);
+  assert.match(titleOf(0), /Refresh prices for Adamant platebody/);
+  assert.match(titleOf(1), /Added manually/, 'a row with no Grand Exchange match says so');
 });
 
 test('editing quantity does not pin the price', async (t) => {
@@ -510,7 +510,7 @@ test('the chain badge appears only while the price is pinned', (t) => {
   editCell(ctx.document.querySelector('[data-field="buyPrice"]'), '3,000');
 
   assert.equal(badge().hidden, false, 'typing a price shows the chain');
-  assert.match(badge().title, /Your price, kept on refresh/);
+  assert.match(badge().title, /Custom price enabled/);
   assert.match(badge().querySelector('img').alt, /custom price/i);
   assert.equal(badge().tagName, 'BUTTON', 'the chain is the control that releases it');
 });
@@ -534,4 +534,60 @@ test('the chain survives a background poll, like the price it marks', async (t) 
   await ctx.app.refresher.poll();
 
   assert.equal(rows(ctx.document)[0].querySelector('[data-pin="buyPrice"]').hidden, false);
+});
+
+/* ------------------------------------------------ item names in toasts --- */
+
+test('a toast picks out the item name in its own element', async (t) => {
+  const ctx = mountWith([{ ...PLATEBODY, buyPrice: 1 }]);
+  t.after(ctx.cleanup);
+
+  click(rows(ctx.document)[0].querySelector('[data-action="refresh"]'));
+  await flush();
+
+  const name = ctx.document.querySelector('.toast__name');
+  assert.ok(name, 'the name should be its own element, not part of the sentence');
+  assert.equal(name.textContent, 'Adamant platebody');
+  assert.match(ctx.document.querySelector('.toast__message').textContent, /updated/);
+});
+
+test('every toast that names an item marks it', async (t) => {
+  const ctx = mountWith([PLATEBODY]);
+  t.after(ctx.cleanup);
+
+  // Delete names the item.
+  click(rows(ctx.document)[0].querySelector('[data-action="delete"]'));
+  assert.equal(ctx.document.querySelector('.toast__name').textContent, 'Adamant platebody');
+  click(ctx.document.querySelector('.toast__action'));
+  ctx.app.toaster.clear();
+
+  // So does releasing a custom price.
+  editCell(ctx.document.querySelector('[data-field="buyPrice"]'), '3,000');
+  click(rows(ctx.document)[0].querySelector('[data-action="refresh"]'));
+  await flush();
+  ctx.app.toaster.clear();
+
+  click(rows(ctx.document)[0].querySelector('[data-pin="buyPrice"]'));
+  assert.equal(ctx.document.querySelector('.toast__name').textContent, 'Adamant platebody');
+});
+
+test('an item name is never parsed as markup', async (t) => {
+  const ctx = mountWith([{ ...PLATEBODY, itemId: null, name: '<img src=x onerror=alert(1)>' }]);
+  t.after(ctx.cleanup);
+
+  click(rows(ctx.document)[0].querySelector('[data-action="delete"]'));
+
+  const name = ctx.document.querySelector('.toast__name');
+  assert.equal(name.textContent, '<img src=x onerror=alert(1)>');
+  assert.equal(name.querySelector('img'), null, 'the name is text, never markup');
+});
+
+test('a plain string message still works', (t) => {
+  const ctx = mountApp();
+  t.after(ctx.cleanup);
+
+  ctx.app.toaster.info('Nothing to report.');
+
+  assert.equal(ctx.document.querySelector('.toast__message').textContent, 'Nothing to report.');
+  assert.equal(ctx.document.querySelector('.toast__name'), null);
 });

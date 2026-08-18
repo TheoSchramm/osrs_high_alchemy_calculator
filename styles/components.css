@@ -530,18 +530,20 @@
   animation: toast-in 160ms ease-out;
 }
 
-.toast--error {
-  color: var(--c-loss);
-}
-
-.toast--success {
-  color: var(--c-profit);
-}
-
+/* A toast reads in plain ink whatever its tone. Colouring the whole message
+   made a success toast green throughout, which fought the one thing that is
+   meant to stand out. The tone classes stay on the element for scripting and
+   for anything that wants them later, but they paint nothing. */
 .toast__message {
   flex: 1;
   font-size: var(--fs-sm);
   min-width: 0;
+  color: var(--c-ink);
+}
+
+/* The only colour in the sentence: which item it is about. */
+.toast__name {
+  color: var(--c-item-name);
 }
 
 .toast__action {

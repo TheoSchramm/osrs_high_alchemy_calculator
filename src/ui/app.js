@@ -12,6 +12,7 @@ import { StatsView } from './stats-panel.js';
 import { SettingsView } from './settings-panel.js';
 import { createAddItemForm } from './add-item-form.js';
 import { createToaster } from './toasts.js';
+import { restrictToAmount, restrictAmountCells } from './numeric-input.js';
 import { parseAmount, formatNumber } from '../core/format.js';
 import { NATURE_RUNE_ITEM_ID } from '../core/alchemy.js';
 import { selectRefreshableIds } from '../state/selectors.js';
@@ -62,7 +63,7 @@ export function createApp(config) {
         store.releaseOverride(id, field);
         const restored = store.getItem(id);
         if (item && restored && restored.buyPrice !== item.buyPrice) {
-          toaster.info(`${restored.name} is back on the market price.`);
+          toaster.info([{ name: restored.name }, ' unlocked.']);
         }
       },
     },
@@ -140,7 +141,9 @@ export function createApp(config) {
     try {
       return { ok: true, value: await action() };
     } catch (error) {
-      toaster.error(`${what} failed: ${describe(error)}`);
+      // `what` may carry an item name as its own segment.
+      const prefix = Array.isArray(what) ? what : [what];
+      toaster.error([...prefix, ` failed: ${describe(error)}`]);
       return { ok: false, value: null };
     }
   }
@@ -184,7 +187,7 @@ export function createApp(config) {
 
     const snapshot = lookup.value;
     if (!snapshot) {
-      toaster.info(`"${item.name}" is not on the Grand Exchange — using the values you entered.`);
+      toaster.info([{ name: item.name }, ' is not on the Grand Exchange.']);
       return item;
     }
 
@@ -205,7 +208,7 @@ export function createApp(config) {
     if (!item) return;
 
     setRowBusy(id, true);
-    const lookup = await guard(`Refreshing ${item.name}`, () =>
+    const lookup = await guard(['Refreshing ', { name: item.name }], () =>
       api.getSnapshot(item.itemId ?? item.name, { priceBasis: store.getState().priceBasis }));
     setRowBusy(id, false);
 
@@ -213,12 +216,15 @@ export function createApp(config) {
 
     const snapshot = lookup.value;
     if (!snapshot) {
-      toaster.info(`No Grand Exchange data for "${item.name}".`);
+      toaster.info(['No Grand Exchange data for ', { name: item.name }, '.']);
       return;
     }
 
     store.applySnapshot(id, snapshot);
-    toaster.success(`${snapshot.name} updated — buy ${formatNumber(snapshot.buyPrice ?? 0)} gp.`);
+    toaster.success([
+      { name: snapshot.name },
+      ` updated (${formatNumber(snapshot.buyPrice ?? 0)} gp).`,
+    ]);
   }
 
   async function refreshAll() {
@@ -273,7 +279,7 @@ export function createApp(config) {
     const index = store.indexOf(id);
     store.removeItem(id);
 
-    toaster.show(`Removed ${item.name}.`, {
+    toaster.show(['Removed ', { name: item.name }, '.'], {
       actionLabel: 'Undo',
       onAction: () => store.insertItem(item, index),
     });
@@ -298,6 +304,16 @@ export function createApp(config) {
     settings.render(state);
   }
 
+  // Amount fields refuse anything that is not part of a number, in the form and
+  // in the table's editable cells alike.
+  const amountGuards = [
+    ...['#buyPrice', '#alchPrice', '#quantity', '#runePrice']
+      .map((selector) => qsOptional(root, selector))
+      .filter(Boolean)
+      .map((input) => restrictToAmount(input)),
+    restrictAmountCells(qs(root, '#itemsBody'), ['buyPrice', 'quantity']),
+  ];
+
   const unsubscribe = store.subscribe(render);
   render();
 
@@ -317,6 +333,7 @@ export function createApp(config) {
     actions: { addItem, refreshItem, refreshAll, fetchRunePrice, deleteItem, clearAll },
     destroy() {
       unsubscribe();
+      for (const removeGuard of amountGuards) removeGuard();
       refresher.stop();
       timers.clearInterval(ageTicker);
       doc.removeEventListener?.('visibilitychange', onVisibility);
