@@ -119,10 +119,13 @@ export function applyFieldEdit(item, field, value) {
     return name ? { ...item, name } : item;
   }
 
-  const next = { ...item, [field]: Math.max(0, parseAmount(value)) };
+  const parsed = Math.max(0, parseAmount(value));
+  const next = { ...item, [field]: parsed };
 
-  // Typing a price pins it: from here on only an explicit refresh may replace it.
-  if (OVERRIDABLE_FIELDS.includes(field)) {
+  // Only an actual change pins the price. The table commits on focusout, which
+  // fires whether or not anything was typed, so pinning on every blur meant
+  // clicking into a cell and straight back out locked the row.
+  if (OVERRIDABLE_FIELDS.includes(field) && parsed !== item[field]) {
     next.overrides = { ...normalizeOverrides(item.overrides), [field]: true };
   }
 

@@ -591,3 +591,41 @@ test('a plain string message still works', (t) => {
   assert.equal(ctx.document.querySelector('.toast__message').textContent, 'Nothing to report.');
   assert.equal(ctx.document.querySelector('.toast__name'), null);
 });
+
+test('clicking into a price cell and out does not lock it', (t) => {
+  const ctx = mountWith([PLATEBODY]);
+  t.after(ctx.cleanup);
+
+  const cell = ctx.document.querySelector('[data-field="buyPrice"]');
+  const badge = () => rows(ctx.document)[0].querySelector('[data-pin="buyPrice"]');
+
+  // Focus and blur without typing, exactly as a stray click does.
+  cell.focus();
+  cell.dispatchEvent(new ctx.window.FocusEvent('focusout', { bubbles: true }));
+
+  assert.equal(ctx.store.getItem('plate').overrides.buyPrice, false);
+  assert.equal(badge().hidden, true, 'no padlock for a click that changed nothing');
+});
+
+test('unlocking always says so, even when the price does not move', (t) => {
+  const ctx = mountWith([PLATEBODY]);
+  t.after(ctx.cleanup);
+
+  // Lock at a price, with no market price on record to restore.
+  editCell(ctx.document.querySelector('[data-field="buyPrice"]'), '3,000');
+  ctx.app.toaster.clear();
+
+  click(rows(ctx.document)[0].querySelector('[data-pin="buyPrice"]'));
+
+  assert.equal(ctx.store.getItem('plate').overrides.buyPrice, false);
+  assert.match(toastMessages(ctx.document).join(' '), /unlocked/);
+});
+
+test('clicking an unlocked row reports nothing', (t) => {
+  const ctx = mountWith([PLATEBODY]);
+  t.after(ctx.cleanup);
+
+  ctx.app.views.table.handlers.onReleaseOverride('plate', 'buyPrice');
+
+  assert.deepEqual(toastMessages(ctx.document), [], 'there was nothing to unlock');
+});

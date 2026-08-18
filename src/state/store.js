@@ -8,6 +8,7 @@
 
 import {
   normalizeItem,
+  normalizeItems,
   applyFieldEdit,
   mergeSnapshot,
   releaseOverride,
@@ -42,8 +43,15 @@ export class AppStore {
     this.storage = options.storage ?? null;
     this.listeners = new Set();
 
+    // Items are normalised whatever door they come in by, so everything
+    // downstream can rely on the shape. Seeding state directly used to skip
+    // this, leaving items without an overrides record.
     this.state = options.initialState
-      ? { ...createDefaultState(), ...options.initialState }
+      ? {
+          ...createDefaultState(),
+          ...options.initialState,
+          items: normalizeItems(options.initialState.items ?? []),
+        }
       : this.storage
         ? loadState(this.storage)
         : createDefaultState();

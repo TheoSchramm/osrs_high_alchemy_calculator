@@ -292,3 +292,28 @@ test('overrides survive being saved and reloaded', () => {
   assert.equal(reloaded[0].overrides.buyPrice, true);
   assert.equal(reloaded[0].buyPrice, 500);
 });
+
+test('an edit that changes nothing does not pin the price', () => {
+  // The table commits on focusout, which fires whether or not anything was
+  // typed, so clicking into a cell and straight back out used to lock the row.
+  const item = normalizeItem({ name: 'Adamant platebody', buyPrice: 9500 });
+
+  const reentered = applyFieldEdit(item, 'buyPrice', '9,500');
+  assert.equal(reentered.buyPrice, 9500);
+  assert.equal(reentered.overrides.buyPrice, false, 'the same value is not an edit');
+
+  const changed = applyFieldEdit(item, 'buyPrice', '9,600');
+  assert.equal(changed.overrides.buyPrice, true, 'a different value is');
+});
+
+test('re-entering the same value leaves an existing lock alone', () => {
+  const locked = applyFieldEdit(
+    normalizeItem({ name: 'x', buyPrice: 9500 }),
+    'buyPrice',
+    '3000',
+  );
+  assert.equal(locked.overrides.buyPrice, true);
+
+  const reentered = applyFieldEdit(locked, 'buyPrice', '3,000');
+  assert.equal(reentered.overrides.buyPrice, true, 'still the user\'s price');
+});

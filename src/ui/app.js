@@ -59,12 +59,16 @@ export function createApp(config) {
       onRefresh: (id) => void refreshItem(id),
       onDelete: (id) => deleteItem(id),
       onReleaseOverride: (id, field) => {
-        const item = store.getItem(id);
+        // Report the unlock itself, not a change of price. The two are not the
+        // same: a row locked at the market price has nothing to restore, and
+        // gating the message on the number moving meant the click looked like
+        // it had done nothing.
+        const wasLocked = Boolean(store.getItem(id)?.overrides?.[field]);
         store.releaseOverride(id, field);
-        const restored = store.getItem(id);
-        if (item && restored && restored.buyPrice !== item.buyPrice) {
-          toaster.info([{ name: restored.name }, ' unlocked.']);
-        }
+        if (!wasLocked) return;
+
+        const item = store.getItem(id);
+        if (item) toaster.info([{ name: item.name }, ' unlocked.']);
       },
     },
   });
