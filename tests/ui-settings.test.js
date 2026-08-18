@@ -14,7 +14,7 @@ import {
   flush,
 } from './helpers/mount.js';
 import { createFakeFetch } from './helpers/fake-api.js';
-import { PRICE_BASIS } from '../src/data/storage.js';
+import { PRICE_BASIS, createMemoryStorage } from '../src/data/storage.js';
 
 const PLATEBODY = {
   id: 'plate',
@@ -219,4 +219,57 @@ test('an API outage surfaces as a toast, not a crash', async (t) => {
 
   assert.ok(toastMessages(ctx.document).some((m) => m.includes('503')));
   assert.equal(rows(ctx.document).length, 1, 'the table still renders');
+});
+
+/* ------------------------------------------------------- auto-refresh ---- */
+
+test('the auto-refresh select is bound to state and defaults to 5 minutes', (t) => {
+  const ctx = mountApp();
+  t.after(ctx.cleanup);
+
+  const select = ctx.document.querySelector('#autoRefresh');
+  assert.equal(select.value, '300000');
+
+  change(select, '60000');
+  assert.equal(ctx.store.getState().autoRefreshMs, 60_000);
+
+  change(select, '0');
+  assert.equal(ctx.store.getState().autoRefreshMs, 0, 'off is a valid choice');
+});
+
+test('the auto-refresh interval survives a reload', (t) => {
+  const storage = createMemoryStorage();
+
+  const first = mountApp({ storage });
+  change(first.document.querySelector('#autoRefresh'), '900000');
+  first.cleanup();
+
+  const second = mountApp({ storage });
+  t.after(second.cleanup);
+
+  assert.equal(second.store.getState().autoRefreshMs, 900_000);
+  assert.equal(second.document.querySelector('#autoRefresh').value, '900000');
+});
+
+test('changing the interval reschedules the poller', (t) => {
+  const ctx = mountApp();
+  t.after(ctx.cleanup);
+
+  change(ctx.document.querySelector('#autoRefresh'), '60000');
+  assert.equal(ctx.app.refresher.intervalMs, 60_000);
+
+  change(ctx.document.querySelector('#autoRefresh'), '0');
+  assert.equal(ctx.app.refresher.intervalMs, 0, 'off stops the schedule');
+});
+
+test('auto-refresh writes prices into the table', async (t) => {
+  const ctx = mountApp({
+    initialState: { items: [{ ...PLATEBODY, buyPrice: 1 }], runePrice: 200 },
+  });
+  t.after(ctx.cleanup);
+
+  await ctx.app.refresher.poll();
+
+  assert.equal(ctx.store.getItem('plate').buyPrice, 4200);
+  assert.equal(rows(ctx.document)[0].querySelector('[data-cell="updatedAt"]').textContent, 'just now');
 });

@@ -7,7 +7,7 @@
  */
 
 import { qs, qsa, on, setText, setHidden, setValueTone, cloneTemplate } from './dom.js';
-import { formatNumber, formatSigned } from '../core/format.js';
+import { formatNumber, formatSigned, formatRelativeTime, freshnessOf } from '../core/format.js';
 import { selectRows, selectTotals } from '../state/selectors.js';
 import { EDITABLE_FIELDS } from '../core/items.js';
 
@@ -52,6 +52,9 @@ export class ItemTableView {
 
     /** @type {Map<string, HTMLTableRowElement>} row id -> element */
     this.rows = new Map();
+    /** @type {Map<string, import('../core/alchemy.js').AlchItem>} */
+    this.renderedItems = new Map();
+    this.now = config.now ?? (() => Date.now());
     this.teardown = [];
 
     this._bindHeader();
@@ -141,6 +144,7 @@ export class ItemTableView {
 
   _renderRows(rows) {
     const seen = new Set();
+    this.renderedItems = new Map(rows.map((row) => [row.item.id, row.item]));
 
     for (const { item, derived } of rows) {
       seen.add(item.id);
@@ -188,12 +192,40 @@ export class ItemTableView {
       if (tone) setValueTone(cell, derived[key]);
     }
 
+    this._updateAgeCell(tr, item);
+
     const refreshButton = qs(tr, '[data-action="refresh"]');
     // Only items the API recognises can be refreshed.
     refreshButton.disabled = !item.itemId;
     refreshButton.title = item.itemId
       ? `Refresh prices for ${item.name}`
       : 'Added manually — no Grand Exchange match to refresh';
+  }
+
+  /**
+   * Stamp the "Updated" cell. Split out from the row render so the ticker can
+   * refresh just these labels without rebuilding anything else.
+   */
+  _updateAgeCell(tr, item) {
+    const cell = tr.querySelector('[data-cell="updatedAt"]');
+    if (!cell) return;
+
+    const now = this.now();
+    // Items added by hand have no Grand Exchange price to age.
+    const known = Boolean(item.itemId);
+    setText(cell, known ? formatRelativeTime(item.updatedAt, now) : '-');
+    cell.dataset.freshness = known ? freshnessOf(item.updatedAt, now) : 'none';
+    cell.title = known && item.updatedAt
+      ? new Date(item.updatedAt).toLocaleString()
+      : 'Never fetched from the Grand Exchange';
+  }
+
+  /** Re-stamp every "Updated" label. Cheap enough to run on a timer. */
+  renderAges() {
+    for (const [id, item] of this.renderedItems) {
+      const tr = this.rows.get(id);
+      if (tr) this._updateAgeCell(tr, item);
+    }
   }
 
   _updateEditableCell(tr, field, value, itemName) {

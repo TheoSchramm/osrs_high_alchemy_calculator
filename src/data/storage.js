@@ -26,12 +26,20 @@ export const PRICE_BASIS = Object.freeze({
   INSTANT_SELL: 'low',
 });
 
+/**
+ * Auto-refresh intervals offered in Settings, in milliseconds. 0 is off.
+ * The bulk price endpoint is ~340 KB, so anything under a minute is wasteful
+ * for a free community API as well as for the user's connection.
+ */
+export const AUTO_REFRESH_OPTIONS = Object.freeze([0, 60_000, 300_000, 900_000]);
+
 /** @returns {import('../state/store.js').AppState} */
 export function createDefaultState() {
   return {
     items: [],
     runePrice: DEFAULT_RUNE_PRICE,
     priceBasis: PRICE_BASIS.INSTANT_BUY,
+    autoRefreshMs: 300_000,
     sort: { field: null, direction: SORT_DIRECTIONS.ASC },
   };
 }
@@ -143,6 +151,12 @@ function hydrate(saved, defaults) {
     ? saved.priceBasis
     : defaults.priceBasis;
 
+  // Only an offered interval is accepted, so a hand-edited save cannot set a
+  // one-second poll against a public API.
+  const autoRefreshMs = AUTO_REFRESH_OPTIONS.includes(Number(saved.autoRefreshMs))
+    ? Number(saved.autoRefreshMs)
+    : defaults.autoRefreshMs;
+
   return {
     items: normalizeItems(saved.items),
     // `parseFloat(null)` is NaN, and NaN is not caught by `??` — check finiteness.
@@ -150,6 +164,7 @@ function hydrate(saved, defaults) {
       ? Math.round(runePrice)
       : defaults.runePrice,
     priceBasis,
+    autoRefreshMs,
     sort,
   };
 }
@@ -166,6 +181,7 @@ export function saveState(storage, state) {
     items: state.items,
     runePrice: toNonNegativeInt(state.runePrice),
     priceBasis: state.priceBasis,
+    autoRefreshMs: state.autoRefreshMs,
     sort: state.sort,
   });
 }

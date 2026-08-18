@@ -43,6 +43,9 @@ export function mountApp(options = {}) {
     // No debounce and no auto-dismiss: tests drive time explicitly.
     searchDebounceMs: 0,
     toastTimeoutMs: 0,
+    now: options.now,
+    timers: options.timers,
+    isVisible: options.isVisible,
   });
 
   return {

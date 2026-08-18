@@ -15,6 +15,7 @@ import {
   saveState,
   clearState,
   PRICE_BASIS,
+  AUTO_REFRESH_OPTIONS,
 } from '../data/storage.js';
 
 /**
@@ -159,6 +160,17 @@ export class AppStore {
   setPriceBasis(basis) {
     if (!Object.values(PRICE_BASIS).includes(basis)) return;
     this.commit({ priceBasis: basis });
+  }
+
+  /**
+   * How often prices refresh on their own. 0 turns it off.
+   * Only the offered intervals are accepted.
+   * @param {number|string} value
+   */
+  setAutoRefreshMs(value) {
+    const ms = Number(value);
+    if (!AUTO_REFRESH_OPTIONS.includes(ms)) return;
+    this.commit({ autoRefreshMs: ms });
   }
 
   /** Header click: sort by `field`, flipping direction if already active. */

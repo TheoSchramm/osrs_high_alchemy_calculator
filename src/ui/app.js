@@ -15,6 +15,10 @@ import { createToaster } from './toasts.js';
 import { parseAmount, formatNumber } from '../core/format.js';
 import { NATURE_RUNE_ITEM_ID } from '../core/alchemy.js';
 import { selectRefreshableIds } from '../state/selectors.js';
+import { AutoRefresher } from '../state/auto-refresh.js';
+
+/** How often the "Updated" labels are re-stamped. */
+const AGE_TICK_MS = 15_000;
 
 /**
  * @param {object} config
@@ -30,6 +34,14 @@ export function createApp(config) {
   const toaster = config.toaster
     ?? createToaster(qs(root, '#toasts'), { timeoutMs: config.toastTimeoutMs });
 
+  const timers = config.timers ?? globalThis;
+  const doc = root.ownerDocument ?? root;
+
+  /** @type {AutoRefresher} assigned below; the settings handler closes over it. */
+  let refresher;
+  /** Errors are reported once per outage, not once per poll. */
+  let autoRefreshFailing = false;
+
   /* ---------------------------------------------------------------- views */
 
   const table = new ItemTableView({
@@ -39,6 +51,7 @@ export function createApp(config) {
     template: qs(root, '#itemRowTemplate'),
     emptyState: qsOptional(root, '#emptyState'),
     rowCount: qsOptional(root, '#rowCount'),
+    now: config.now,
     handlers: {
       onSort: (field) => store.toggleSort(field),
       onEdit: (id, field, value) => store.editItemField(id, field, value),
@@ -59,6 +72,7 @@ export function createApp(config) {
   const settings = new SettingsView({
     runePriceInput: qs(root, '#runePrice'),
     priceBasisSelect: qs(root, '#priceBasis'),
+    autoRefreshSelect: qsOptional(root, '#autoRefresh'),
     fetchRuneButton: qsOptional(root, '#fetchRunePrice'),
     refreshAllButton: qsOptional(root, '#refreshAll'),
     clearAllButton: qsOptional(root, '#clearAll'),
@@ -66,9 +80,38 @@ export function createApp(config) {
     handlers: {
       onRunePriceChange: (value) => store.setRunePrice(value),
       onPriceBasisChange: (basis) => store.setPriceBasis(basis),
+      onAutoRefreshChange: (value) => {
+        store.setAutoRefreshMs(value);
+        refresher.reschedule();
+      },
       onFetchRunePrice: () => void fetchRunePrice(),
       onRefreshAll: () => void refreshAll(),
       onClearAll: () => clearAll(),
+    },
+  });
+
+  refresher = new AutoRefresher({
+    store,
+    api,
+    timers,
+    // A hidden tab should not poll a public API in the background.
+    isVisible: config.isVisible ?? (() => doc.visibilityState !== 'hidden'),
+    onEvent: (event) => {
+      if (event.type === 'success') {
+        autoRefreshFailing = false;
+        settings.setStatus(
+          `Prices updated ${new Date().toLocaleTimeString()} - ${event.count} item${event.count === 1 ? '' : 's'}.`,
+        );
+        render();
+      } else if (event.type === 'error') {
+        // Quiet after the first failure: a broken connection should not stack
+        // up a toast every interval.
+        if (!autoRefreshFailing) {
+          autoRefreshFailing = true;
+          toaster.error(`Auto-refresh failed: ${describe(event.error)}. Retrying.`);
+        }
+        settings.setStatus('Auto-refresh could not reach the price API.');
+      }
     },
   });
 
@@ -250,13 +293,25 @@ export function createApp(config) {
   const unsubscribe = store.subscribe(render);
   render();
 
+  // Relative times go stale on their own, so re-stamp them on a timer. This
+  // touches only those cells, never the rest of the table.
+  const ageTicker = timers.setInterval(() => table.renderAges(), config.ageTickMs ?? AGE_TICK_MS);
+
+  const onVisibility = () => refresher.handleVisibilityChange();
+  doc.addEventListener?.('visibilitychange', onVisibility);
+  refresher.start();
+
   return {
     render,
     toaster,
     views: { table, stats, settings, addForm },
+    refresher,
     actions: { addItem, refreshItem, refreshAll, fetchRunePrice, deleteItem, clearAll },
     destroy() {
       unsubscribe();
+      refresher.stop();
+      timers.clearInterval(ageTicker);
+      doc.removeEventListener?.('visibilitychange', onVisibility);
       table.destroy();
       settings.destroy();
       addForm.destroy();

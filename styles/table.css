@@ -6,9 +6,13 @@
  */
 
 .table-scroll {
-  /* Wide tables scroll inside the panel; the page itself never scrolls sideways. */
+  /* The table is sized to fit, so this is only a safety net for a viewport
+     narrower than anything we lay out for. The bar itself is hidden: a
+     scrollbar cutting across the parchment looks wrong, and every column that
+     matters is already visible at that width. */
   overflow-x: auto;
   overscroll-behavior-x: contain;
+  scrollbar-width: none;
   border: 1px solid var(--c-rule-strong);
   /* Deliberately unpainted: the panel's parchment shows through, so the table
      reads as part of the scroll rather than a flat pane sitting on top of it. */
@@ -19,6 +23,19 @@
   border-collapse: collapse;
   font-size: var(--fs-md);
   color: var(--c-ink);
+  /* Deliberately wrappable. Holding every cell on one line forced a minimum
+     width of ~1120px, which is what put a scrollbar under the table. Headers
+     and item names wrap; only the figures are kept intact below. */
+  table-layout: auto;
+}
+
+/* Numbers must never break mid-value. */
+.osrs-table td[data-column='buyPrice'],
+.osrs-table td[data-column='alchPrice'],
+.osrs-table td[data-column='quantity'],
+.osrs-table td[data-cell],
+.osrs-table tfoot td,
+.cell-age {
   white-space: nowrap;
 }
 
@@ -115,7 +132,7 @@
   display: flex;
   align-items: center;
   gap: var(--sp-3);
-  min-width: 200px;
+  min-width: 0;
 }
 
 .cell-item__icon {
@@ -140,8 +157,7 @@
 
 .cell-item__name {
   color: var(--c-ink-strong);
-  overflow: hidden;
-  text-overflow: ellipsis;
+  overflow-wrap: anywhere;
 }
 
 /* ---- Editable cells ---- */
@@ -202,17 +218,79 @@
   color: var(--c-ink-muted);
 }
 
-/* ---- Narrow screens: shed the least important columns ---- */
+/* ---- Narrow screens: shed columns so the table keeps fitting ----
+   The table has no visible scrollbar, so it has to fit on its own. Columns are
+   dropped in order of how easily the number is recovered: the two spend columns
+   are quantity times a price already on the row, the freshness stamp is a
+   convenience, and per-cast profit is total profit over quantity. Quantity, buy
+   price and total profit are the point of the table and never go.
+
+   The widths come from measuring the rendered table, not from guessing. */
+
+@media (width <= 1150px) {
+  .osrs-table th[data-column='costItems'],
+  .osrs-table td[data-column='costItems'],
+  .osrs-table th[data-column='costRunes'],
+  .osrs-table td[data-column='costRunes'] {
+    display: none;
+  }
+}
 
 @media (width <= 900px) {
   .osrs-table {
     font-size: var(--fs-sm);
   }
 
-  .osrs-table th[data-column='costItems'],
-  .osrs-table td[data-column='costItems'],
-  .osrs-table th[data-column='costRunes'],
-  .osrs-table td[data-column='costRunes'] {
+  .osrs-table tbody td,
+  .osrs-table thead th,
+  .osrs-table tfoot td {
+    padding-inline: var(--sp-2);
+  }
+}
+
+@media (width <= 820px) {
+  .osrs-table th[data-column='updatedAt'],
+  .osrs-table td[data-column='updatedAt'] {
     display: none;
+  }
+}
+
+@media (width <= 780px) {
+  .osrs-table th[data-column='profitPerCast'],
+  .osrs-table td[data-column='profitPerCast'] {
+    display: none;
+  }
+}
+
+@media (width <= 640px) {
+  .osrs-table th[data-column='alchPrice'],
+  .osrs-table td[data-column='alchPrice'] {
+    display: none;
+  }
+
+  .cell-item__icon {
+    width: 26px;
+    height: 26px;
+  }
+}
+
+@media (width <= 560px) {
+  .osrs-table tbody td,
+  .osrs-table thead th,
+  .osrs-table tfoot td {
+    padding-inline: var(--sp-1);
+  }
+
+  .cell-item {
+    gap: var(--sp-2);
+  }
+
+  .icon-btn {
+    width: 26px;
+  }
+
+  .icon-btn img {
+    width: 15px;
+    height: 15px;
   }
 }

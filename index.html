@@ -100,18 +100,23 @@
               <th scope="col" data-sort="costRunes" data-column="costRunes">Spent on runes</th>
               <th scope="col" data-sort="profitPerCast" data-column="profitPerCast">Profit / cast</th>
               <th scope="col" data-sort="profit" data-column="profit">Profit</th>
+              <th scope="col" data-sort="updatedAt" data-column="updatedAt">Updated</th>
               <th scope="col" data-column="actions"><span class="sr-only">Actions</span></th>
             </tr>
           </thead>
           <tbody id="itemsBody"></tbody>
           <tfoot id="itemsFoot" hidden>
             <tr>
-              <td colspan="4">Total</td>
-              <td data-total="costItems">0</td>
-              <td data-total="costRunes">0</td>
-              <td data-total="profitPerCast">0</td>
-              <td data-total="profit">0</td>
-              <td></td>
+              <td data-column="name">Total</td>
+              <td data-column="buyPrice"></td>
+              <td data-column="alchPrice"></td>
+              <td data-column="quantity"></td>
+              <td data-column="costItems" data-total="costItems">0</td>
+              <td data-column="costRunes" data-total="costRunes">0</td>
+              <td data-column="profitPerCast" data-total="profitPerCast">0</td>
+              <td data-column="profit" data-total="profit">0</td>
+              <td data-column="updatedAt"></td>
+              <td data-column="actions"></td>
             </tr>
           </tfoot>
         </table>
@@ -188,6 +193,18 @@
 
         <!-- Actions get their own ruled row so they stop competing with the
              fields for the same line, and the destructive one sits apart. -->
+          <div class="field field--select">
+            <label class="field__label" for="autoRefresh">Auto-refresh prices</label>
+            <select class="field__select" id="autoRefresh">
+              <option value="0">Off</option>
+              <option value="60000">Every minute</option>
+              <option value="300000">Every 5 minutes</option>
+              <option value="900000">Every 15 minutes</option>
+            </select>
+            <span class="field__hint">Only while this tab is open</span>
+          </div>
+        </div>
+
         <div class="action-bar">
           <button class="btn" id="fetchRunePrice" type="button">
             <img class="btn__icon btn__icon--ink" src="assets/ui/refresh.png" alt=""> Update rune price
@@ -238,6 +255,7 @@
       <td data-column="costRunes" data-cell="costRunes"></td>
       <td data-column="profitPerCast" data-cell="profitPerCast"></td>
       <td data-column="profit" data-cell="profit"></td>
+      <td data-column="updatedAt"><span class="cell-age" data-cell="updatedAt"></span></td>
       <td data-column="actions">
         <div class="cell-actions">
           <button class="icon-btn" type="button" data-action="refresh" title="Refresh prices">

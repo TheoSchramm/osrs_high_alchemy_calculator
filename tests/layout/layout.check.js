@@ -63,19 +63,43 @@ for (const width of WIDTHS) {
   });
 }
 
-test('the wide table stays inside its own scroller', { timeout: 90_000 }, async () => {
-  const page = await pageAt(500);
-  const result = await page.evaluate(`{
-    tableWidth: document.querySelector('.osrs-table').getBoundingClientRect().width,
-    scrollerWidth: document.querySelector('.table-scroll').getBoundingClientRect().width,
-    scrollerOverflowX: getComputedStyle(document.querySelector('.table-scroll')).overflowX
-  }`);
+test('the table fits without scrolling at every width', { timeout: 120_000 }, async () => {
+  // The table has no visible scrollbar, so fitting is not cosmetic: anything
+  // that overflows is simply unreachable on a desktop.
+  for (const width of WIDTHS) {
+    const page = await pageAt(width);
+    const result = await page.evaluate(`{
+      scroller: document.querySelector('.table-scroll').clientWidth,
+      table: document.querySelector('.table-scroll').scrollWidth,
+      columns: [...document.querySelectorAll('#itemsTable thead th')]
+        .filter(th => getComputedStyle(th).display !== 'none').length,
+      footCells: [...document.querySelectorAll('#itemsFoot td')]
+        .filter(td => getComputedStyle(td).display !== 'none').length
+    }`);
 
-  assert.equal(result.scrollerOverflowX, 'auto');
-  assert.ok(
-    result.tableWidth > result.scrollerWidth,
-    'the fixture should be wide enough to actually exercise the scroller',
-  );
+    assert.ok(
+      result.table <= result.scroller + 1,
+      `the table overflows at ${width}px (${result.table} > ${result.scroller})`,
+    );
+    // The totals row must drop columns in step with the header, or it stops
+    // lining up with the figures above it.
+    assert.equal(
+      result.footCells,
+      result.columns,
+      `totals row has ${result.footCells} cells against ${result.columns} columns at ${width}px`,
+    );
+    await page.close();
+  }
+});
+
+test('the table scroller shows no scrollbar', { timeout: 90_000 }, async () => {
+  const page = await pageAt(768);
+  const thickness = await page.evaluate(`(() => {
+    const s = document.querySelector('.table-scroll');
+    return s.offsetHeight - s.clientHeight - 2; // minus its 1px top and bottom border
+  })()`);
+
+  assert.ok(thickness <= 0, `a scrollbar is taking ${thickness}px of layout`);
   await page.close();
 });
 

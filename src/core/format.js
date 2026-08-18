@@ -149,3 +149,44 @@ export function formatPercent(ratio) {
   if (!Number.isFinite(number)) return '0%';
   return `${(number * 100).toFixed(1)}%`;
 }
+
+/** Thresholds for {@link formatRelativeTime}, in milliseconds. */
+const SECOND = 1000;
+const MINUTE = 60 * SECOND;
+const HOUR = 60 * MINUTE;
+const DAY = 24 * HOUR;
+
+/**
+ * Describe how long ago `timestamp` was, e.g. `"just now"`, `"12m ago"`.
+ *
+ * @param {number|null|undefined} timestamp epoch ms, or null if it never happened
+ * @param {number} [now] epoch ms; injectable so tests do not depend on the clock
+ * @returns {string} `"never"` when there is no timestamp
+ */
+export function formatRelativeTime(timestamp, now = Date.now()) {
+  const then = Number(timestamp);
+  if (!Number.isFinite(then) || then <= 0) return 'never';
+
+  // A clock skew or a future stamp should read as fresh, not negative.
+  const elapsed = Math.max(0, Number(now) - then);
+
+  if (elapsed < 10 * SECOND) return 'just now';
+  if (elapsed < MINUTE) return `${Math.floor(elapsed / SECOND)}s ago`;
+  if (elapsed < HOUR) return `${Math.floor(elapsed / MINUTE)}m ago`;
+  if (elapsed < DAY) return `${Math.floor(elapsed / HOUR)}h ago`;
+  return `${Math.floor(elapsed / DAY)}d ago`;
+}
+
+/**
+ * How stale a price is, as a coarse band the UI can colour by.
+ * @returns {'fresh'|'ageing'|'stale'|'unknown'}
+ */
+export function freshnessOf(timestamp, now = Date.now(), staleAfterMs = 30 * MINUTE) {
+  const then = Number(timestamp);
+  if (!Number.isFinite(then) || then <= 0) return 'unknown';
+
+  const elapsed = Math.max(0, Number(now) - then);
+  if (elapsed < staleAfterMs / 3) return 'fresh';
+  if (elapsed < staleAfterMs) return 'ageing';
+  return 'stale';
+}

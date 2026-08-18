@@ -326,7 +326,6 @@
     scrollbar-color: var(--c-parchment-dark) var(--c-stone);
   }
 
-  .table-scroll,
   .suggestions {
     scrollbar-width: thin;
     scrollbar-color: var(--c-parchment-dark) var(--c-parchment-sunken);
@@ -344,7 +343,12 @@
   box-shadow: inset 0 0 3px rgb(0 0 0 / 60%);
 }
 
-.table-scroll::-webkit-scrollbar-track,
+/* The table is sized to fit, so its scroller is a safety net only and its bar
+   is hidden: a scrollbar cutting across the parchment looks wrong. */
+.table-scroll::-webkit-scrollbar {
+  display: none;
+}
+
 .suggestions::-webkit-scrollbar-track {
   background: var(--c-parchment-sunken);
   box-shadow: inset 0 1px 3px rgb(43 33 21 / 40%);
@@ -360,12 +364,6 @@
   border-image: var(--tex-scroll-h) var(--slice-scroll-h) fill stretch;
 }
 
-.table-scroll::-webkit-scrollbar-thumb:horizontal {
-  border: 5px solid transparent;
-  border-image: var(--tex-scroll-h) var(--slice-scroll-h) fill stretch;
-}
-
-.table-scroll::-webkit-scrollbar-thumb:vertical,
 .suggestions::-webkit-scrollbar-thumb:vertical {
   border: 5px solid transparent;
   border-image: var(--tex-scroll-v) var(--slice-scroll-v) fill stretch;

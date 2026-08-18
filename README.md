@@ -112,6 +112,17 @@ it should be sortable, a field to the return value of `computeItem` in
   format under `osrs-alch:state:v2`.
 - **The item mapping is cached for 24 hours** in localStorage. v1 refetched
   ~860 KB on every page load.
+- **Prices refresh on their own** every 5 minutes by default, configurable in
+  Settings (off, 1, 5 or 15 minutes). The bulk price endpoint is ~340 KB, so
+  only those four intervals are accepted, even in a hand-edited save file.
+  Polling pauses while the tab is hidden and catches up when you return, never
+  overlaps requests, and does nothing when no item in the list is on the Grand
+  Exchange.
+- **The Updated column** shows how long ago each price was fetched, colour
+  banded from fresh to stale. Items added by hand show a dash: they have no
+  Grand Exchange price to age.
+- **The table never scrolls sideways.** It sheds columns as the window narrows,
+  in order of how easily the number is recovered from the others.
 
 ## Attribution
 

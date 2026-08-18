@@ -95,3 +95,35 @@ test('icon URLs actually resolve', { timeout: TIMEOUT_MS }, async () => {
 test('an unknown item name resolves to null rather than throwing', { timeout: TIMEOUT_MS }, async () => {
   assert.equal(await api.getSnapshot('Definitely not a real item 12345'), null);
 });
+
+test('the auto-refresher updates real items end to end', { timeout: TIMEOUT_MS }, async () => {
+  const { AutoRefresher } = await import('../../src/state/auto-refresh.js');
+  const { AppStore } = await import('../../src/state/store.js');
+  const { createMemoryStorage } = await import('../../src/data/storage.js');
+
+  const store = new AppStore({
+    storage: createMemoryStorage(),
+    initialState: {
+      items: [
+        {
+          id: 'live-1',
+          itemId: ADAMANT_PLATEBODY_ID,
+          name: 'Adamant platebody',
+          buyPrice: 1,
+          alchPrice: 1,
+          quantity: 1,
+        },
+      ],
+    },
+  });
+
+  const refresher = new AutoRefresher({ store, api });
+  const updated = await refresher.poll();
+
+  assert.equal(updated, 1);
+
+  const item = store.getItem('live-1');
+  assert.ok(item.buyPrice > 1, 'a real price replaced the placeholder');
+  assert.ok(item.alchPrice > 1, 'the high alch value came from the mapping');
+  assert.ok(Date.now() - item.updatedAt < TIMEOUT_MS, 'updatedAt was stamped just now');
+});

@@ -24,6 +24,8 @@ export const SORT_ACCESSORS = Object.freeze({
   profit: (item, derived) => derived.profit,
   profitPerCast: (item, derived) => derived.profitPerCast,
   roi: (item, derived) => derived.roi,
+  // Never refreshed sorts as oldest, not newest.
+  updatedAt: (item) => item.updatedAt ?? 0,
 });
 
 /** @returns {boolean} whether `field` can be sorted on. */

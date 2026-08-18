@@ -292,3 +292,83 @@ test('editable cells are labelled for screen readers', (t) => {
     'Buy price for Adamant platebody',
   );
 });
+
+/* ---------------------------------- Updated column ---------------------- */
+
+test('the Updated column shows how long since the last price fetch', (t) => {
+  const now = Date.now();
+  const ctx = mountWith([
+    { ...PLATEBODY, id: 'fresh', updatedAt: now - 5000 },
+    { ...LONGBOW, id: 'old', updatedAt: now - 3 * 60 * 60 * 1000 },
+  ]);
+  t.after(ctx.cleanup);
+
+  const ages = [...ctx.document.querySelectorAll('[data-cell="updatedAt"]')];
+  assert.equal(ages[0].textContent, 'just now');
+  assert.equal(ages[1].textContent, '3h ago');
+});
+
+test('the Updated column is colour-banded by staleness', (t) => {
+  const now = Date.now();
+  const ctx = mountWith([
+    { ...PLATEBODY, id: 'fresh', updatedAt: now - 1000 },
+    { ...LONGBOW, id: 'stale', updatedAt: now - 6 * 60 * 60 * 1000 },
+  ]);
+  t.after(ctx.cleanup);
+
+  const ages = [...ctx.document.querySelectorAll('[data-cell="updatedAt"]')];
+  assert.equal(ages[0].dataset.freshness, 'fresh');
+  assert.equal(ages[1].dataset.freshness, 'stale');
+});
+
+test('a hand-entered item has no age to show', (t) => {
+  const ctx = mountWith([{ id: 'm', name: 'Hand-entered', buyPrice: 1, alchPrice: 2, quantity: 3 }]);
+  t.after(ctx.cleanup);
+
+  const age = ctx.document.querySelector('[data-cell="updatedAt"]');
+  assert.equal(age.textContent, '-');
+  assert.equal(age.dataset.freshness, 'none');
+  assert.match(age.title, /Never fetched/);
+});
+
+test('an item that has never been refreshed reads as never', (t) => {
+  const ctx = mountWith([{ ...PLATEBODY, updatedAt: null }]);
+  t.after(ctx.cleanup);
+
+  assert.equal(ctx.document.querySelector('[data-cell="updatedAt"]').textContent, 'never');
+});
+
+test('renderAges re-stamps the labels without a full render', (t) => {
+  let now = 1_000_000_000;
+  const ctx = mountApp({
+    initialState: { items: [{ ...PLATEBODY, updatedAt: now - 5000 }], runePrice: 200 },
+    now: () => now,
+  });
+  t.after(ctx.cleanup);
+
+  const age = () => ctx.document.querySelector('[data-cell="updatedAt"]').textContent;
+  assert.equal(age(), 'just now');
+
+  now += 5 * 60 * 1000;
+  ctx.app.views.table.renderAges();
+
+  assert.equal(age(), '5m ago', 'the label ages without the store changing');
+});
+
+test('the Updated column is sortable', (t) => {
+  const now = Date.now();
+  const ctx = mountWith([
+    { ...PLATEBODY, id: 'old', updatedAt: now - 60 * 60 * 1000 },
+    { ...LONGBOW, id: 'new', updatedAt: now - 1000 },
+  ]);
+  t.after(ctx.cleanup);
+
+  const header = ctx.document.querySelector('th[data-sort="updatedAt"]');
+  assert.ok(header, 'the Updated header should be sortable');
+
+  click(header);
+  assert.deepEqual(rows(ctx.document).map((tr) => tr.dataset.id), ['old', 'new']);
+
+  click(header);
+  assert.deepEqual(rows(ctx.document).map((tr) => tr.dataset.id), ['new', 'old']);
+});

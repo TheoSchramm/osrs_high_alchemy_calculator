@@ -21,6 +21,7 @@ export class SettingsView {
   constructor(config) {
     this.runePriceInput = config.runePriceInput;
     this.priceBasisSelect = config.priceBasisSelect;
+    this.autoRefreshSelect = config.autoRefreshSelect ?? null;
     this.fetchRuneButton = config.fetchRuneButton ?? null;
     this.refreshAllButton = config.refreshAllButton ?? null;
     this.clearAllButton = config.clearAllButton ?? null;
@@ -41,6 +42,12 @@ export class SettingsView {
     this.teardown.push(on(this.priceBasisSelect, 'change', () => {
       handlers.onPriceBasisChange?.(this.priceBasisSelect.value);
     }));
+
+    if (this.autoRefreshSelect) {
+      this.teardown.push(on(this.autoRefreshSelect, 'change', () => {
+        handlers.onAutoRefreshChange?.(this.autoRefreshSelect.value);
+      }));
+    }
 
     if (this.fetchRuneButton) {
       this.teardown.push(on(this.fetchRuneButton, 'click', () => handlers.onFetchRunePrice?.()));
@@ -65,6 +72,11 @@ export class SettingsView {
 
     if (this.priceBasisSelect.value !== state.priceBasis) {
       this.priceBasisSelect.value = state.priceBasis;
+    }
+
+    if (this.autoRefreshSelect) {
+      const interval = String(state.autoRefreshMs);
+      if (this.autoRefreshSelect.value !== interval) this.autoRefreshSelect.value = interval;
     }
 
     if (this.refreshAllButton) {
