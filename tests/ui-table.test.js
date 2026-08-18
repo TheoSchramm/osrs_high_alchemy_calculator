@@ -421,7 +421,7 @@ test('a pinned cell is marked and explains itself', (t) => {
   editCell(cell(), '3,000');
 
   assert.equal(cell().dataset.overridden, 'true');
-  assert.match(cell().title, /auto-refresh will not change it/);
+  assert.match(cell().title, /Your price, kept on refresh/);
 });
 
 test('the refresh tooltip warns that it will replace typed values', (t) => {
@@ -479,4 +479,46 @@ test('the alch cell still updates when the value is filled in', async (t) => {
   await flush();
 
   assert.equal(rowCells(rows(ctx.document)[0]).alchPrice, '5,760');
+});
+
+test('the chain badge appears only while the price is pinned', (t) => {
+  const ctx = mountWith([PLATEBODY]);
+  t.after(ctx.cleanup);
+
+  const badge = () => rows(ctx.document)[0].querySelector('[data-pin="buyPrice"]');
+  assert.ok(badge(), 'the badge exists in every row');
+  assert.equal(badge().hidden, true, 'and is hidden while the row tracks the market');
+
+  editCell(ctx.document.querySelector('[data-field="buyPrice"]'), '3,000');
+
+  assert.equal(badge().hidden, false, 'typing a price shows the chain');
+  assert.match(badge().title, /Your price, kept on refresh/);
+  assert.match(badge().alt, /custom price/i);
+});
+
+test('an explicit refresh clears the chain badge', async (t) => {
+  const ctx = mountWith([PLATEBODY]);
+  t.after(ctx.cleanup);
+
+  editCell(ctx.document.querySelector('[data-field="buyPrice"]'), '3,000');
+  assert.equal(rows(ctx.document)[0].querySelector('[data-pin="buyPrice"]').hidden, false);
+
+  click(rows(ctx.document)[0].querySelector('[data-action="refresh"]'));
+  await flush();
+
+  assert.equal(
+    rows(ctx.document)[0].querySelector('[data-pin="buyPrice"]').hidden,
+    true,
+    'the row tracks the market again, so the chain goes',
+  );
+});
+
+test('the chain survives a background poll, like the price it marks', async (t) => {
+  const ctx = mountWith([PLATEBODY]);
+  t.after(ctx.cleanup);
+
+  editCell(ctx.document.querySelector('[data-field="buyPrice"]'), '3,000');
+  await ctx.app.refresher.poll();
+
+  assert.equal(rows(ctx.document)[0].querySelector('[data-pin="buyPrice"]').hidden, false);
 });

@@ -124,8 +124,15 @@ export async function launchBrowser(options = {}) {
   return {
     /**
      * Navigate to `url`, then evaluate expressions against the loaded page.
+     *
      * @param {string} url
-     * @param {{ settleMs?: number }} [pageOptions]
+     * @param {object} [pageOptions]
+     * @param {number} [pageOptions.settleMs]
+     * @param {number} [pageOptions.viewportWidth] emulate a viewport narrower
+     *   than Chromium's ~492px window floor, which is the only way to test real
+     *   phone widths
+     * @param {number} [pageOptions.viewportHeight]
+     * @param {boolean} [pageOptions.mobile]
      */
     async open(url, pageOptions = {}) {
       const { targetId } = await cdp.send('Target.createTarget', { url: 'about:blank' });
@@ -133,6 +140,15 @@ export async function launchBrowser(options = {}) {
 
       await cdp.send('Page.enable', {}, sessionId);
       await cdp.send('Runtime.enable', {}, sessionId);
+
+      if (pageOptions.viewportWidth) {
+        await cdp.send('Emulation.setDeviceMetricsOverride', {
+          width: pageOptions.viewportWidth,
+          height: pageOptions.viewportHeight ?? 900,
+          deviceScaleFactor: 1,
+          mobile: Boolean(pageOptions.mobile),
+        }, sessionId);
+      }
 
       const loaded = cdp.once('Page.loadEventFired');
       await cdp.send('Page.navigate', { url }, sessionId);
@@ -156,6 +172,14 @@ export async function launchBrowser(options = {}) {
             throw new Error(exceptionDetails.exception?.description ?? exceptionDetails.text);
           }
           return result.value === undefined ? undefined : JSON.parse(result.value);
+        },
+        /** @returns {Promise<string>} base64 PNG of the full page */
+        async screenshot() {
+          const { data } = await cdp.send('Page.captureScreenshot', {
+            format: 'png',
+            captureBeyondViewport: true,
+          }, sessionId);
+          return data;
         },
         close: () => cdp.send('Target.closeTarget', { targetId }),
       };

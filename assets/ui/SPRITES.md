@@ -34,6 +34,7 @@ Two sources, both Jagex assets:
 | `guide_prices.png` | `button/equipment_guide_prices` | Total spend |
 | `chevron_up.png` | `chevron/green_up_single` | Sorted ascending |
 | `chevron_down.png` | `chevron/green_down_single` | Sorted descending |
+| `pinned.png` | `account_management/links_tab_icon` | A buy price you typed |
 
 Three of the four **stat cards** deliberately keep the original icons from
 `assets/` (`coins`, `xp`, `giant_stopwatch`) rather than pack equivalents: they

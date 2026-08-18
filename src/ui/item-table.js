@@ -230,15 +230,24 @@ export class ItemTableView {
       const pinned = Boolean(overrides[field]);
       cell.dataset.overridden = String(pinned);
 
+      const badge = tr.querySelector(`[data-pin="${field}"]`);
+      if (badge) badge.hidden = !pinned;
+
       if (!pinned) {
         cell.removeAttribute('title');
+        if (badge) badge.removeAttribute('title');
         continue;
       }
 
-      const market = field === 'buyPrice' && Number.isFinite(item.marketBuyPrice)
-        ? ` The Grand Exchange says ${formatNumber(item.marketBuyPrice)} gp.`
+      // Short enough to read at a glance: what the chain means, then the number
+      // it is holding out against. The Refresh button's own tooltip covers how
+      // to undo it.
+      const market = Number.isFinite(item.marketBuyPrice)
+        ? ` Market: ${formatNumber(item.marketBuyPrice)} gp.`
         : '';
-      cell.title = `Your own value - auto-refresh will not change it.${market} Use Refresh on this row to go back to the market price.`;
+      const explanation = `Your price, kept on refresh.${market}`;
+      cell.title = explanation;
+      if (badge) badge.title = explanation;
     }
   }
 

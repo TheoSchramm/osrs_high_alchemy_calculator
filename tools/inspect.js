@@ -24,7 +24,11 @@ const browser = await launchBrowser({
 });
 
 try {
-  const page = await browser.open(url);
+  // VIEWPORT emulates a width below Chromium's window floor, for phone sizes.
+  const page = await browser.open(url, {
+    viewportWidth: process.env.VIEWPORT ? Number(process.env.VIEWPORT) : undefined,
+    viewportHeight: Number(process.env.HEIGHT ?? 1000),
+  });
   console.log(JSON.stringify(await page.evaluate(expression), null, 2));
 } catch (error) {
   console.error(error.message);

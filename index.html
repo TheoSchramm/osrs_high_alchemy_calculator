@@ -108,14 +108,14 @@
           <tfoot id="itemsFoot" hidden>
             <tr>
               <td data-column="name">Total</td>
-              <td data-column="buyPrice"></td>
-              <td data-column="alchPrice"></td>
-              <td data-column="quantity"></td>
-              <td data-column="costItems" data-total="costItems">0</td>
-              <td data-column="costRunes" data-total="costRunes">0</td>
-              <td data-column="profitPerCast" data-total="profitPerCast">0</td>
-              <td data-column="profit" data-total="profit">0</td>
-              <td data-column="updatedAt"></td>
+              <td data-column="buyPrice" data-label="Buy price"></td>
+              <td data-column="alchPrice" data-label="High alch"></td>
+              <td data-column="quantity" data-label="Qty"></td>
+              <td data-column="costItems" data-label="Spent on items" data-total="costItems">0</td>
+              <td data-column="costRunes" data-label="Spent on runes" data-total="costRunes">0</td>
+              <td data-column="profitPerCast" data-label="Profit / cast" data-total="profitPerCast">0</td>
+              <td data-column="profit" data-label="Profit" data-total="profit">0</td>
+              <td data-column="updatedAt" data-label="Updated"></td>
               <td data-column="actions"></td>
             </tr>
           </tfoot>
@@ -242,19 +242,23 @@
             tabindex="0"></span>
         </div>
       </td>
-      <td data-column="buyPrice">
+      <td data-column="buyPrice" data-label="Buy price">
         <span class="cell-edit" data-field="buyPrice" contenteditable="true" role="textbox" tabindex="0"></span>
+        <!-- Shown when the price is your own, so a refresh has stopped moving it.
+             After the value, not before: the editable span has a min-width, and
+             a badge in front of it would sit adrift at the far side of the cell. -->
+        <img class="cell-pin" data-pin="buyPrice" src="assets/ui/pinned.png" alt="Custom price" hidden>
       </td>
       <!-- Read-only: high alch is a constant the game assigns to the item. -->
-      <td data-column="alchPrice" data-cell="alchPrice" title="Fixed by the game"></td>
-      <td data-column="quantity">
+      <td data-column="alchPrice" data-label="High alch" data-cell="alchPrice" title="Fixed by the game"></td>
+      <td data-column="quantity" data-label="Qty">
         <span class="cell-edit" data-field="quantity" contenteditable="true" role="textbox" tabindex="0"></span>
       </td>
-      <td data-column="costItems" data-cell="costItems"></td>
-      <td data-column="costRunes" data-cell="costRunes"></td>
-      <td data-column="profitPerCast" data-cell="profitPerCast"></td>
-      <td data-column="profit" data-cell="profit"></td>
-      <td data-column="updatedAt"><span class="cell-age" data-cell="updatedAt"></span></td>
+      <td data-column="costItems" data-label="Spent on items" data-cell="costItems"></td>
+      <td data-column="costRunes" data-label="Spent on runes" data-cell="costRunes"></td>
+      <td data-column="profitPerCast" data-label="Profit / cast" data-cell="profitPerCast"></td>
+      <td data-column="profit" data-label="Profit" data-cell="profit"></td>
+      <td data-column="updatedAt" data-label="Updated"><span class="cell-age" data-cell="updatedAt"></span></td>
       <td data-column="actions">
         <div class="cell-actions">
           <button class="icon-btn" type="button" data-action="refresh" title="Refresh prices">

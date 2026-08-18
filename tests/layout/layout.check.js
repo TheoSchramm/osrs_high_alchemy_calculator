@@ -14,27 +14,36 @@ import assert from 'node:assert/strict';
 
 import { launchBrowser, startServer, findBrowser } from '../../tools/browser.js';
 
-const WIDTHS = [500, 768, 1024, 1400];
+/**
+ * 360 is a common phone. It is only reachable through viewport emulation:
+ * Chromium refuses to open a window narrower than about 492px, which hid a
+ * real failure at phone sizes for a long time.
+ */
+const WIDTHS = [360, 500, 768, 1024, 1400];
+
+/** Below this the table becomes stacked cards; see styles/table.css. */
+const CARD_BREAKPOINT = 560;
 
 let server;
-const browsers = new Map();
+let browser;
 
 before(async () => {
   if (!findBrowser()) throw new Error('No Chromium-based browser found; skipping layout checks');
   server = await startServer();
+  browser = await launchBrowser({ width: 1500, height: 1600 });
 });
 
 after(() => {
-  for (const browser of browsers.values()) browser.close();
+  browser?.close();
   server?.close();
 });
 
-/** One browser per viewport width, reused across tests. */
+/** One browser, with the viewport emulated per page. */
 async function pageAt(width, url = '/tools/preview.html') {
-  if (!browsers.has(width)) {
-    browsers.set(width, await launchBrowser({ width, height: 1600 }));
-  }
-  return browsers.get(width).open(`${server.origin}${url}`);
+  return browser.open(`${server.origin}${url}`, {
+    viewportWidth: width,
+    viewportHeight: 1600,
+  });
 }
 
 for (const width of WIDTHS) {
@@ -82,14 +91,37 @@ test('the table fits without scrolling at every width', { timeout: 120_000 }, as
       `the table overflows at ${width}px (${result.table} > ${result.scroller})`,
     );
     // The totals row must drop columns in step with the header, or it stops
-    // lining up with the figures above it.
-    assert.equal(
-      result.footCells,
-      result.columns,
-      `totals row has ${result.footCells} cells against ${result.columns} columns at ${width}px`,
-    );
+    // lining up with the figures above it. Cards stack every field with its own
+    // label, so there are no columns to line up with.
+    if (width > CARD_BREAKPOINT) {
+      assert.equal(
+        result.footCells,
+        result.columns,
+        `totals row has ${result.footCells} cells against ${result.columns} columns at ${width}px`,
+      );
+    }
     await page.close();
   }
+});
+
+test('phones get stacked cards with every field labelled', { timeout: 90_000 }, async () => {
+  // No column shedding fits a phone: at 360px the grid still wanted 114px more
+  // than it had, and with the scrollbar hidden those columns were unreachable.
+  const page = await pageAt(360);
+  const result = await page.evaluate(`{
+    rowDisplay: getComputedStyle(document.querySelector('#itemsBody tr')).display,
+    visibleCells: [...document.querySelectorAll('#itemsBody tr:first-child td')]
+      .filter(td => getComputedStyle(td).display !== 'none').length,
+    labelled: [...document.querySelectorAll('#itemsBody tr:first-child td[data-label]')]
+      .every(td => getComputedStyle(td, '::before').content.includes(td.dataset.label)),
+    headerTakesSpace: document.querySelector('#itemsTable thead').getBoundingClientRect().height > 2
+  }`);
+
+  assert.equal(result.rowDisplay, 'block', 'rows should stack rather than lay out as a table row');
+  assert.equal(result.visibleCells, 10, 'stacking gives every column back');
+  assert.equal(result.labelled, true, 'each stacked cell shows its own label');
+  assert.equal(result.headerTakesSpace, false, 'the column header row is out of the way');
+  await page.close();
 });
 
 test('the table scroller shows no scrollbar', { timeout: 90_000 }, async () => {

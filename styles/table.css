@@ -284,33 +284,100 @@
   }
 }
 
+/* ---- Phones: stop being a table ----
+   Below this width no amount of column shedding fits: at 360px the grid still
+   wanted 114px more than it had, and with the scrollbar hidden those columns
+   were simply unreachable. Each row becomes a card instead, which also lets
+   every column come back, because vertical space is the one thing a phone has
+   plenty of. Labels come from data-label on each cell. */
+
 @media (width <= 560px) {
-  .osrs-table tbody td,
-  .osrs-table thead th,
-  .osrs-table tfoot td {
-    padding-inline: var(--sp-1);
+  .osrs-table thead {
+    /* clip rather than display:none, so the headers stay reachable to a
+       screen reader while taking no space */
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+
+  .osrs-table,
+  .osrs-table tbody,
+  .osrs-table tfoot,
+  .osrs-table tr,
+  .osrs-table td {
+    display: block;
+    width: auto;
+  }
+
+  .osrs-table tbody tr,
+  .osrs-table tfoot tr {
+    margin-bottom: var(--sp-3);
+    border: 1px solid var(--c-rule-strong);
+    border-radius: var(--radius);
+    background: rgb(43 33 21 / 6%);
+  }
+
+  .osrs-table tbody tr:hover {
+    background: rgb(43 33 21 / 6%);
+  }
+
+  /* Every column is worth showing again once they are stacked. */
+  .osrs-table td[data-column] {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sp-3);
+    padding: var(--sp-1) var(--sp-3);
+    text-align: right;
+    border-bottom: 1px solid var(--c-rule);
+  }
+
+  .osrs-table td[data-label]::before {
+    content: attr(data-label);
+    flex: none;
+    color: var(--c-ink-label);
+    font-size: var(--fs-xs);
+    text-align: left;
+  }
+
+  .osrs-table tr td:last-child {
+    border-bottom: none;
+  }
+
+  /* The name is the card's heading, so it gets the full width and no label. */
+  .osrs-table td[data-column='name'] {
+    justify-content: flex-start;
+    padding: var(--sp-2) var(--sp-3);
+    background: rgb(43 33 21 / 8%);
+    border-bottom: 1px solid var(--c-rule-strong);
   }
 
   .cell-item {
-    gap: var(--sp-2);
+    min-width: 0;
   }
 
-  .icon-btn {
-    width: 26px;
+  .cell-item__name {
+    font-size: var(--fs-md);
   }
 
-  .icon-btn img {
-    width: 15px;
-    height: 15px;
+  /* An empty cell would otherwise show as a stray labelled row. */
+  .osrs-table tfoot td:empty,
+  .osrs-table td[data-column='actions']:empty {
+    display: none;
   }
-}
 
-/* ---- Hand-typed prices ----
-   A pinned cell no longer tracks the market, so it needs to look different
-   from one that does. The dotted rule reads as "entered by hand" without
-   adding an icon or a column to a table that has no width to spare. */
+  .osrs-table td[data-column='actions'] {
+    justify-content: flex-end;
+  }
 
-.cell-edit[data-overridden='true'] {
-  border-bottom: 1px dotted var(--c-ink-label);
-  font-style: italic;
+  .osrs-table tfoot td[data-column='name'] {
+    font-size: var(--fs-md);
+    color: var(--c-ink-strong);
+  }
+
+  .cell-edit {
+    min-width: 3em;
+  }
 }

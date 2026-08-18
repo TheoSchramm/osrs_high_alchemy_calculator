@@ -44,6 +44,10 @@ To poke at the running page yourself:
 npm run serve
 node tools/inspect.js http://localhost:4173/ "document.title"
 WIDTH=500 node tools/inspect.js http://localhost:4173/ "innerWidth"
+
+# Chromium will not open a window under about 492px, so phone widths need
+# viewport emulation:
+VIEWPORT=360 node tools/inspect.js http://localhost:4173/ "innerWidth"
 ```
 
 `tools/preview.html` loads the app with a few sample rows already in it, which
@@ -128,12 +132,15 @@ it should be sortable, a field to the return value of `computeItem` in
   matched to the Grand Exchange. Editable fields are name, buy price and
   quantity.
 - **Typing a buy price pins it.** Auto-refresh will not touch it again: a timer
-  you did not trigger must never discard your work. The cell is shown italic
-  with a dotted underline, and its tooltip gives the market price. An explicit
+  you did not trigger must never discard your work. A chain icon next to the
+  value marks it as yours, with the market price in its tooltip. An explicit
   Refresh (the row button or Refresh all) *does* replace it and releases the
   pin, because that is what you asked it to do.
-- **The table never scrolls sideways.** It sheds columns as the window narrows,
-  in order of how easily the number is recovered from the others.
+- **The table never scrolls sideways.** Between 560px and 1150px it sheds
+  columns, in order of how easily the number is recovered from the others.
+  Below 560px it stops being a table: each row becomes a card with every field
+  stacked and labelled, which brings back the columns narrow screens had lost.
+  No width sheds enough to fit a phone otherwise.
 
 ## Attribution
 
