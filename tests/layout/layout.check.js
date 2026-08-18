@@ -22,7 +22,7 @@ import { launchBrowser, startServer, findBrowser } from '../../tools/browser.js'
 const WIDTHS = [360, 500, 768, 1024, 1400];
 
 /** Below this the table becomes stacked cards; see styles/table.css. */
-const CARD_BREAKPOINT = 560;
+const CARD_BREAKPOINT = 700;
 
 let server;
 let browser;

@@ -186,6 +186,33 @@ test('9-slice widths are declared as tokens next to their sprite', () => {
   }
 });
 
+test('index.html has balanced container tags', () => {
+  // A stray </div> does not throw: browsers and jsdom both silently re-parent
+  // the rest of the block, so the only symptom was a control quietly escaping
+  // its flex row. Counting is enough to catch it.
+  const html = read('index.html');
+
+  for (const tag of ['div', 'section', 'form', 'table', 'thead', 'tbody', 'tfoot', 'tr', 'template']) {
+    // Substring counting rather than a regex: '<div' cannot appear inside
+    // '</div>', so the two counts are directly comparable.
+    const open = html.split('<' + tag).length - 1;
+    const close = html.split('</' + tag + '>').length - 1;
+    assert.equal(open, close, `<${tag}> opened ${open} times but closed ${close}`);
+  }
+});
+
+test('every settings control shares one row', () => {
+  // The auto-refresh select had escaped the toolbar and was stretching across
+  // the whole panel at wide viewports.
+  const html = read('index.html');
+  const body = html.slice(html.indexOf('id="settingsHeading"'));
+  const toolbar = body.slice(body.indexOf('<div class="toolbar">'), body.indexOf('<div class="action-bar">'));
+
+  for (const id of ['runePrice', 'priceBasis', 'autoRefresh']) {
+    assert.ok(toolbar.includes(`id="${id}"`), `${id} should sit in the settings toolbar`);
+  }
+});
+
 test('every stylesheet has balanced braces', () => {
   for (const file of STYLE_FILES) {
     const css = stripComments(read(file));

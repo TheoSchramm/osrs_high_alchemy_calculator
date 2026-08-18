@@ -91,17 +91,20 @@
   position: relative;
 }
 
+/* All three keep their preferred width but may shrink: a fixed basis meant a
+   narrow viewport pushed them straight off the side of the page. They still do
+   not grow, so a wide panel does not stretch a quantity box across it. */
 .field--narrow {
-  flex: 0 0 120px;
+  flex: 0 1 120px;
 }
 
 .field--price {
-  flex: 0 0 160px;
+  flex: 0 1 160px;
 }
 
 /* Wide enough for the longest option label without truncating it. */
 .field--select {
-  flex: 0 0 250px;
+  flex: 0 1 250px;
 }
 
 .field__label {
@@ -628,12 +631,48 @@
   margin-left: auto;
 }
 
-@media (width <= 720px) {
+@media (width <= 900px) {
   .action-bar__end {
     margin-left: 0;
   }
 
   .action-bar .btn {
     flex: 1 1 auto;
+  }
+}
+
+/* Small screens: the panel frame is the biggest single piece of chrome, and at
+   a quarter larger it was eating the width the cards need. The 9-slice simply
+   renders at half scale, which still reads as the same frame. */
+@media (width <= 900px) {
+  .panel {
+    --border-panel: 8px;
+    padding: var(--sp-1);
+  }
+
+  .panel__body {
+    padding: var(--sp-1) var(--sp-1) var(--sp-2);
+  }
+}
+
+/* The smallest phones still in use (320px) have 256px of room once everything
+   is a quarter larger. The frame gives way almost entirely so the numbers do
+   not have to. */
+@media (width <= 420px) {
+  .panel {
+    --border-panel: 6px;
+    padding: 0;
+  }
+
+  .panel__title {
+    padding-inline: var(--sp-2);
+  }
+
+  .panel__body {
+    padding: var(--sp-1) 0 var(--sp-2);
+  }
+
+  .panel__footer {
+    padding-inline: var(--sp-1);
   }
 }

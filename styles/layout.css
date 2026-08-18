@@ -31,7 +31,10 @@
 }
 
 .page {
-  width: min(100% - var(--sp-5) * 2, var(--content-width));
+  /* Fluid: the content fills whatever width it is given, minus its gutters.
+     A fixed cap meant zooming out just added more empty stone at the sides
+     instead of showing more of the table. */
+  width: calc(100% - var(--sp-5) * 2);
   margin-inline: auto;
   padding-block: var(--sp-6) var(--sp-7);
   display: flex;
@@ -60,7 +63,7 @@
   gap: var(--sp-4);
 }
 
-@media (width <= 720px) {
+@media (width <= 900px) {
   .site-header {
     flex-direction: column;
     text-align: center;
@@ -73,7 +76,7 @@
   }
 
   .page {
-    width: min(100% - var(--sp-3) * 2, var(--content-width));
+    width: calc(100% - var(--sp-1) * 2);
     padding-block: var(--sp-4) var(--sp-6);
     gap: var(--sp-4);
   }
