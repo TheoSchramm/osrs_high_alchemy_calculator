@@ -11,6 +11,21 @@ import { parseAmount, toNonNegativeInt } from './format.js';
 /** Fields the user may edit inline in the table. */
 export const EDITABLE_FIELDS = Object.freeze(['name', 'buyPrice', 'alchPrice', 'quantity']);
 
+/**
+ * Fields that come from the Grand Exchange and can therefore be overridden by
+ * a hand edit. Quantity and name have no market value to conflict with.
+ */
+export const OVERRIDABLE_FIELDS = Object.freeze(['buyPrice', 'alchPrice']);
+
+/** @returns {{buyPrice: boolean, alchPrice: boolean}} */
+function normalizeOverrides(raw) {
+  const source = raw ?? {};
+  return {
+    buyPrice: Boolean(source.buyPrice),
+    alchPrice: Boolean(source.alchPrice),
+  };
+}
+
 let idCounter = 0;
 
 /** Stable unique row id, with a fallback for environments without `crypto`. */
@@ -49,6 +64,14 @@ export function normalizeItem(raw = {}) {
     quantity: toNonNegativeInt(source.quantity ?? 1),
     icon: typeof source.icon === 'string' && source.icon ? source.icon : null,
     updatedAt: Number.isFinite(Number(source.updatedAt)) ? Number(source.updatedAt) : null,
+    // Which fields the user has typed over, so a background refresh does not
+    // silently discard them.
+    overrides: normalizeOverrides(source.overrides),
+    // The last price the Grand Exchange reported, kept even while overridden so
+    // the UI can show what the market says and offer it back.
+    marketBuyPrice: Number.isFinite(Number(source.marketBuyPrice))
+      ? Number(source.marketBuyPrice)
+      : null,
   };
 }
 
@@ -92,32 +115,54 @@ export function applyFieldEdit(item, field, value) {
     return name ? { ...item, name } : item;
   }
 
-  return { ...item, [field]: Math.max(0, parseAmount(value)) };
+  const next = { ...item, [field]: Math.max(0, parseAmount(value)) };
+
+  // Typing a price pins it: from here on only an explicit refresh may replace it.
+  if (OVERRIDABLE_FIELDS.includes(field)) {
+    next.overrides = { ...normalizeOverrides(item.overrides), [field]: true };
+  }
+
+  return next;
 }
 
 /**
  * Merge an API snapshot into an item without clobbering data the API lacks.
  *
+ * Fields the user has typed over are left alone unless `force` is set. That is
+ * the difference between a background poll, which must never discard someone's
+ * work, and an explicit Refresh, which was asked for and should win.
+ *
  * @param {import('./alchemy.js').AlchItem} item
  * @param {import('../data/prices-api.js').ItemSnapshot|null} snapshot
- * @param {{ now?: number }} [options]
+ * @param {{ now?: number, force?: boolean }} [options]
  */
 export function mergeSnapshot(item, snapshot, options = {}) {
   if (!snapshot) return item;
 
   const now = options.now ?? Date.now();
+  const force = Boolean(options.force);
+  const overrides = normalizeOverrides(item.overrides);
+
+  const marketBuy = Number.isFinite(snapshot.buyPrice) && snapshot.buyPrice > 0
+    ? snapshot.buyPrice
+    : item.marketBuyPrice;
+  const marketAlch = Number.isFinite(snapshot.highAlch) && snapshot.highAlch > 0
+    ? snapshot.highAlch
+    : item.alchPrice;
+
+  const keepBuy = overrides.buyPrice && !force;
+  const keepAlch = overrides.alchPrice && !force;
 
   return {
     ...item,
     itemId: snapshot.itemId ?? item.itemId,
     name: snapshot.name || item.name,
     icon: snapshot.icon || item.icon,
-    alchPrice: Number.isFinite(snapshot.highAlch) && snapshot.highAlch > 0
-      ? snapshot.highAlch
-      : item.alchPrice,
-    buyPrice: Number.isFinite(snapshot.buyPrice) && snapshot.buyPrice > 0
-      ? snapshot.buyPrice
-      : item.buyPrice,
+    alchPrice: keepAlch ? item.alchPrice : marketAlch,
+    buyPrice: keepBuy ? item.buyPrice : (marketBuy ?? item.buyPrice),
+    marketBuyPrice: marketBuy ?? null,
+    // An explicit refresh hands the row back to the market.
+    overrides: force ? normalizeOverrides(null) : overrides,
     updatedAt: now,
   };
 }

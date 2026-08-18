@@ -209,7 +209,8 @@ export function createApp(config) {
       return;
     }
 
-    store.applySnapshot(id, snapshot);
+    // Explicit refresh: the user asked for market data, so it replaces edits.
+    store.applySnapshot(id, snapshot, { force: true });
     toaster.success(`${snapshot.name} updated — buy ${formatNumber(snapshot.buyPrice ?? 0)} gp.`);
   }
 
@@ -232,7 +233,7 @@ export function createApp(config) {
     for (const item of store.getState().items) {
       const snapshot = item.itemId ? snapshots.get(item.itemId) : null;
       if (!snapshot) continue;
-      store.applySnapshot(item.id, snapshot);
+      store.applySnapshot(item.id, snapshot, { force: true });
       updated += 1;
     }
 

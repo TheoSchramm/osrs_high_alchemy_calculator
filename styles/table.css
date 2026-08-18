@@ -304,3 +304,13 @@
     height: 15px;
   }
 }
+
+/* ---- Hand-typed prices ----
+   A pinned cell no longer tracks the market, so it needs to look different
+   from one that does. The dotted rule reads as "entered by hand" without
+   adding an icon or a column to a table that has no width to spare. */
+
+.cell-edit[data-overridden='true'] {
+  border-bottom: 1px dotted var(--c-ink-label);
+  font-style: italic;
+}

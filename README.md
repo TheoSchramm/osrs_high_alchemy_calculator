@@ -121,6 +121,12 @@ it should be sortable, a field to the return value of `computeItem` in
 - **The Updated column** shows how long ago each price was fetched, colour
   banded from fresh to stale. Items added by hand show a dash: they have no
   Grand Exchange price to age.
+- **Typing a price pins it.** Editing buy price or high alch marks that field
+  as yours, and auto-refresh will not touch it again: a timer you did not
+  trigger must never discard your work. The cell is shown italic with a dotted
+  underline, and its tooltip gives the market price. An explicit Refresh (the
+  row button or Refresh all) *does* replace it and releases the pin, because
+  that is what you asked it to do. Quantity and name are never pinned.
 - **The table never scrolls sideways.** It sheds columns as the window narrows,
   in order of how easily the number is recovered from the others.
 

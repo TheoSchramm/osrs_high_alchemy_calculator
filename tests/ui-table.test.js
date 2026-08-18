@@ -372,3 +372,66 @@ test('the Updated column is sortable', (t) => {
   click(header);
   assert.deepEqual(rows(ctx.document).map((tr) => tr.dataset.id), ['new', 'old']);
 });
+
+/* ------------------------------------------ hand-typed prices vs polling -- */
+
+test('a hand-typed buy price survives a background poll', async (t) => {
+  const ctx = mountWith([PLATEBODY]);
+  t.after(ctx.cleanup);
+
+  editCell(ctx.document.querySelector('[data-field="buyPrice"]'), '3,000');
+  assert.equal(ctx.store.getItem('plate').buyPrice, 3000);
+
+  // The timer fires without the user asking for anything.
+  await ctx.app.refresher.poll();
+
+  assert.equal(ctx.store.getItem('plate').buyPrice, 3000, 'the typed price is still there');
+  assert.equal(rowCells(rows(ctx.document)[0]).buyPrice, '3,000');
+});
+
+test('an explicit row refresh replaces a hand-typed price', async (t) => {
+  const ctx = mountWith([PLATEBODY]);
+  t.after(ctx.cleanup);
+
+  editCell(ctx.document.querySelector('[data-field="buyPrice"]'), '3,000');
+  click(rows(ctx.document)[0].querySelector('[data-action="refresh"]'));
+  await flush();
+
+  assert.equal(ctx.store.getItem('plate').buyPrice, 4200, 'the market price wins');
+  assert.equal(ctx.store.getItem('plate').overrides.buyPrice, false, 'and the pin is released');
+});
+
+test('a pinned cell is marked and explains itself', (t) => {
+  const ctx = mountWith([PLATEBODY]);
+  t.after(ctx.cleanup);
+
+  const cell = () => ctx.document.querySelector('[data-field="buyPrice"]');
+  assert.equal(cell().dataset.overridden, 'false');
+
+  editCell(cell(), '3,000');
+
+  assert.equal(cell().dataset.overridden, 'true');
+  assert.match(cell().title, /auto-refresh will not change it/);
+});
+
+test('the refresh tooltip warns that it will replace typed values', (t) => {
+  const ctx = mountWith([PLATEBODY]);
+  t.after(ctx.cleanup);
+
+  const button = () => rows(ctx.document)[0].querySelector('[data-action="refresh"]');
+  assert.equal(/replaces/.test(button().title), false);
+
+  editCell(ctx.document.querySelector('[data-field="buyPrice"]'), '3,000');
+  assert.match(button().title, /replaces the values you typed/);
+});
+
+test('editing quantity does not pin the price', async (t) => {
+  const ctx = mountWith([{ ...PLATEBODY, buyPrice: 1 }]);
+  t.after(ctx.cleanup);
+
+  editCell(ctx.document.querySelector('[data-field="quantity"]'), '250');
+  await ctx.app.refresher.poll();
+
+  assert.equal(ctx.store.getItem('plate').buyPrice, 4200, 'the price still tracks the market');
+  assert.equal(ctx.store.getItem('plate').quantity, 250, 'and the quantity is untouched');
+});

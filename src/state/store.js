@@ -129,12 +129,15 @@ export class AppStore {
 
   /**
    * Fold an API snapshot into an item.
+   *
    * @param {string} id
    * @param {import('../data/prices-api.js').ItemSnapshot|null} snapshot
+   * @param {{ force?: boolean }} [options] force replaces fields the user has
+   *   typed over. Use it only for an action the user explicitly asked for.
    */
-  applySnapshot(id, snapshot) {
+  applySnapshot(id, snapshot, options = {}) {
     if (!snapshot) return null;
-    return this._replaceItem(id, (item) => mergeSnapshot(item, snapshot));
+    return this._replaceItem(id, (item) => mergeSnapshot(item, snapshot, options));
   }
 
   removeItem(id) {

@@ -34,6 +34,10 @@ Dependencies flow one way: `ui` → `state` → `data` → `core`.
   reach for a global directly.
 - **`src/state/`** is the single source of truth. Views read state and call store
   methods; they never mutate state and never talk to each other.
+- **Never let a background task overwrite something the user typed.** Price
+  fields carry an `overrides` flag set by an inline edit; `mergeSnapshot`
+  skips those fields unless `force` is passed, and only an action the user
+  explicitly triggered may pass it.
 - **`src/ui/`** renders and reports intent through handler callbacks. Async work
   belongs in `src/ui/app.js`, not in a view.
 - **`src/main.js`** is the only file allowed to touch `document`,

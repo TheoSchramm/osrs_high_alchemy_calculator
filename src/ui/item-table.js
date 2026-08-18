@@ -9,7 +9,7 @@
 import { qs, qsa, on, setText, setHidden, setValueTone, cloneTemplate } from './dom.js';
 import { formatNumber, formatSigned, formatRelativeTime, freshnessOf } from '../core/format.js';
 import { selectRows, selectTotals } from '../state/selectors.js';
-import { EDITABLE_FIELDS } from '../core/items.js';
+import { EDITABLE_FIELDS, OVERRIDABLE_FIELDS } from '../core/items.js';
 
 /** Cells rendered from derived figures, and how each is formatted. */
 const DERIVED_CELLS = {
@@ -185,6 +185,7 @@ export class ItemTableView {
     this._updateEditableCell(tr, 'buyPrice', formatNumber(item.buyPrice), item.name);
     this._updateEditableCell(tr, 'alchPrice', formatNumber(item.alchPrice), item.name);
     this._updateEditableCell(tr, 'quantity', formatNumber(item.quantity), item.name);
+    this._markOverrides(tr, item);
 
     for (const [key, { format, tone }] of Object.entries(DERIVED_CELLS)) {
       const cell = qs(tr, `[data-cell="${key}"]`);
@@ -197,9 +198,37 @@ export class ItemTableView {
     const refreshButton = qs(tr, '[data-action="refresh"]');
     // Only items the API recognises can be refreshed.
     refreshButton.disabled = !item.itemId;
+    const pinned = Object.values(item.overrides ?? {}).some(Boolean);
     refreshButton.title = item.itemId
-      ? `Refresh prices for ${item.name}`
+      ? `Refresh prices for ${item.name}${pinned ? ' (replaces the values you typed)' : ''}`
       : 'Added manually — no Grand Exchange match to refresh';
+  }
+
+  /**
+   * Flag the price cells the user has typed over. Without this the pinning is
+   * invisible: the row would quietly stop tracking the market with nothing on
+   * screen to say so.
+   */
+  _markOverrides(tr, item) {
+    const overrides = item.overrides ?? {};
+
+    for (const field of OVERRIDABLE_FIELDS) {
+      const cell = tr.querySelector(`[data-field="${field}"]`);
+      if (!cell) continue;
+
+      const pinned = Boolean(overrides[field]);
+      cell.dataset.overridden = String(pinned);
+
+      if (!pinned) {
+        cell.removeAttribute('title');
+        continue;
+      }
+
+      const market = field === 'buyPrice' && Number.isFinite(item.marketBuyPrice)
+        ? ` The Grand Exchange says ${formatNumber(item.marketBuyPrice)} gp.`
+        : '';
+      cell.title = `Your own value - auto-refresh will not change it.${market} Use Refresh on this row to go back to the market price.`;
+    }
   }
 
   /**

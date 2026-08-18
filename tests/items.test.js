@@ -155,3 +155,86 @@ test('mergeSnapshot with no snapshot is a no-op', () => {
   const item = normalizeItem({ name: 'x' });
   assert.equal(mergeSnapshot(item, null), item);
 });
+
+/* ------------------------------------------------- hand-typed overrides --- */
+
+test('a new item pins nothing', () => {
+  const item = normalizeItem({ name: 'Rune axe', buyPrice: 100 });
+  assert.deepEqual(item.overrides, { buyPrice: false, alchPrice: false });
+  assert.equal(item.marketBuyPrice, null);
+});
+
+test('editing a price pins that field only', () => {
+  const item = normalizeItem({ name: 'Rune axe', buyPrice: 100, alchPrice: 200 });
+
+  const edited = applyFieldEdit(item, 'buyPrice', '3000');
+  assert.deepEqual(edited.overrides, { buyPrice: true, alchPrice: false });
+
+  const both = applyFieldEdit(edited, 'alchPrice', '9000');
+  assert.deepEqual(both.overrides, { buyPrice: true, alchPrice: true });
+});
+
+test('editing quantity or name pins nothing', () => {
+  const item = normalizeItem({ name: 'Rune axe', quantity: 1 });
+
+  assert.equal(applyFieldEdit(item, 'quantity', '50').overrides.buyPrice, false);
+  assert.equal(applyFieldEdit(item, 'name', 'Rune scimitar').overrides.buyPrice, false);
+});
+
+test('a background merge leaves a pinned price alone', () => {
+  const item = applyFieldEdit(
+    normalizeItem({ name: 'Adamant platebody', buyPrice: 4200, alchPrice: 5760 }),
+    'buyPrice',
+    '3000',
+  );
+
+  const merged = mergeSnapshot(item, {
+    itemId: 1123,
+    name: 'Adamant platebody',
+    highAlch: 5760,
+    buyPrice: 4200,
+  });
+
+  assert.equal(merged.buyPrice, 3000, 'the typed value survives');
+  assert.equal(merged.marketBuyPrice, 4200, 'the market price is still recorded');
+  assert.equal(merged.overrides.buyPrice, true, 'and it stays pinned');
+  assert.ok(merged.updatedAt > 0, 'the row still counts as refreshed');
+});
+
+test('a forced merge replaces a pinned price and unpins it', () => {
+  const item = applyFieldEdit(
+    normalizeItem({ name: 'Adamant platebody', buyPrice: 4200 }),
+    'buyPrice',
+    '3000',
+  );
+
+  const merged = mergeSnapshot(
+    item,
+    { itemId: 1123, name: 'Adamant platebody', highAlch: 5760, buyPrice: 4200 },
+    { force: true },
+  );
+
+  assert.equal(merged.buyPrice, 4200);
+  assert.equal(merged.overrides.buyPrice, false, 'the row tracks the market again');
+});
+
+test('a pinned alch value is independent of a pinned buy price', () => {
+  const item = applyFieldEdit(
+    normalizeItem({ name: 'x', buyPrice: 100, alchPrice: 200 }),
+    'alchPrice',
+    '9999',
+  );
+
+  const merged = mergeSnapshot(item, { itemId: 1, name: 'x', highAlch: 5760, buyPrice: 4200 });
+
+  assert.equal(merged.alchPrice, 9999, 'the typed alch value survives');
+  assert.equal(merged.buyPrice, 4200, 'the un-pinned buy price still updates');
+});
+
+test('overrides survive being saved and reloaded', () => {
+  const edited = applyFieldEdit(normalizeItem({ name: 'x', buyPrice: 1 }), 'buyPrice', '500');
+  const reloaded = normalizeItems(JSON.parse(JSON.stringify([edited])));
+
+  assert.equal(reloaded[0].overrides.buyPrice, true);
+  assert.equal(reloaded[0].buyPrice, 500);
+});
