@@ -119,6 +119,7 @@ test('bordered sprites are never tiled', () => {
     '--tex-panel', '--tex-button', '--tex-button-active',
     '--tex-button-primary', '--tex-icon-button', '--tex-icon-button-hover',
     '--tex-slot', '--tex-scroll-h', '--tex-scroll-v',
+    '--tex-chevron-up', '--tex-chevron-down',
   ];
   const offenders = [];
 
@@ -319,6 +320,25 @@ test('only flat outline icons get the ink filter', () => {
       `${src}: ink filter applied incorrectly`,
     );
   }
+});
+
+test('the sorted column is marked with the green chevron', () => {
+  const css = stripComments(read('styles/table.css'));
+  const blocks = css.split('}');
+
+  const sorted = blocks.find((rule) => /th\[aria-sort\]::after\s*\{/.test(rule));
+  assert.ok(sorted, 'no rule for the sorted column indicator');
+  assert.match(sorted, /var\(--tex-chevron-up\)/);
+  assert.match(sorted, /background-repeat:\s*no-repeat/, 'the chevron must be drawn once');
+
+  const descending = blocks.find((rule) => /th\[aria-sort='descending'\]::after\s*\{/.test(rule));
+  assert.ok(descending, 'no rule for the descending indicator');
+  assert.match(descending, /var\(--tex-chevron-down\)/);
+
+  // Unsorted columns are left unmarked: only the column actually in use gets
+  // an indicator, so nothing else in the header competes with it.
+  const sortable = blocks.find((rule) => /th\[data-sort\]::after\s*\{/.test(rule));
+  assert.equal(sortable, undefined, 'unsorted headers should carry no indicator');
 });
 
 test('the totals row covers the same derived columns as the body', () => {

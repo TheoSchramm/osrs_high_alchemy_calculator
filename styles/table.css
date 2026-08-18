@@ -59,22 +59,30 @@
   background-color: #9a8961;
 }
 
-.osrs-table th[data-sort]::after {
-  content: '\2195'; /* up-down arrow: the "sortable" affordance, dimmed until used */
+/* Only the column actually in use is marked. Unsorted headers show nothing:
+   the cursor and hover already say they are clickable, and a glyph on every
+   column is noise. Drawn once at native size; the chevron's black outline is
+   what lets it read on the tan band, where the pack's gold arrows would not. */
+.osrs-table th[aria-sort]::after {
+  content: '';
   display: inline-block;
-  width: 1em;
-  margin-left: var(--sp-1);
-  opacity: 0.4;
-}
-
-.osrs-table th[aria-sort='ascending']::after {
-  content: '\25B2'; /* filled up-pointing triangle */
-  opacity: 1;
+  width: 16px;
+  height: 12px;
+  margin-left: var(--sp-2);
+  vertical-align: middle;
+  background-image: var(--tex-chevron-up);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 16px 12px;
+  /* vertical-align: middle centres a box on the x-height, and this font's
+     x-height sits below the optical centre of its caps, so the chevron
+     otherwise reads low against the label. */
+  position: relative;
+  top: -2px;
 }
 
 .osrs-table th[aria-sort='descending']::after {
-  content: '\25BC'; /* filled down-pointing triangle */
-  opacity: 1;
+  background-image: var(--tex-chevron-down);
 }
 
 .osrs-table th[aria-sort] {

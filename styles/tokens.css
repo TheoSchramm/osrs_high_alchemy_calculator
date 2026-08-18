@@ -53,6 +53,9 @@
   --tex-icon-button: url('../assets/ui/icon_button.png'); /* ge/button, cropped */
   --tex-icon-button-hover: url('../assets/ui/icon_button_hovered.png');
   --tex-slot: url('../assets/ui/item_slot.png'); /* ge/selected_item_box */
+  /* Sort direction on the active column: chevron/green_{up,down}_single. */
+  --tex-chevron-up: url('../assets/ui/chevron_up.png');
+  --tex-chevron-down: url('../assets/ui/chevron_down.png');
   /* Scrollbar thumbs, each composed from the pack's three cap/middle pieces. */
   --tex-scroll-h: url('../assets/ui/scroll_thumb_h.png');
   --tex-scroll-v: url('../assets/ui/scroll_thumb_v.png');

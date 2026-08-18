@@ -32,6 +32,8 @@ Two sources, both Jagex assets:
 | `refresh.png` | `other/refresh_icon` | Refresh buttons |
 | `trash.png` | `bank/send_to_trash` | Remove item |
 | `guide_prices.png` | `button/equipment_guide_prices` | Total spend |
+| `chevron_up.png` | `chevron/green_up_single` | Sorted ascending |
+| `chevron_down.png` | `chevron/green_down_single` | Sorted descending |
 
 Three of the four **stat cards** deliberately keep the original icons from
 `assets/` (`coins`, `xp`, `giant_stopwatch`) rather than pack equivalents: they
@@ -96,8 +98,20 @@ Two older sprites are kept in `assets/` as cautionary examples, no longer used:
   a dark field fights the parchment panels and would flip every input to light
   text for no gain.
 - `other/list_sorting_arrow_{ascending,descending}` are the real OSRS sort
-  arrows, but they are fixed gold on a tan header band. The CSS triangles in
-  `table.css` can be coloured for proper contrast, so legibility wins.
+  arrows, but they are fixed gold on a tan header band and would barely read.
+  The green chevrons carry a black outline, which is exactly what lets them sit
+  on that same band, so they are used instead.
+
+## Sort indicators
+
+Only the column actually in use is marked. Unsorted headers carry nothing: the
+pointer cursor and the hover highlight already say they are clickable, and an
+indicator on all eight columns competed with the one that mattered. Dropping it
+also gives the width back to a table that already scrolls.
+
+It is nudged up 2px: `vertical-align: middle` centres a box on the x-height, and
+this font's x-height sits below the optical centre of its caps, so the chevron
+otherwise reads low against the label.
 
 ## Licence
 
