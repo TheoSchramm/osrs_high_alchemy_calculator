@@ -89,6 +89,16 @@ a:focus-visible {
   text-decoration: underline;
 }
 
+/* The hidden attribute must win, whatever display a component rule sets.
+   The UA rule for [hidden] is display:none at the lowest possible specificity,
+   so any class rule carrying a display silently beats it - which is how the
+   chain badge kept painting after being hidden, once it became a button with
+   display:inline-flex. Three components had already worked around this
+   individually; this replaces all of them. */
+[hidden] {
+  display: none !important;
+}
+
 img {
   max-width: 100%;
   /* Game sprites are tiny; keep the pixels crisp instead of blurring them. */

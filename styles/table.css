@@ -390,6 +390,7 @@ button.cell-pin {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  text-align: center;
   min-width: 28px;
   min-height: 28px;
   padding: 0;

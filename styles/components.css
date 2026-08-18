@@ -390,10 +390,6 @@
   box-shadow: 0 8px 18px rgb(0 0 0 / 45%);
 }
 
-.suggestions[hidden] {
-  display: none;
-}
-
 .suggestion {
   display: flex;
   align-items: center;
@@ -487,10 +483,6 @@
   border-radius: var(--radius);
 }
 
-.notice[hidden] {
-  display: none;
-}
-
 .notice--error {
   border-left-color: var(--c-loss);
 }
@@ -508,10 +500,6 @@
   padding: var(--sp-6) var(--sp-4);
   text-align: center;
   color: var(--c-ink-muted);
-}
-
-.empty-state[hidden] {
-  display: none;
 }
 
 .toast-stack {

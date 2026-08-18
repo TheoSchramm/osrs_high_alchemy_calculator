@@ -135,6 +135,49 @@ test('the table scroller shows no scrollbar', { timeout: 90_000 }, async () => {
   await page.close();
 });
 
+test('nothing carrying the hidden attribute is painted', { timeout: 90_000 }, async () => {
+  // The UA rule for [hidden] is display:none at the lowest possible
+  // specificity, so any component rule with a display silently beats it. That
+  // is how the chain badge kept painting after being hidden, once it became a
+  // button with display:inline-flex, and jsdom cannot see it: the hidden
+  // property read back as true the whole time.
+  const page = await pageAt(1400);
+  const painted = await page.evaluate(`
+    [...document.querySelectorAll('[hidden]')]
+      .filter(el => {
+        const r = el.getBoundingClientRect();
+        return r.width > 0 || r.height > 0;
+      })
+      .slice(0, 8)
+      .map(el => el.tagName + '.' + String(el.className).split(' ')[0])
+  `);
+
+  assert.deepEqual(painted, [], 'these are hidden but still take up space');
+  await page.close();
+});
+
+test('clicking the chain removes it from the page', { timeout: 90_000 }, async () => {
+  const page = await pageAt(1400);
+  const result = await page.evaluate(`(() => {
+    const row = [...document.querySelectorAll('#itemsBody tr')]
+      .find(r => !r.querySelector('[data-pin="buyPrice"]').hidden);
+    const pin = row.querySelector('[data-pin="buyPrice"]');
+    const price = () => row.querySelector('[data-field="buyPrice"]').textContent;
+
+    const before = { price: price(), painted: pin.getBoundingClientRect().width > 0 };
+    pin.click();
+    return {
+      before,
+      after: { price: price(), painted: pin.getBoundingClientRect().width > 0 },
+    };
+  })()`);
+
+  assert.equal(result.before.painted, true, 'the fixture should start with a locked row');
+  assert.equal(result.after.painted, false, 'the chain must actually leave the page');
+  assert.notEqual(result.after.price, result.before.price, 'and the market price comes back');
+  await page.close();
+});
+
 test('the sort chevron never wraps off the label line', { timeout: 90_000 }, async () => {
   // Header labels wrap on purpose - that is what keeps the table narrow enough
   // to need no scrollbar - and an in-flow chevron is an atomic inline, so the

@@ -242,14 +242,14 @@
         </div>
       </td>
       <td data-column="buyPrice" data-label="Buy price">
+                <button class="cell-pin" data-pin="buyPrice" type="button" hidden>
+          <img src="assets/ui/pinned.png" alt="Custom price, click to use the market price">
+        </button>
         <span class="cell-edit" data-field="buyPrice" contenteditable="true" role="textbox" tabindex="0"></span>
         <!-- Shown when the price is your own, so no refresh moves it. Clicking
              it hands the row back to the market. After the value, not before:
              the editable span has a min-width, and a badge in front of it would
              sit adrift at the far side of the cell. -->
-        <button class="cell-pin" data-pin="buyPrice" type="button" hidden>
-          <img src="assets/ui/pinned.png" alt="Custom price, click to use the market price">
-        </button>
       </td>
       <!-- Read-only: high alch is a constant the game assigns to the item. -->
       <td data-column="alchPrice" data-label="High alch" data-cell="alchPrice" title="Fixed by the game"></td>
