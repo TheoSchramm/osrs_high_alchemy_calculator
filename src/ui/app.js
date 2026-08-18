@@ -57,6 +57,14 @@ export function createApp(config) {
       onEdit: (id, field, value) => store.editItemField(id, field, value),
       onRefresh: (id) => void refreshItem(id),
       onDelete: (id) => deleteItem(id),
+      onReleaseOverride: (id, field) => {
+        const item = store.getItem(id);
+        store.releaseOverride(id, field);
+        const restored = store.getItem(id);
+        if (item && restored && restored.buyPrice !== item.buyPrice) {
+          toaster.info(`${restored.name} is back on the market price.`);
+        }
+      },
     },
   });
 
@@ -209,8 +217,7 @@ export function createApp(config) {
       return;
     }
 
-    // Explicit refresh: the user asked for market data, so it replaces edits.
-    store.applySnapshot(id, snapshot, { force: true });
+    store.applySnapshot(id, snapshot);
     toaster.success(`${snapshot.name} updated — buy ${formatNumber(snapshot.buyPrice ?? 0)} gp.`);
   }
 
@@ -233,7 +240,7 @@ export function createApp(config) {
     for (const item of store.getState().items) {
       const snapshot = item.itemId ? snapshots.get(item.itemId) : null;
       if (!snapshot) continue;
-      store.applySnapshot(item.id, snapshot, { force: true });
+      store.applySnapshot(item.id, snapshot);
       updated += 1;
     }
 

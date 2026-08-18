@@ -399,7 +399,7 @@ test('a hand-typed buy price survives a background poll', async (t) => {
   assert.equal(rowCells(rows(ctx.document)[0]).buyPrice, '3,000');
 });
 
-test('an explicit row refresh replaces a hand-typed price', async (t) => {
+test('an explicit row refresh keeps a hand-typed price', async (t) => {
   const ctx = mountWith([PLATEBODY]);
   t.after(ctx.cleanup);
 
@@ -407,8 +407,26 @@ test('an explicit row refresh replaces a hand-typed price', async (t) => {
   click(rows(ctx.document)[0].querySelector('[data-action="refresh"]'));
   await flush();
 
-  assert.equal(ctx.store.getItem('plate').buyPrice, 4200, 'the market price wins');
-  assert.equal(ctx.store.getItem('plate').overrides.buyPrice, false, 'and the pin is released');
+  const item = ctx.store.getItem('plate');
+  assert.equal(item.buyPrice, 3000, 'your price stands');
+  assert.equal(item.overrides.buyPrice, true, 'and stays pinned');
+  assert.equal(item.marketBuyPrice, 4200, 'while the market price is noted for later');
+});
+
+test('clicking the chain gives the row back to the market', async (t) => {
+  const ctx = mountWith([PLATEBODY]);
+  t.after(ctx.cleanup);
+
+  editCell(ctx.document.querySelector('[data-field="buyPrice"]'), '3,000');
+  click(rows(ctx.document)[0].querySelector('[data-action="refresh"]'));
+  await flush();
+
+  click(rows(ctx.document)[0].querySelector('[data-pin="buyPrice"]'));
+
+  const item = ctx.store.getItem('plate');
+  assert.equal(item.buyPrice, 4200, 'the market price returns');
+  assert.equal(item.overrides.buyPrice, false);
+  assert.equal(rows(ctx.document)[0].querySelector('[data-pin="buyPrice"]').hidden, true);
 });
 
 test('a pinned cell is marked and explains itself', (t) => {
@@ -424,15 +442,15 @@ test('a pinned cell is marked and explains itself', (t) => {
   assert.match(cell().title, /Your price, kept on refresh/);
 });
 
-test('the refresh tooltip warns that it will replace typed values', (t) => {
+test('the refresh tooltip says a typed price is safe', (t) => {
   const ctx = mountWith([PLATEBODY]);
   t.after(ctx.cleanup);
 
   const button = () => rows(ctx.document)[0].querySelector('[data-action="refresh"]');
-  assert.equal(/replaces/.test(button().title), false);
+  assert.equal(/your own price/.test(button().title), false);
 
   editCell(ctx.document.querySelector('[data-field="buyPrice"]'), '3,000');
-  assert.match(button().title, /replaces the values you typed/);
+  assert.match(button().title, /your own price is kept/);
 });
 
 test('editing quantity does not pin the price', async (t) => {
@@ -493,24 +511,19 @@ test('the chain badge appears only while the price is pinned', (t) => {
 
   assert.equal(badge().hidden, false, 'typing a price shows the chain');
   assert.match(badge().title, /Your price, kept on refresh/);
-  assert.match(badge().alt, /custom price/i);
+  assert.match(badge().querySelector('img').alt, /custom price/i);
+  assert.equal(badge().tagName, 'BUTTON', 'the chain is the control that releases it');
 });
 
-test('an explicit refresh clears the chain badge', async (t) => {
+test('the chain survives an explicit refresh, like the price it marks', async (t) => {
   const ctx = mountWith([PLATEBODY]);
   t.after(ctx.cleanup);
 
   editCell(ctx.document.querySelector('[data-field="buyPrice"]'), '3,000');
-  assert.equal(rows(ctx.document)[0].querySelector('[data-pin="buyPrice"]').hidden, false);
-
   click(rows(ctx.document)[0].querySelector('[data-action="refresh"]'));
   await flush();
 
-  assert.equal(
-    rows(ctx.document)[0].querySelector('[data-pin="buyPrice"]').hidden,
-    true,
-    'the row tracks the market again, so the chain goes',
-  );
+  assert.equal(rows(ctx.document)[0].querySelector('[data-pin="buyPrice"]').hidden, false);
 });
 
 test('the chain survives a background poll, like the price it marks', async (t) => {

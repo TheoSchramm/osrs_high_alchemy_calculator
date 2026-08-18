@@ -381,3 +381,36 @@
     min-width: 3em;
   }
 }
+
+/* The chain is a control, not decoration: clicking it gives the row back to
+   the market. Styled as bare as possible so it still reads as a marker. */
+button.cell-pin {
+  /* The icon stays 20px, but as a control it needs a real hit target, so the
+     button carries padding around it rather than growing the artwork. */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  min-height: 28px;
+  padding: 0;
+  background: none;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  line-height: 0;
+  vertical-align: middle;
+}
+
+button.cell-pin:hover {
+  background: rgb(43 33 21 / 12%);
+}
+
+button.cell-pin img {
+  width: 20px;
+  height: 20px;
+}
+
+button.cell-pin:hover img,
+button.cell-pin:focus-visible img {
+  filter: brightness(1.3);
+}

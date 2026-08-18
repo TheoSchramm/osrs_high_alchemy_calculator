@@ -7,6 +7,7 @@ import {
   normalizeItems,
   applyFieldEdit,
   mergeSnapshot,
+  releaseOverride,
   EDITABLE_FIELDS,
 } from '../src/core/items.js';
 
@@ -229,21 +230,50 @@ test('a background merge leaves a pinned price alone', () => {
   assert.ok(merged.updatedAt > 0, 'the row still counts as refreshed');
 });
 
-test('a forced merge replaces a pinned price and unpins it', () => {
+test('no refresh replaces a pinned price, however it was triggered', () => {
   const item = applyFieldEdit(
     normalizeItem({ name: 'Adamant platebody', buyPrice: 4200 }),
     'buyPrice',
     '3000',
   );
+  const snapshot = { itemId: 1123, name: 'Adamant platebody', highAlch: 5760, buyPrice: 4200 };
 
-  const merged = mergeSnapshot(
-    item,
-    { itemId: 1123, name: 'Adamant platebody', highAlch: 5760, buyPrice: 4200 },
-    { force: true },
+  assert.equal(mergeSnapshot(item, snapshot).buyPrice, 3000);
+  // There is no escape hatch any more: releasing is a separate, deliberate act.
+  assert.equal(mergeSnapshot(item, snapshot, { force: true }).buyPrice, 3000);
+});
+
+test('releasing an override takes the market price back', () => {
+  const typed = applyFieldEdit(
+    normalizeItem({ name: 'Adamant platebody', buyPrice: 4200 }),
+    'buyPrice',
+    '3000',
   );
+  // A refresh records what the market says even while the row ignores it.
+  const withMarket = mergeSnapshot(typed, {
+    itemId: 1123,
+    name: 'Adamant platebody',
+    highAlch: 5760,
+    buyPrice: 4200,
+  });
 
-  assert.equal(merged.buyPrice, 4200);
-  assert.equal(merged.overrides.buyPrice, false, 'the row tracks the market again');
+  const released = releaseOverride(withMarket, 'buyPrice');
+
+  assert.equal(released.buyPrice, 4200, 'the market price comes back');
+  assert.equal(released.overrides.buyPrice, false);
+});
+
+test('releasing with no market price on record keeps what is there', () => {
+  const typed = applyFieldEdit(normalizeItem({ name: 'x', buyPrice: 1 }), 'buyPrice', '3000');
+  const released = releaseOverride(typed, 'buyPrice');
+
+  assert.equal(released.buyPrice, 3000, 'there is nothing better to fall back to');
+  assert.equal(released.overrides.buyPrice, false);
+});
+
+test('releasing a field that cannot be overridden is a no-op', () => {
+  const item = normalizeItem({ name: 'x', alchPrice: 5760 });
+  assert.equal(releaseOverride(item, 'alchPrice'), item);
 });
 
 test('an existing alch value is never rewritten', () => {

@@ -130,23 +130,42 @@ export function applyFieldEdit(item, field, value) {
 }
 
 /**
+ * Hand a field back to the market: drop the override and take the last price
+ * the Grand Exchange reported.
+ *
+ * @param {import('./alchemy.js').AlchItem} item
+ * @param {string} field
+ */
+export function releaseOverride(item, field) {
+  if (!OVERRIDABLE_FIELDS.includes(field)) return item;
+
+  const overrides = { ...normalizeOverrides(item.overrides), [field]: false };
+  const market = item.marketBuyPrice;
+
+  return {
+    ...item,
+    overrides,
+    buyPrice: Number.isFinite(market) && market > 0 ? market : item.buyPrice,
+  };
+}
+
+/**
  * Merge an API snapshot into an item without clobbering data the API lacks.
  *
- * The buy price the user has typed is left alone unless `force` is set. That is
- * the difference between a background poll, which must never discard someone's
- * work, and an explicit Refresh, which was asked for and should win.
+ * A buy price the user has typed is never replaced, by a background poll or by
+ * an explicit Refresh. Releasing it is a separate, deliberate act; see
+ * {@link releaseOverride}.
  *
  * The high alch value is never changed either way; see below.
  *
  * @param {import('./alchemy.js').AlchItem} item
  * @param {import('../data/prices-api.js').ItemSnapshot|null} snapshot
- * @param {{ now?: number, force?: boolean }} [options]
+ * @param {{ now?: number }} [options]
  */
 export function mergeSnapshot(item, snapshot, options = {}) {
   if (!snapshot) return item;
 
   const now = options.now ?? Date.now();
-  const force = Boolean(options.force);
   const overrides = normalizeOverrides(item.overrides);
 
   const marketBuy = Number.isFinite(snapshot.buyPrice) && snapshot.buyPrice > 0
@@ -161,7 +180,7 @@ export function mergeSnapshot(item, snapshot, options = {}) {
     ? item.alchPrice
     : (Number.isFinite(snapshot.highAlch) ? Math.max(0, snapshot.highAlch) : 0);
 
-  const keepBuy = overrides.buyPrice && !force;
+  const keepBuy = overrides.buyPrice;
 
   return {
     ...item,
@@ -170,9 +189,9 @@ export function mergeSnapshot(item, snapshot, options = {}) {
     icon: snapshot.icon || item.icon,
     alchPrice,
     buyPrice: keepBuy ? item.buyPrice : (marketBuy ?? item.buyPrice),
+    // Recorded even while the row ignores it, so the chain can offer it back.
     marketBuyPrice: marketBuy ?? null,
-    // An explicit refresh hands the row back to the market.
-    overrides: force ? normalizeOverrides(null) : overrides,
+    overrides,
     updatedAt: now,
   };
 }

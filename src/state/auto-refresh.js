@@ -124,7 +124,7 @@ export class AutoRefresher {
       for (const item of this.store.getState().items) {
         const snapshot = item.itemId ? snapshots.get(item.itemId) : null;
         if (!snapshot) continue;
-        // No force: a timer the user did not trigger must leave their edits alone.
+        // A price the user typed is kept; see mergeSnapshot.
         this.store.applySnapshot(item.id, snapshot);
         updated += 1;
       }

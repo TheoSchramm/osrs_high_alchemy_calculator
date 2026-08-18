@@ -91,6 +91,13 @@ export class ItemTableView {
   _bindBody() {
     // One listener per event type for the whole table, rather than per row.
     this.teardown.push(on(this.body, 'click', (event) => {
+      const pin = event.target.closest('button[data-pin]');
+      if (pin) {
+        const pinnedId = pin.closest('tr')?.dataset.id;
+        if (pinnedId) this.handlers.onReleaseOverride?.(pinnedId, pin.dataset.pin);
+        return;
+      }
+
       const button = event.target.closest('button[data-action]');
       if (!button) return;
 
@@ -211,7 +218,7 @@ export class ItemTableView {
     refreshButton.disabled = !item.itemId;
     const pinned = Object.values(item.overrides ?? {}).some(Boolean);
     refreshButton.title = item.itemId
-      ? `Refresh prices for ${item.name}${pinned ? ' (replaces the values you typed)' : ''}`
+      ? `Refresh prices for ${item.name}${pinned ? ' (your own price is kept)' : ''}`
       : 'Added manually — no Grand Exchange match to refresh';
   }
 
@@ -239,11 +246,10 @@ export class ItemTableView {
         continue;
       }
 
-      // Short enough to read at a glance: what the chain means, then the number
-      // it is holding out against. The Refresh button's own tooltip covers how
-      // to undo it.
-      const market = Number.isFinite(item.marketBuyPrice)
-        ? ` Market: ${formatNumber(item.marketBuyPrice)} gp.`
+      // Short enough to read at a glance: what the chain means, then the way
+      // out of it.
+      const market = Number.isFinite(item.marketBuyPrice) && item.marketBuyPrice > 0
+        ? ` Click to use ${formatNumber(item.marketBuyPrice)} gp.`
         : '';
       const explanation = `Your price, kept on refresh.${market}`;
       cell.title = explanation;

@@ -132,10 +132,10 @@ it should be sortable, a field to the return value of `computeItem` in
   matched to the Grand Exchange. Editable fields are name, buy price and
   quantity.
 - **Typing a buy price pins it.** Auto-refresh will not touch it again: a timer
-  you did not trigger must never discard your work. A chain icon next to the
-  value marks it as yours, with the market price in its tooltip. An explicit
-  Refresh (the row button or Refresh all) *does* replace it and releases the
-  pin, because that is what you asked it to do.
+  no refresh replaces it, manual or automatic. A chain icon next to the value
+  marks it as yours; click the chain to hand the row back to the market. The
+  market price is still fetched and recorded while the row ignores it, which is
+  what the chain offers back and what its tooltip shows.
 - **The table never scrolls sideways.** Between 560px and 1150px it sheds
   columns, in order of how easily the number is recovered from the others.
   Below 560px it stops being a table: each row becomes a card with every field

@@ -6,7 +6,13 @@
  * plus a view that reads the new field — no cross-talk between views.
  */
 
-import { normalizeItem, applyFieldEdit, mergeSnapshot, createId } from '../core/items.js';
+import {
+  normalizeItem,
+  applyFieldEdit,
+  mergeSnapshot,
+  releaseOverride,
+  createId,
+} from '../core/items.js';
 import { nextSortState } from '../core/sorting.js';
 import { toNonNegativeInt } from '../core/format.js';
 import {
@@ -132,12 +138,20 @@ export class AppStore {
    *
    * @param {string} id
    * @param {import('../data/prices-api.js').ItemSnapshot|null} snapshot
-   * @param {{ force?: boolean }} [options] force replaces fields the user has
-   *   typed over. Use it only for an action the user explicitly asked for.
+   * @param {{ now?: number }} [options]
    */
   applySnapshot(id, snapshot, options = {}) {
     if (!snapshot) return null;
     return this._replaceItem(id, (item) => mergeSnapshot(item, snapshot, options));
+  }
+
+  /**
+   * Stop holding a field at the user's value and take the market price again.
+   * @param {string} id
+   * @param {string} field
+   */
+  releaseOverride(id, field) {
+    return this._replaceItem(id, (item) => releaseOverride(item, field));
   }
 
   removeItem(id) {
