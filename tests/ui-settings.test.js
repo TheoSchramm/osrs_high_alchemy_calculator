@@ -48,7 +48,11 @@ test('totals cards render profit, xp, time and spend', (t) => {
   assert.equal(text(ctx.document, '#totalXp'), '9,750 xp');
   assert.equal(text(ctx.document, '#totalTime'), '8m', '150 casts is 7.5 minutes, rounded');
   assert.equal(text(ctx.document, '#totalCost'), '445,000 gp');
-  assert.equal(text(ctx.document, '#totalCasts'), '150 casts');
+  // Each note explains its own card: the rate is what the clock is made from,
+  // and the split is what the money went on. The two halves of a note are
+  // separated by a newline, which the stylesheet renders as a line break.
+  assert.equal(text(ctx.document, '#castRate'), '1,200 casts an hour');
+  assert.equal(text(ctx.document, '#totalSplit'), '415,000 on items\n30,000 on runes');
 });
 
 test('the profit card is coloured and notes the return', (t) => {
@@ -57,7 +61,7 @@ test('the profit card is coloured and notes the return', (t) => {
 
   const card = ctx.document.querySelector('#totalProfit');
   assert.ok(card.classList.contains('value-profit'));
-  assert.equal(text(ctx.document, '#totalProfitNote'), '128.6% return · +5,400 gp per cast');
+  assert.equal(text(ctx.document, '#totalProfitNote'), '128.6% return\n+5,400 gp per cast');
 });
 
 test('an empty list shows neutral totals', (t) => {

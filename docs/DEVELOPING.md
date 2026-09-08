@@ -67,7 +67,8 @@ Two suites are deliberately kept out of it:
   `tests/helpers/fake-api.js` needs updating.
 - `npm run test:layout` drives a real headless browser over the DevTools
   Protocol. jsdom has no layout engine, so it cannot see an element overflowing
-  the viewport, a control being clipped, or a 9-sliced sprite failing to apply.
+  the viewport, a control being clipped, or a widget losing its face and
+  vanishing into the backdrop.
   Needs Edge or Chrome installed, and takes a few minutes.
 
 To poke at the running page yourself:
@@ -134,6 +135,41 @@ it should be sortable, a field to the return value of `computeItem` in
 **A new API call.** Add a method to `PricesApi`. Tests stub `fetch` through
 `tests/helpers/fake-api.js`, so no test ever hits the network.
 
+## Look and feel
+
+The interface is the Old School RuneScape *client* rather than the wiki: a flat
+dark backdrop, brown widget panels with a hard two-tone frame, and the classic
+chat colours for text. Figures are the loud element on the page.
+
+Every colour is a token in `styles/tokens.css` — the chat palette under its own
+names (`--c-yellow`, `--c-gold`, `--c-green`, `--c-red`, `--c-blue`,
+`--c-cyan`), and the semantics named on top of them, so a rule reads as "profit
+is chat green" rather than as a hex. `tests/assets.test.js` fails the build on a
+`#rrggbb` or `rgb()` written anywhere but the token file, which is what stops
+the palette leaking into a component stylesheet a value at a time.
+
+Panels, controls and the table well are all drawn from the same three ideas: a
+painted face, a two-tone frame, and a shadow that says whether the surface is
+raised or recessed. Three consequences of that, each with a test behind it:
+
+- **Everything pressable shares one declaration.** `.btn` and the toast's Undo
+  button are the same rule, so two controls that should be identical cannot
+  drift apart.
+- **Notifications are widgets.** Toasts and the `file://` notice are built on
+  the panel's own frame and shadow, and say which kind of message they are by
+  colouring the line, the way the client colours chat — not with a coloured edge
+  down one side, which is a web convention and was the only thing on the page
+  not drawn as a game widget.
+- **Frames are flat borders, not sprites.** The cache's widget frames are ~35px
+  images that smear when stretched across a panel several hundred pixels wide.
+  `../assets/ui/SPRITES.md` records what every sprite is, which ones are still
+  used (the icons and the sort chevrons, each drawn once) and why the structural
+  ones were dropped.
+
+The layout suite guards what the source cannot show: that each widget still has
+a face and a frame, that text stands off the panel it sits on, and that no
+sprite is tiled.
+
 ## Behaviour worth knowing
 
 - **Amount parsing** accepts `10k`, `1.5m`, `2b`, `1,234` and `1.234`
@@ -168,9 +204,9 @@ it should be sortable, a field to the return value of `computeItem` in
   marks it as yours; click the chain to hand the row back to the market. The
   market price is still fetched and recorded while the row ignores it, which is
   what the chain offers back and what its tooltip shows.
-- **The table never scrolls sideways.** Between 560px and 1150px it sheds
+- **The table never scrolls sideways.** Between 700px and 1150px it sheds
   columns, in order of how easily the number is recovered from the others.
-  Below 560px it stops being a table: each row becomes a card with every field
+  Below 700px it stops being a table: each row becomes a card with every field
   stacked and labelled, which brings back the columns narrow screens had lost.
   No width sheds enough to fit a phone otherwise.
 

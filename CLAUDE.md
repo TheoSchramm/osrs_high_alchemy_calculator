@@ -67,9 +67,18 @@ Do not build markup from strings.
 - JSDoc on exported functions and classes; skip it on obvious internals.
 - Comments explain *why*, not *what*. Several existing comments record v1 bugs
   (`Number(null)` is `0`, `parseFloat(null) ?? 200` is `NaN`) — keep that kind.
-- The visual language is the Old School RuneScape scroll interface: parchment
-  panels on a stone wall. Colours, spacing and fonts come from
-  `styles/tokens.css`; do not hard-code a hex value in a component stylesheet.
+- The visual language is the Old School RuneScape *interface*: a flat dark
+  backdrop, brown widget panels with a hard two-tone frame, and game text
+  carrying the client's 1px black drop shadow. Figures are the loud element.
+  Colours, spacing and fonts come from `styles/tokens.css`; do not hard-code a
+  hex value in a component stylesheet — `tests/assets.test.js` fails the build
+  over a stray `#rrggbb` or `rgb(...)` outside the token file.
+- Text colours are the classic chat palette (`--c-yellow`, `--c-gold`,
+  `--c-green`, `--c-red`, `--c-blue`, `--c-cyan`). Semantics are named on top of
+  them — `--c-profit` is chat green, `--c-item-name` is chat blue — so a rule
+  says what it means rather than repeating a hex. Notifications carry their tone
+  in the text colour, like a line of chat, never as a coloured edge.
+  See `docs/DEVELOPING.md` for the rest of the design notes.
 
 ## Sprites
 
@@ -79,8 +88,12 @@ cache that means the ones whose RuneLite `SpriteID` constant starts with
 into the image, and repeating it stamps that frame across the middle of the
 element. Non-seamless sprites must be 9-sliced with `border-image` or drawn once.
 
-Slice insets are measured off the sprite and stored as `--slice-*` tokens next
-to the sprite they describe. `assets/ui/SPRITES.md` records every sprite's id,
-RuneLite constant and permitted use. Both test suites enforce the rule:
-`tests/assets.test.js` reads the CSS source, `tests/layout/layout.check.js`
-checks what the browser actually computed.
+Nothing in the current stylesheet tiles or 9-slices anything: frames are flat
+two-tone borders, the backdrop is a flat colour, and the only sprites left in CSS
+are the sort chevrons, drawn once. The rule still holds the moment one comes
+back. Slice insets are measured off the sprite and stored as `--slice-*` tokens
+next to the sprite they describe. `assets/ui/SPRITES.md` records every sprite's
+id, RuneLite constant and permitted use, and why the structural ones were
+dropped. Both test suites enforce the rule: `tests/assets.test.js` reads the CSS
+source, `tests/layout/layout.check.js` checks what the browser actually
+computed.

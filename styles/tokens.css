@@ -1,76 +1,100 @@
 /*
  * Design tokens.
  *
- * The look is the Old School RuneScape scroll interface: parchment panels
- * floating on a stone wall, which is also how oldschool.runescape.wiki reads.
+ * The look is the Old School RuneScape *interface* rather than a scroll: a
+ * flat dark backdrop, brown widget panels with a hard two-tone frame, and
+ * yellow game text carrying the drop shadow the client draws behind every
+ * string. Figures are the loud element, the way an XP drop is.
  * Change a value here and it changes everywhere.
  */
 
 :root {
-  /* ---- Parchment: the surface almost all content sits on ---- */
-  --c-parchment: #cbba95;
-  --c-parchment-light: #e0d2b0;
-  --c-parchment-dark: #b0a07c;
-  --c-parchment-sunken: #a89771;
-  --c-banner: #ffe39b;
+  /* ---- Backdrop: the flat surface the widgets sit on ---- */
+  --c-page: #1b1b1b;
 
+  /* ---- Widget brown: panels, buttons, table bands ---- */
+  --c-widget: #5b4a3c;
+  --c-widget-hover: #6d5a48;
+  --c-widget-dark: #4b3d31;
+  --c-frame: #383023;
+  --c-frame-dark: #241e15;
 
-  /* ---- Stone: the page surround, behind the parchment ---- */
-  --c-stone-deep: #14130f;
-  --c-stone: #2a2823;
-  --c-stone-light: #46433a;
+  /* ---- Sunken: inputs and anything the eye should read as a recess ---- */
+  --c-sunken: #2b231a;
+  --c-sunken-deep: #1d1811;
 
-  /* ---- Ink: text on parchment ---- */
-  --c-ink: #2b2115;
-  --c-ink-strong: #1c1509;
-  --c-ink-muted: #6a5a41;
-  --c-ink-label: #4a3617;
-
-  /* ---- Text on stone (site header, footer) ---- */
-  --c-on-stone: #e8dcc0;
-  --c-on-stone-muted: #9c8f74;
+  /* ---- Chat colours ----
+   * The classic in-game chat palette, kept under its own names so the
+   * semantics below read as "profit is chat green" rather than as a hex.
+   * Softer than pure #0f0 / #ff0: the screen versions are what the client
+   * actually draws, and they sit on brown without vibrating.
+   */
+  --c-yellow: #ffe000;
   --c-gold: #ff981f;
+  --c-cyan: #00ffff;
+  --c-green: #00e83e;
+  --c-red: #ff4f4f;
+  --c-blue: #5aa9ff;
+  --c-white: #ffffff;
 
-  /* ---- Rules and bevels ---- */
-  --c-rule: rgb(43 33 21 / 30%);
-  --c-rule-strong: rgb(43 33 21 / 55%);
-  --c-bevel-dark: #100d09;
+  /* ---- Text ----
+   * Warm neutrals rather than greys: a flat grey reads cold and slightly blue
+   * against the brown, which is what made the panels look washed out.
+   */
+  --c-text: var(--c-yellow);
+  --c-text-body: #e8dcc0;
+  --c-text-strong: var(--c-white);
+  --c-text-dim: #c3b493;
+  --c-text-muted: #9c8f74;
 
   /* ---- Semantics ---- */
-  --c-profit: #0f6b1c;
-  --c-loss: #9c1010;
-  --c-link: #14418c;
-  /* Item names, wherever they are called out in running text. */
-  --c-item-name: #0088ff;
-  --c-focus: #33240d;
+  --c-accent: var(--c-gold);
+  --c-profit: var(--c-green);
+  --c-loss: var(--c-red);
+  --c-link: var(--c-cyan);
+  --c-focus: var(--c-yellow);
+  /* Item names are called out in blue wherever they appear in running text,
+     the way the client picks a name out of a line of chat. */
+  --c-item-name: var(--c-blue);
+
+  /* ---- Rules and separators ---- */
+  --c-rule: rgb(0 0 0 / 35%);
+  --c-rule-light: rgb(255 255 255 / 8%);
+
+  /* ---- Row shading, stated once so the table and the phone cards agree ---- */
+  --c-row-odd: rgb(0 0 0 / 14%);
+  --c-row-hover: rgb(255 255 255 / 7%);
 
   /* ---- Textures ----
    * Only sprites whose RuneLite constant starts with TEXTURE_ are seamless and
    * may be repeated. Everything else is a self-contained widget with a baked-in
-   * border and must be 9-sliced with `border-image`. See assets/ui/SPRITES.md.
+   * border and must be drawn once. See assets/ui/SPRITES.md.
+   * Sort direction on the active column: chevron/green_{up,down}_single.
    */
-  --tex-page: url('../assets/ui/stone_wall.png'); /* 533 TEXTURE_ROOF_TILES_SLATE_GREY, 128x128, seamless */
-  --tex-panel: url('../assets/ui/panel_parchment.png'); /* 1017 CHATBOX, 519x142 */
-  --tex-button-primary: url('../assets/ui/button_primary.png'); /* welcome_screen/button_click_here_to_play */
-  --tex-icon-button: url('../assets/ui/icon_button.png'); /* ge/button, cropped */
-  --tex-icon-button-hover: url('../assets/ui/icon_button_hovered.png');
-  --tex-slot: url('../assets/ui/item_slot.png'); /* ge/selected_item_box */
-  /* Sort direction on the active column: chevron/green_{up,down}_single. */
   --tex-chevron-up: url('../assets/ui/chevron_up.png');
   --tex-chevron-down: url('../assets/ui/chevron_down.png');
-  /* Scrollbar thumbs, each composed from the pack's three cap/middle pieces. */
-  --tex-scroll-h: url('../assets/ui/scroll_thumb_h.png');
-  --tex-scroll-v: url('../assets/ui/scroll_thumb_v.png');
 
-  /* ---- 9-slice geometry, measured from the sprites themselves ---- */
-  --slice-panel: 16; /* uniform bevel, flat parchment from 16px in */
-  --slice-button-primary: 4; /* 4px light rim around the red field */
-  --slice-icon-button: 3; /* 1px black rule plus a 2px bevel */
-  --slice-scroll-h: 0 5; /* left and right caps are 5px wide */
-  --slice-scroll-v: 5 0; /* top and bottom caps are 5px tall */
+  /* ---- Frames ----
+   * Flat borders rather than 9-sliced sprites: at this size the cache's widget
+   * frames are a 35px image stretched across a 900px panel, which smears. Two
+   * tones of brown reproduce the same bevel and stay crisp at any width.
+   */
+  --bd-panel: 3px solid var(--c-frame);
+  --bd-control: 2px solid var(--c-frame);
+  --bd-hair: 1px solid var(--c-rule);
 
-  --border-panel: 16px;
-  --border-primary: 4px;
+  --radius: 4px;
+  --radius-sm: 2px;
+
+  /* ---- Shadows ---- */
+  /* The client draws a hard 1px shadow behind every string; without it light
+     text on brown looks washed out. */
+  --shadow-text: 1px 1px 0 #000;
+  --shadow-text-lg: 2px 2px 0 #000;
+  --shadow-panel: inset 2px 2px 5px rgb(0 0 0 / 50%), 2px 2px 5px rgb(0 0 0 / 50%);
+  --shadow-float: 0 4px 10px rgb(0 0 0 / 40%);
+  --shadow-raised: inset 1px 1px 0 rgb(255 255 255 / 10%);
+  --shadow-sunken: inset 2px 2px 4px rgb(0 0 0 / 55%);
 
   /* ---- Type ---- */
   --font-ui: 'RuneScape', 'Trebuchet MS', 'Segoe UI', sans-serif;
@@ -83,6 +107,7 @@
   --fs-lg: 1.375rem;
   --fs-xl: 1.75rem;
   --fs-2xl: 2.25rem;
+  --fs-3xl: 3rem;
 
   /* ---- Spacing (4px scale) ---- */
   --sp-1: 0.25rem;
@@ -93,11 +118,9 @@
   --sp-6: 2rem;
   --sp-7: 3rem;
 
-  /* ---- Misc ---- */
-  --radius: 3px;
-  --shadow-panel: 0 3px 10px rgb(0 0 0 / 55%);
-  --shadow-ink: none;
-  --shadow-on-stone: 1px 1px 0 rgb(0 0 0 / 90%);
+  /* Controls must stay comfortably clickable; the game font is small. */
+  --control-height: 34px;
+
   --transition: 120ms ease-out;
 }
 

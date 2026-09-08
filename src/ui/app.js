@@ -79,7 +79,8 @@ export function createApp(config) {
     totalXp: qsOptional(root, '#totalXp'),
     totalTime: qsOptional(root, '#totalTime'),
     totalCost: qsOptional(root, '#totalCost'),
-    totalCasts: qsOptional(root, '#totalCasts'),
+    castRate: qsOptional(root, '#castRate'),
+    totalSplit: qsOptional(root, '#totalSplit'),
   });
 
   const settings = new SettingsView({

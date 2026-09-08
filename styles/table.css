@@ -1,31 +1,38 @@
 /*
  * The items table.
  *
- * Structurally this is the wiki's `.wikitable`: a header band, ruled rows,
- * zebra striping and a hover highlight, sitting on the parchment panel.
+ * A sunken well inside the panel: dark bands, hair rules, and a header that
+ * stays put while the list scrolls. Figures are light on brown, and only the
+ * ones that carry a judgement (profit, loss) take a colour.
  */
 
 .table-scroll {
   /* The table is sized to fit, so this is only a safety net for a viewport
      narrower than anything we lay out for. The bar itself is hidden: a
-     scrollbar cutting across the parchment looks wrong, and every column that
+     scrollbar cutting across the widget looks wrong, and every column that
      matters is already visible at that width. */
   overflow-x: auto;
   overscroll-behavior-x: contain;
   scrollbar-width: none;
-  border: 1px solid var(--c-rule-strong);
-  /* Deliberately unpainted: the panel's parchment shows through, so the table
-     reads as part of the scroll rather than a flat pane sitting on top of it. */
+
+  background: var(--c-sunken);
+  border: var(--bd-control);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sunken);
+}
+
+.table-scroll::-webkit-scrollbar {
+  display: none;
 }
 
 .osrs-table {
   width: 100%;
   border-collapse: collapse;
   font-size: var(--fs-md);
-  color: var(--c-ink);
-  /* Deliberately wrappable. Holding every cell on one line forced a minimum
-     width of ~1120px, which is what put a scrollbar under the table. Headers
-     and item names wrap; only the figures are kept intact below. */
+  color: var(--c-text-body);
+  /* Deliberately wrappable. Holding every cell on one line forces a minimum
+     width wide enough to need a scrollbar; headers and item names wrap, and
+     only the figures below are kept intact. */
   table-layout: auto;
 }
 
@@ -39,6 +46,8 @@
   white-space: nowrap;
 }
 
+/* ---- Header ---- */
+
 .osrs-table thead th {
   position: sticky;
   top: 0;
@@ -47,12 +56,12 @@
   padding: var(--sp-2) var(--sp-3);
   font-weight: normal;
   text-align: right;
-  color: var(--c-ink-strong);
+  color: var(--c-accent);
+  text-shadow: var(--shadow-text);
 
-  background-color: var(--c-parchment-sunken);
-  background-image: linear-gradient(rgb(255 255 255 / 8%), rgb(43 33 21 / 14%));
-  border-bottom: 2px solid var(--c-bevel-dark);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 22%);
+  background-color: var(--c-widget-dark);
+  border-bottom: 2px solid var(--c-frame);
+  box-shadow: var(--shadow-raised);
 }
 
 .osrs-table th:first-child,
@@ -73,25 +82,28 @@
 }
 
 .osrs-table th[data-sort]:hover {
-  background-color: #9a8961;
+  background-color: var(--c-widget-hover);
+  color: var(--c-text-strong);
 }
 
 /* Only the column actually in use is marked. Unsorted headers show nothing:
    the cursor and hover already say they are clickable, and a glyph on every
-   column is noise. Drawn once at native size; the chevron's black outline is
-   what lets it read on the tan band, where the pack's gold arrows would not.
+   column is noise.
 
-   It is taken out of the text flow and pinned to the right edge. In flow it is
-   an atomic inline, which the browser may break onto its own line once a header
-   label wraps - and these labels do wrap, because that is what keeps the table
-   narrow enough to need no scrollbar. Absolute placement cannot wrap.
+   The chevron is taken out of the text flow and pinned to the right edge. In
+   flow it is an atomic inline, which the browser may break onto its own line
+   once a header label wraps - and these labels do wrap, because that is what
+   keeps the table narrow enough to need no scrollbar. Absolute placement
+   cannot wrap.
 
    The containing block is the th itself: it is position: sticky, which is a
-   positioned value, so no extra position property is needed here and the header
-   keeps sticking. */
+   positioned value, so no extra position property is needed here and the
+   header keeps sticking. */
 .osrs-table th[aria-sort] {
   /* Room for the chevron so it never sits on top of a right-aligned label. */
   padding-right: 20px;
+  background-color: var(--c-widget);
+  color: var(--c-text);
 }
 
 .osrs-table th[aria-sort]::after {
@@ -102,6 +114,7 @@
   transform: translateY(-50%);
   width: 14px;
   height: 11px;
+  /* Drawn once at native size: the sprite carries its own frame. */
   background-image: var(--tex-chevron-up);
   background-repeat: no-repeat;
   background-position: center;
@@ -110,10 +123,6 @@
 
 .osrs-table th[aria-sort='descending']::after {
   background-image: var(--tex-chevron-down);
-}
-
-.osrs-table th[aria-sort] {
-  background-color: #9a8961;
 }
 
 /* ---- Body ---- */
@@ -125,11 +134,11 @@
 }
 
 .osrs-table tbody tr:nth-child(odd) {
-  background: rgb(43 33 21 / 6%);
+  background: var(--c-row-odd);
 }
 
 .osrs-table tbody tr:hover {
-  background: rgb(43 33 21 / 12%);
+  background: var(--c-row-hover);
 }
 
 .osrs-table tbody tr:last-child td {
@@ -146,18 +155,15 @@
 }
 
 .cell-item__icon {
-  width: 34px;
-  height: 34px;
+  width: 32px;
+  height: 32px;
   flex: none;
   object-fit: contain;
 
-  /* Mimic the bank/GE inventory slot the sprite normally sits in. One copy
-     only: the slot sprite has its own frame, so it must never repeat. */
-  background-color: var(--c-parchment-sunken);
-  background-image: var(--tex-slot);
-  background-repeat: no-repeat;
-  background-size: cover;
-  border: 1px solid var(--c-rule-strong);
+  /* Mimic the bank slot the sprite normally sits in. */
+  background-color: var(--c-sunken-deep);
+  border: 1px solid var(--c-frame);
+  border-radius: var(--radius-sm);
 }
 
 .cell-item__icon[src=''],
@@ -166,7 +172,7 @@
 }
 
 .cell-item__name {
-  color: var(--c-ink-strong);
+  color: var(--c-item-name);
   overflow-wrap: anywhere;
 }
 
@@ -176,19 +182,40 @@
   display: inline-block;
   min-width: 4.5em;
   padding: 0 var(--sp-1);
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   transition: background var(--transition), box-shadow var(--transition);
 }
 
 .cell-edit:hover {
-  background: rgb(255 255 255 / 30%);
-  box-shadow: inset 0 0 0 1px var(--c-rule);
+  background: var(--c-row-hover);
+  box-shadow: inset 0 0 0 1px var(--c-rule-light);
 }
 
 .cell-edit:focus {
   outline: none;
-  background: var(--c-parchment-light);
-  box-shadow: inset 0 0 0 2px var(--c-focus);
+  color: var(--c-text);
+  background: var(--c-sunken-deep);
+  box-shadow: inset 0 0 0 2px var(--c-accent);
+}
+
+.cell-age {
+  color: var(--c-text-muted);
+}
+
+/* A price the market has not touched recently is worth less trust than a fresh
+   one, so the stamp says so rather than reading the same at any age. The values
+   come from freshnessOf(): fresh, ageing, stale, unknown - plus 'none' for a
+   hand-added row, which has no Grand Exchange price to age. */
+.cell-age[data-freshness='fresh'] {
+  color: var(--c-profit);
+}
+
+.cell-age[data-freshness='ageing'] {
+  color: var(--c-accent);
+}
+
+.cell-age[data-freshness='stale'] {
+  color: var(--c-loss);
 }
 
 .cell-actions {
@@ -197,20 +224,20 @@
   justify-content: center;
 }
 
-/* ---- Footer totals row ---- */
+/* ---- Totals row ---- */
 
 .osrs-table tfoot td {
   padding: var(--sp-2) var(--sp-3);
   text-align: right;
-  color: var(--c-ink-strong);
+  color: var(--c-text);
 
-  background-color: var(--c-parchment-sunken);
-  background-image: linear-gradient(rgb(255 255 255 / 8%), rgb(43 33 21 / 14%));
-  border-top: 2px solid var(--c-bevel-dark);
+  background-color: var(--c-widget-dark);
+  border-top: 2px solid var(--c-frame);
 }
 
 .osrs-table tfoot td:first-child {
   text-align: left;
+  color: var(--c-accent);
 }
 
 /* The totals row sets its own colour, which outranks the plain tone classes,
@@ -225,7 +252,50 @@
 }
 
 .osrs-table tfoot td.value-muted {
-  color: var(--c-ink-muted);
+  color: var(--c-text-muted);
+}
+
+/* ---- The chain badge ----
+   A control, not decoration: clicking it gives the row back to the market.
+   Styled as bare as possible so it still reads as a marker. */
+
+button.cell-pin {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  min-height: 28px;
+  padding: 0;
+  /* It sits before the value, so the gap belongs on the trailing edge. */
+  margin-inline-end: var(--sp-1);
+  background: none;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  line-height: 0;
+
+  /* vertical-align: middle centres on the x-height, and this font's x-height
+     sits below the optical centre of its caps, so the icon reads low against
+     the figure beside it. */
+  vertical-align: middle;
+  position: relative;
+  top: -2px;
+}
+
+button.cell-pin:hover {
+  background: var(--c-row-hover);
+}
+
+button.cell-pin img {
+  /* Sized by height with the width left to follow: the sprite is 17x21, and
+     forcing it square squashed it. */
+  height: 20px;
+  width: auto;
+}
+
+button.cell-pin:hover img,
+button.cell-pin:focus-visible img {
+  filter: brightness(1.3);
 }
 
 /* ---- Narrow screens: shed columns so the table keeps fitting ----
@@ -237,7 +307,7 @@
 
    The widths come from measuring the rendered table, not from guessing. */
 
-@media (width <= 1438px) {
+@media (width <= 1150px) {
   .osrs-table th[data-column='costItems'],
   .osrs-table td[data-column='costItems'],
   .osrs-table th[data-column='costRunes'],
@@ -246,7 +316,7 @@
   }
 }
 
-@media (width <= 1125px) {
+@media (width <= 1000px) {
   .osrs-table {
     font-size: var(--fs-sm);
   }
@@ -256,16 +326,14 @@
   .osrs-table tfoot td {
     padding-inline: var(--sp-2);
   }
-}
 
-@media (width <= 1025px) {
   .osrs-table th[data-column='updatedAt'],
   .osrs-table td[data-column='updatedAt'] {
     display: none;
   }
 }
 
-@media (width <= 975px) {
+@media (width <= 900px) {
   .osrs-table th[data-column='profitPerCast'],
   .osrs-table td[data-column='profitPerCast'] {
     display: none;
@@ -285,16 +353,19 @@
 }
 
 /* ---- Phones: stop being a table ----
-   Below this width no amount of column shedding fits: at 360px the grid still
-   wanted 114px more than it had, and with the scrollbar hidden those columns
-   were simply unreachable. Each row becomes a card instead, which also lets
-   every column come back, because vertical space is the one thing a phone has
-   plenty of. Labels come from data-label on each cell. */
+   Below this width no amount of column shedding fits, and with the scrollbar
+   hidden the columns that overflow are simply unreachable. Each row becomes a
+   card instead, which also lets every column come back, because vertical space
+   is the one thing a phone has plenty of. Labels come from data-label on each
+   cell.
+
+   These rules have to match the specificity of the shedding rules above, or a
+   dropped column stays dropped once it is stacked. */
 
 @media (width <= 700px) {
   .osrs-table thead {
-    /* clip rather than display:none, so the headers stay reachable to a
-       screen reader while taking no space */
+    /* Clipped rather than display:none, so the headers stay reachable to a
+       screen reader while taking no space. */
     position: absolute;
     width: 1px;
     height: 1px;
@@ -314,13 +385,13 @@
   .osrs-table tbody tr,
   .osrs-table tfoot tr {
     margin-bottom: var(--sp-3);
-    border: 1px solid var(--c-rule-strong);
-    border-radius: var(--radius);
-    background: rgb(43 33 21 / 6%);
+    border: 1px solid var(--c-frame);
+    border-radius: var(--radius-sm);
+    background: var(--c-row-odd);
   }
 
   .osrs-table tbody tr:hover {
-    background: rgb(43 33 21 / 6%);
+    background: var(--c-row-odd);
   }
 
   /* Every column is worth showing again once they are stacked. */
@@ -337,7 +408,7 @@
   .osrs-table td[data-label]::before {
     content: attr(data-label);
     flex: none;
-    color: var(--c-ink-label);
+    color: var(--c-text-dim);
     font-size: var(--fs-xs);
     text-align: left;
   }
@@ -350,12 +421,8 @@
   .osrs-table td[data-column='name'] {
     justify-content: flex-start;
     padding: var(--sp-2) var(--sp-3);
-    background: rgb(43 33 21 / 8%);
-    border-bottom: 1px solid var(--c-rule-strong);
-  }
-
-  .cell-item {
-    min-width: 0;
+    background: var(--c-widget-dark);
+    border-bottom: 1px solid var(--c-frame);
   }
 
   .cell-item__name {
@@ -374,56 +441,9 @@
 
   .osrs-table tfoot td[data-column='name'] {
     font-size: var(--fs-md);
-    color: var(--c-ink-strong);
   }
 
   .cell-edit {
     min-width: 3em;
   }
-}
-
-/* The padlock is a control, not decoration: clicking it gives the row back to
-   the market. Styled as bare as possible so it still reads as a marker.
-
-   It needs a real hit target, which looked oversized while the sprite still
-   carried 7px of transparent margin down its left: the artwork sat off centre
-   and appeared cut off. The sprite is cropped on the way in now. */
-button.cell-pin {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  min-width: 28px;
-  min-height: 28px;
-  padding: 0;
-  /* It sits before the value, so the gap belongs on the trailing edge. */
-  margin-inline-end: var(--sp-1);
-  background: none;
-  border: none;
-  border-radius: var(--radius);
-  cursor: pointer;
-  line-height: 0;
-
-  /* Same correction as the sort chevron: vertical-align: middle centres on the
-     x-height, and this font's x-height sits below the optical centre of its
-     caps, so the icon reads low against the figure beside it. */
-  vertical-align: middle;
-  position: relative;
-  top: -2px;
-}
-
-button.cell-pin:hover {
-  background: rgb(43 33 21 / 12%);
-}
-
-button.cell-pin img {
-  /* Sized by height with the width left to follow: the sprite is 17x21, and
-     forcing it square squashed it. */
-  height: 20px;
-  width: auto;
-}
-
-button.cell-pin:hover img,
-button.cell-pin:focus-visible img {
-  filter: brightness(1.3);
 }

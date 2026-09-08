@@ -18,7 +18,7 @@
     <img class="site-header__icon" src="assets/ui/high_alchemy.png" alt="">
     <div>
       <h1 class="site-header__title">High Alchemy Calculator</h1>
-      <p class="site-header__subtitle">Old School RuneScape &middot; live Grand Exchange prices</p>
+      <p class="site-header__subtitle">Profit, experience and time for every Old School RuneScape alch</p>
     </div>
   </header>
 
@@ -35,6 +35,50 @@
       </div>
     </div>
 
+    <!-- ============================== Totals ============================
+         The headline figures lead, so the answer is on screen before the
+         working that produced it. -->
+    <section class="stats" aria-label="Totals">
+      <div class="panel stat">
+        <img class="stat__icon" src="assets/coins.png" alt="">
+        <div class="stat__body">
+          <p class="stat__label">Total profit</p>
+          <p class="stat__value" id="totalProfit">0</p>
+          <p class="stat__note" id="totalProfitNote">Nothing spent yet</p>
+        </div>
+      </div>
+
+      <div class="panel stat">
+        <img class="stat__icon" src="assets/xp.png" alt="">
+        <div class="stat__body">
+          <p class="stat__label">Total experience</p>
+          <p class="stat__value" id="totalXp">0</p>
+          <p class="stat__note">65 xp per cast</p>
+        </div>
+      </div>
+
+      <div class="panel stat">
+        <img class="stat__icon" src="assets/giant_stopwatch.png" alt="">
+        <div class="stat__body">
+          <p class="stat__label">Estimated time</p>
+          <p class="stat__value" id="totalTime">0m</p>
+          <!-- The rate the estimate is made from. Written by the view, from the
+               constant the maths uses, rather than left as prose that can drift
+               out of step with it. -->
+          <p class="stat__note" id="castRate">1,200 casts an hour</p>
+        </div>
+      </div>
+
+      <div class="panel stat">
+        <img class="stat__icon" src="assets/ui/guide_prices.png" alt="">
+        <div class="stat__body">
+          <p class="stat__label">Total spend</p>
+          <p class="stat__value" id="totalCost">0</p>
+          <p class="stat__note" id="totalSplit">Items and nature runes</p>
+        </div>
+      </div>
+    </section>
+
     <!-- ============================ Add item ============================ -->
     <section class="panel" aria-labelledby="addHeading">
       <h2 class="panel__title" id="addHeading">
@@ -46,7 +90,7 @@
         <div class="field field--grow">
           <label class="field__label" for="itemName">Item name</label>
           <input class="field__input" id="itemName" name="itemName" type="text"
-            placeholder="Start typing, e.g. Adamant platebody" role="combobox" aria-expanded="false"
+            placeholder="Adamant platebody..." role="combobox" aria-expanded="false"
             aria-autocomplete="list" aria-controls="itemSuggestions">
           <ul class="suggestions" id="itemSuggestions" role="listbox" aria-label="Matching items" hidden></ul>
         </div>
@@ -127,45 +171,6 @@
       </p>
     </section>
 
-    <!-- ============================== Totals ============================ -->
-    <section class="stats" aria-label="Totals">
-      <div class="panel stat">
-        <img class="stat__icon" src="assets/coins.png" alt="">
-        <div class="stat__body">
-          <p class="stat__label">Total profit</p>
-          <p class="stat__value" id="totalProfit">0</p>
-          <p class="stat__note" id="totalProfitNote">Nothing spent yet</p>
-        </div>
-      </div>
-
-      <div class="panel stat">
-        <img class="stat__icon" src="assets/xp.png" alt="">
-        <div class="stat__body">
-          <p class="stat__label">Total experience</p>
-          <p class="stat__value" id="totalXp">0</p>
-          <p class="stat__note">65 xp per cast</p>
-        </div>
-      </div>
-
-      <div class="panel stat">
-        <img class="stat__icon" src="assets/giant_stopwatch.png" alt="">
-        <div class="stat__body">
-          <p class="stat__label">Estimated time</p>
-          <p class="stat__value" id="totalTime">0m</p>
-          <p class="stat__note">At 1,200 casts per hour</p>
-        </div>
-      </div>
-
-      <div class="panel stat">
-        <img class="stat__icon" src="assets/ui/guide_prices.png" alt="">
-        <div class="stat__body">
-          <p class="stat__label">Total spend</p>
-          <p class="stat__value" id="totalCost">0</p>
-          <p class="stat__note" id="totalCasts">0 casts</p>
-        </div>
-      </div>
-    </section>
-
     <!-- ============================= Settings =========================== -->
     <section class="panel" aria-labelledby="settingsHeading">
       <h2 class="panel__title" id="settingsHeading">
@@ -178,7 +183,6 @@
           <div class="field field--price">
             <label class="field__label" for="runePrice">Nature rune price</label>
             <input class="field__input" id="runePrice" type="text" inputmode="numeric" value="200">
-            <span class="field__hint">Cost of one cast</span>
           </div>
 
           <div class="field field--select">
@@ -187,7 +191,6 @@
               <option value="high">Instant buy (realistic)</option>
               <option value="low">Instant sell (optimistic)</option>
             </select>
-            <span class="field__hint">Which GE price counts as your cost</span>
           </div>
 
           <div class="field field--select">
@@ -198,7 +201,6 @@
               <option value="300000">Every 5 minutes</option>
               <option value="900000">Every 15 minutes</option>
             </select>
-            <span class="field__hint">Only while this tab is open</span>
           </div>
         </div>
 
@@ -206,10 +208,10 @@
              fields for the same line, and the destructive one sits apart. -->
         <div class="action-bar">
           <button class="btn" id="fetchRunePrice" type="button">
-            <img class="btn__icon btn__icon--ink" src="assets/ui/refresh.png" alt=""> Update rune price
+            <img class="btn__icon" src="assets/ui/refresh.png" alt=""> Update rune price
           </button>
           <button class="btn" id="refreshAll" type="button">
-            <img class="btn__icon btn__icon--ink" src="assets/ui/refresh.png" alt=""> Update all prices
+            <img class="btn__icon" src="assets/ui/refresh.png" alt=""> Update all prices
           </button>
           <button class="btn btn--danger action-bar__end" id="clearAll" type="button">
             <img class="btn__icon" src="assets/ui/trash.png" alt=""> Clear list
@@ -217,7 +219,10 @@
         </div>
       </div>
 
-      <p class="panel__footer" id="dataStatus">Prices come from the OSRS Wiki real-time API.</p>
+      <!-- Empty on load: this is the live status line the app writes into after
+           a refresh, not a second place to say where prices come from. The
+           footer says that once, for the whole page. -->
+      <p class="panel__footer" id="dataStatus"></p>
     </section>
   </main>
 

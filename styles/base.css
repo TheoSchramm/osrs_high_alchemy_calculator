@@ -1,4 +1,4 @@
-/* Reset, typography and the stone canvas the parchment sits on. */
+/* Reset, typography, and the flat backdrop the widgets sit on. */
 
 @font-face {
   font-family: 'RuneScape';
@@ -20,33 +20,23 @@ html {
 }
 
 body {
-  /* The whole interface is drawn a quarter larger. zoom rather than a bigger
-     root font size, because half the sizing here is pixel art - icons, 9-slice
-     borders, sprite frames - which rem scaling would leave behind.
-
-     Media queries still measure the real viewport, so every breakpoint below
-     is scaled to match; see the note in table.css. */
-  zoom: 1.25;
-
   margin: 0;
   min-height: 100vh;
+  padding: var(--sp-5) var(--sp-4);
+
   font-family: var(--font-body);
   font-size: var(--fs-md);
   line-height: 1.45;
+  /* The page is centred, like the game's own dialogs; anything that wants to
+     read as a column of figures re-aligns itself. */
+  text-align: center;
 
-  /* Body text only shows on the stone surround; panels set their own ink. */
-  color: var(--c-on-stone);
-  text-shadow: var(--shadow-on-stone);
+  color: var(--c-text);
+  text-shadow: var(--shadow-text);
 
-  /* The one genuinely seamless sprite, tiled at its native 128px and darkened
-     so the parchment panels read as the foreground. */
-  background-color: var(--c-stone-deep);
-  background-image:
-    linear-gradient(rgb(12 11 8 / 72%), rgb(12 11 8 / 72%)),
-    var(--tex-page);
-  background-repeat: repeat;
-  background-size: auto, 128px 128px;
-  background-attachment: fixed;
+  /* Flat, deliberately. A texture here competes with the panels for attention
+     and buys nothing: the panels are what the eye should land on. */
+  background-color: var(--c-page);
 }
 
 h1,
@@ -80,12 +70,13 @@ ul {
 }
 
 a {
-  color: var(--c-gold);
+  color: var(--c-link);
   text-decoration: none;
 }
 
 a:hover,
 a:focus-visible {
+  color: var(--c-text-strong);
   text-decoration: underline;
 }
 
@@ -93,8 +84,7 @@ a:focus-visible {
    The UA rule for [hidden] is display:none at the lowest possible specificity,
    so any class rule carrying a display silently beats it - which is how the
    chain badge kept painting after being hidden, once it became a button with
-   display:inline-flex. Three components had already worked around this
-   individually; this replaces all of them. */
+   display:inline-flex. */
 [hidden] {
   display: none !important;
 }
@@ -128,10 +118,9 @@ img {
   left: var(--sp-4);
   z-index: 100;
   padding: var(--sp-2) var(--sp-4);
-  background: var(--c-parchment);
-  border: 2px solid var(--c-bevel-dark);
-  color: var(--c-ink);
-  text-shadow: none;
+  background: var(--c-widget);
+  border: var(--bd-control);
+  color: var(--c-text);
 }
 
 .skip-link:focus {

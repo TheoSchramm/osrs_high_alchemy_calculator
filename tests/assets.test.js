@@ -115,12 +115,7 @@ test('no stray non-ASCII characters in CSS declarations', () => {
  * See assets/ui/SPRITES.md.
  */
 test('bordered sprites are never tiled', () => {
-  const BORDERED = [
-    '--tex-panel', '--tex-button', '--tex-button-active',
-    '--tex-button-primary', '--tex-icon-button', '--tex-icon-button-hover',
-    '--tex-slot', '--tex-scroll-h', '--tex-scroll-v',
-    '--tex-chevron-up', '--tex-chevron-down',
-  ];
+  const BORDERED = ['--tex-chevron-up', '--tex-chevron-down'];
   const offenders = [];
 
   for (const file of STYLE_FILES) {
@@ -141,10 +136,10 @@ test('bordered sprites are never tiled', () => {
   assert.deepEqual(offenders, []);
 });
 
-test('only the seamless TEXTURE_ sprites are ever repeated', () => {
-  // The inverse of the rule above, stated positively: any rule that repeats a
-  // background must be using one of the two 128x128 seamless tiles.
-  const SEAMLESS = ['--tex-page'];
+test('no sprite is tiled at all', () => {
+  // The inverse of the rule above, stated positively. No sprite in this design
+  // is seamless: the backdrop is a flat colour and every frame is a flat border,
+  // so the only sprites left are icons, which are drawn once.
   const offenders = [];
 
   for (const file of STYLE_FILES) {
@@ -153,7 +148,6 @@ test('only the seamless TEXTURE_ sprites are ever repeated', () => {
 
       const tokens = [...block.matchAll(/var\((--tex-[\w-]+)\)/g)].map((m) => m[1]);
       if (tokens.length === 0) continue;
-      if (tokens.every((token) => SEAMLESS.includes(token))) continue;
 
       const selector = block.trim().split('\n')[0].trim();
       offenders.push(`${file}: "${selector}" repeats ${tokens.join(', ')}`);
@@ -161,28 +155,64 @@ test('only the seamless TEXTURE_ sprites are ever repeated', () => {
   }
 
   assert.deepEqual(offenders, []);
-  // And the tiles really are used, so the rule is not vacuously true.
-  const allCss = STYLE_FILES.map(read).join('\n');
-  for (const token of SEAMLESS) {
-    assert.ok(allCss.includes(`var(${token})`), `${token} is unused`);
-  }
 });
 
-test('9-slice widths are declared as tokens next to their sprite', () => {
-  // Values measured off the sprites themselves: see assets/ui/SPRITES.md.
+test('frames are flat borders built from tokens', () => {
+  // The widget frames in the cache are ~35px images. Stretched across a panel
+  // several hundred pixels wide they smear, so they are drawn as two-tone flat
+  // borders instead. That leaves no 9-slice anywhere: if one comes back it must
+  // carry a measured slice token rather than a bare number.
   const tokens = read('styles/tokens.css');
-  assert.match(tokens, /--slice-panel:\s*16;/);
-  assert.match(tokens, /--slice-button-primary:\s*4;/);
-  assert.match(tokens, /--slice-icon-button:\s*3;/);
+  assert.match(tokens, /--bd-panel:\s*[^;]+;/);
+  assert.match(tokens, /--bd-control:\s*[^;]+;/);
 
-  // Every border-image must use a slice token rather than a bare number, so
-  // the value stays next to the sprite dimensions that justify it.
   for (const file of STYLE_FILES) {
     for (const match of stripComments(read(file)).matchAll(/border-image:\s*([^;]+);/g)) {
       const value = match[1].trim();
       if (value === 'none') continue;
       assert.match(value, /var\(--slice-[\w-]+\)/, `${file}: hard-coded slice in "${value}"`);
     }
+  }
+});
+
+test('every colour is declared in tokens.css', () => {
+  // The palette is the design. A hex dropped into a component stylesheet is a
+  // colour nothing else can follow, which is how a theme drifts apart.
+  const offenders = [];
+
+  for (const file of STYLE_FILES.filter((name) => !name.endsWith('tokens.css'))) {
+    stripComments(read(file)).split('\n').forEach((line, index) => {
+      if (/#[0-9a-fA-F]{3,8}\b/.test(line) || /\brgba?\(/.test(line)) {
+        offenders.push(`${file}:${index + 1}: ${line.trim()}`);
+      }
+    });
+  }
+
+  assert.deepEqual(offenders, []);
+});
+
+test('the freshness colours key off values freshnessOf can return', async () => {
+  // The stylesheet had a rule for [data-freshness='old'], which nothing ever
+  // sets, while 'ageing' went unpainted. Neither fails anything at runtime: the
+  // cell just renders the same colour at every age.
+  const { freshnessOf } = await import('../src/core/format.js');
+
+  const now = Date.UTC(2024, 0, 1, 12);
+  const produced = new Set([
+    freshnessOf(now - 1000, now),
+    freshnessOf(now - 20 * 60 * 1000, now),
+    freshnessOf(now - 90 * 60 * 1000, now),
+    freshnessOf(null, now),
+    // The table view stamps this itself for a row with no Grand Exchange match.
+    'none',
+  ]);
+
+  const styled = [...stripComments(read('styles/table.css'))
+    .matchAll(/\[data-freshness='([^']+)'\]/g)].map((match) => match[1]);
+
+  assert.ok(styled.length > 0, 'the Updated column should be colour banded');
+  for (const value of styled) {
+    assert.ok(produced.has(value), `nothing ever sets data-freshness="${value}"`);
   }
 });
 
@@ -227,7 +257,8 @@ test('index.html declares every element the app looks up', () => {
   const required = [
     'addForm', 'itemName', 'buyPrice', 'alchPrice', 'quantity', 'itemSuggestions',
     'itemsTable', 'itemsBody', 'itemsFoot', 'itemRowTemplate', 'emptyState', 'rowCount',
-    'totalProfit', 'totalProfitNote', 'totalXp', 'totalTime', 'totalCost', 'totalCasts',
+    'totalProfit', 'totalProfitNote', 'totalXp', 'totalTime', 'totalCost', 'castRate',
+    'totalSplit',
     'runePrice', 'priceBasis', 'fetchRunePrice', 'refreshAll', 'clearAll', 'dataStatus',
     'toasts', 'protocolWarning',
   ];
@@ -302,14 +333,54 @@ test('the row action buttons use the pack icons', () => {
   assert.match(template, /data-action="delete"[\s\S]{0,120}assets\/ui\/trash\.png/);
 });
 
-test('the icon buttons have a sprite body so they read on parchment', () => {
-  // The row icons are pale; without a button behind them they vanish into the
-  // parchment. Enforced here so the background cannot be dropped silently.
+test('notifications are built like panels, and carry tone in the text', () => {
+  // Toasts and the protocol notice were cards with a coloured left edge: a web
+  // convention, and the only thing on the page not drawn as a game widget. They
+  // use the panel's own frame and shadow now, and say which kind of message
+  // they are the way the client does - by colouring the line.
+  const css = stripComments(read('styles/components.css'));
+  const blockFor = (selector) =>
+    css.split('}').find((rule) => new RegExp(`^\\s*\\${selector}\\s*\\{`).test(rule));
+
+  for (const selector of ['.toast', '.notice']) {
+    const block = blockFor(selector);
+    assert.ok(block, `no ${selector} rule found`);
+    assert.match(block, /border:\s*var\(--bd-panel\)/, `${selector} should wear the panel frame`);
+    assert.match(block, /box-shadow:[^;]*var\(--shadow-panel\)/, `${selector} needs the panel shadow`);
+  }
+
+  assert.equal(
+    /border-left/.test(css),
+    false,
+    'tone belongs in the text colour, not in a coloured edge',
+  );
+  assert.match(css, /\.toast--error\s+\.toast__message\s*\{[^}]*var\(--c-red\)/);
+  assert.match(css, /\.toast--success\s+\.toast__message\s*\{[^}]*var\(--c-green\)/);
+});
+
+test('the toast action is the same control as every other button', () => {
+  // It used to restate the button's face, frame and hover for itself, which is
+  // how two controls that should look identical drift apart.
+  const css = stripComments(read('styles/components.css'));
+  const shared = css.split('}').find((rule) => /\.btn,\s*\n\s*\.toast__action\s*\{/.test(rule));
+
+  assert.ok(shared, '.toast__action should share the .btn declaration');
+
+  const own = css.split('}').find((rule) => /^\s*\.toast__action\s*\{/.test(rule));
+  assert.ok(own, 'no .toast__action rule found');
+  assert.equal(/border:/.test(own), false, 'the frame comes from the shared rule');
+});
+
+test('the icon buttons have a body of their own so they read as controls', () => {
+  // The row icons are pale outlines. Without a painted face and a frame behind
+  // them they float on the panel and stop looking clickable. Enforced here so
+  // the background cannot be dropped silently.
   const css = stripComments(read('styles/components.css'));
   const block = css.split('}').find((rule) => /^\s*\.icon-btn\s*\{/.test(rule));
 
   assert.ok(block, 'no .icon-btn rule found');
-  assert.match(block, /border-image:\s*var\(--tex-icon-button\)/);
+  assert.match(block, /background:\s*var\(--c-[\w-]+\)/);
+  assert.match(block, /border:\s*[^;]+var\(--c-[\w-]+\)/);
 });
 
 test('the settings actions sit in their own ruled row', () => {
@@ -325,30 +396,23 @@ test('the settings actions sit in their own ruled row', () => {
   assert.equal(html.includes('btn--ghost'), false, 'the odd-one-out ghost style is gone');
 });
 
-test('only flat outline icons get the ink filter', () => {
-  // brightness(0) is a silhouette. It suits the refresh sprite, which is a thin
-  // outline, and destroys the trash sprite, which is a shaded bin: it rendered
-  // as a solid black blob. So the filter is opt-in per icon, never on .btn__icon.
+test('button icons are never inked to a silhouette', () => {
+  // brightness(0) turns a sprite into a black silhouette. That was how these
+  // icons were made to read on parchment; on the dark widget face it makes them
+  // disappear instead, so the filter and its opt-in class are both gone.
   const html = read('index.html');
   const css = stripComments(read('styles/components.css'));
 
   const base = css.split('}').find((rule) => /^\s*\.btn__icon\s*\{/.test(rule));
   assert.ok(base, 'no .btn__icon rule found');
   assert.equal(/filter:/.test(base), false, '.btn__icon must not filter every icon');
+  assert.equal(/brightness\(0\)/.test(css), false, 'a silhouette is invisible on the widget face');
+  assert.equal(html.includes('btn__icon--ink'), false, 'the ink modifier is gone');
 
-  const ink = css.split('}').find((rule) => /\.btn__icon--ink\s*\{/.test(rule));
-  assert.ok(ink && /brightness\(0\)/.test(ink), '.btn__icon--ink should ink the sprite');
-
-  // The refresh outlines are inked; the shaded trash bin is left alone.
+  // The icons themselves stay: they are what tells the two update buttons apart
+  // from the destructive one at a glance.
   const icons = [...html.matchAll(/<img class="(btn__icon[^"]*)" src="([^"]+)"/g)];
   assert.ok(icons.length >= 3, 'expected several button icons');
-  for (const [, classes, src] of icons) {
-    assert.equal(
-      classes.includes('btn__icon--ink'),
-      src.includes('refresh.png'),
-      `${src}: ink filter applied incorrectly`,
-    );
-  }
 });
 
 test('the sorted column is marked with the green chevron', () => {

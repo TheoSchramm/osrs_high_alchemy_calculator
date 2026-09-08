@@ -1,85 +1,82 @@
-/* Reusable interface chrome: panels, fields, buttons, cards, notices, toasts. */
+/*
+ * Components.
+ *
+ * Everything here is a game widget: a brown face, a hard two-tone frame, and a
+ * light inner rim where the surface should read as raised. Recessed things
+ * (inputs, the table well) invert that with an inner shadow instead.
+ */
 
-/* ============================================================
-   Panel - the parchment chatbox frame (sprite 1017)
-   ============================================================ */
+/* ------------------------------------------------------------------ panel */
 
 .panel {
-  /* 9-sliced: the bevel stays at native size on the edges and only the flat
-     middle stretches. The border is a uniform bevel, so stretching it along
-     its own length is invisible. */
-  padding: var(--sp-2);
-  color: var(--c-ink);
-  text-shadow: var(--shadow-ink);
+  padding: var(--sp-3);
+  text-align: left;
 
-  background-color: var(--c-parchment);
-  border: var(--border-panel) solid transparent;
-  border-image: var(--tex-panel) var(--slice-panel) fill stretch;
+  background-color: var(--c-widget);
+  border: var(--bd-panel);
+  border-radius: var(--radius);
   box-shadow: var(--shadow-panel);
+  color: var(--c-text);
 }
 
 .panel__title {
   display: flex;
   align-items: center;
-  gap: var(--sp-3);
-  margin: 0 0 var(--sp-3);
-  padding: var(--sp-2) var(--sp-4);
-  min-height: 40px;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-3);
+  padding-bottom: var(--sp-2);
   font-size: var(--fs-lg);
-  color: var(--c-ink-strong);
-
-  /* Drawn in CSS, not from a sprite. The stone and marble plaques are mottled
-     textures, and a title bar stretches them roughly five times their width,
-     which smears the mottling into mud. A flat band cannot smear. */
-  background-color: var(--c-parchment-sunken);
-  background-image: linear-gradient(rgb(255 255 255 / 8%), rgb(43 33 21 / 14%));
-  border: 1px solid var(--c-rule-strong);
-  border-bottom: 2px solid var(--c-bevel-dark);
-  border-radius: var(--radius);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 22%);
+  color: var(--c-accent);
+  border-bottom: 1px solid var(--c-frame);
 }
 
 .panel__title-icon {
   width: 26px;
   height: 26px;
   flex: none;
+  object-fit: contain;
 }
 
+/* Pushed to the far end of the title bar, where it reads as a count rather
+   than as part of the heading. */
 .panel__title-note {
-  margin-left: auto;
+  margin-inline-start: auto;
   font-size: var(--fs-xs);
-  color: var(--c-ink-muted);
+  color: var(--c-text-muted);
 }
 
+/* Deliberately sets no display: the add form carries .toolbar as well, and a
+   display here would beat it - components.css is imported after layout.css. */
 .panel__body {
-  padding: var(--sp-2) var(--sp-2) var(--sp-3);
-}
-
-.panel__body--flush {
-  padding: 0;
+  min-width: 0;
 }
 
 .panel__footer {
   margin-top: var(--sp-3);
-  padding: var(--sp-2) var(--sp-2) 0;
-  border-top: 1px solid var(--c-rule);
   font-size: var(--fs-xs);
-  color: var(--c-ink-muted);
+  color: var(--c-text-dim);
+}
+
+/* The settings status line starts empty and fills in after a refresh. Without
+   this it still contributes its top margin, leaving a gap under the panel that
+   appears to close the first time you update a price. */
+.panel__footer:empty {
+  display: none;
 }
 
 .panel code {
-  font-family: var(--font-mono);
-  color: var(--c-ink-strong);
-  background: rgb(43 33 21 / 12%);
   padding: 0 var(--sp-1);
-  border-radius: 2px;
+  font-family: var(--font-mono);
+  color: var(--c-text);
+  background: var(--c-sunken);
+  border: 1px solid var(--c-frame-dark);
+  border-radius: var(--radius-sm);
 }
 
-/* ============================================================
-   Fields
-   ============================================================ */
+/* ------------------------------------------------------------------ field */
 
 .field {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: var(--sp-1);
@@ -88,293 +85,207 @@
 
 .field--grow {
   flex: 1 1 260px;
-  position: relative;
-}
-
-/* All three keep their preferred width but may shrink: a fixed basis meant a
-   narrow viewport pushed them straight off the side of the page. They still do
-   not grow, so a wide panel does not stretch a quantity box across it. */
-.field--narrow {
-  flex: 0 1 120px;
 }
 
 .field--price {
-  flex: 0 1 160px;
+  flex: 0 1 150px;
 }
 
-/* Wide enough for the longest option label without truncating it. */
+.field--narrow {
+  flex: 0 1 100px;
+}
+
 .field--select {
-  flex: 0 1 250px;
+  flex: 0 1 220px;
 }
 
 .field__label {
-  font-size: var(--fs-sm);
-  color: var(--c-ink-label);
+  font-size: var(--fs-xs);
+  color: var(--c-text-dim);
 }
 
 .field__input,
 .field__select {
   width: 100%;
-  padding: var(--sp-2) var(--sp-3);
+  min-height: var(--control-height);
+  padding: var(--sp-1) var(--sp-2);
+
   font-family: var(--font-ui);
   font-size: var(--fs-md);
-  color: var(--c-ink-strong);
+  color: var(--c-text);
+  text-shadow: var(--shadow-text);
 
-  /* A recessed slot cut into the parchment. */
-  background-color: var(--c-parchment-light);
-  border: 2px solid var(--c-rule-strong);
-  border-radius: var(--radius);
-  box-shadow: inset 0 2px 4px rgb(43 33 21 / 28%);
+  /* Sunken: a typed value should look like it sits inside the widget. */
+  background: var(--c-sunken);
+  border: var(--bd-control);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sunken);
 }
 
 .field__select {
+  /* The native arrow is drawn in the platform's own colours and looks pasted
+     on; the field is wide enough to do without it. */
+  appearance: none;
   cursor: pointer;
 }
 
 .field__input::placeholder {
-  color: var(--c-ink-muted);
-  opacity: 0.8;
+  color: var(--c-text-muted);
+  opacity: 1;
 }
 
 .field__input:focus,
 .field__select:focus {
   outline: none;
-  border-color: var(--c-focus);
-  box-shadow: inset 0 2px 4px rgb(43 33 21 / 28%), 0 0 0 2px rgb(51 36 13 / 35%);
+  border-color: var(--c-accent);
+  background: var(--c-sunken-deep);
 }
 
-.field__hint {
-  font-size: var(--fs-xs);
-  color: var(--c-ink-muted);
-}
+/* ----------------------------------------------------------------- button */
 
-.field__input[type='number'] {
-  appearance: textfield;
-  -moz-appearance: textfield;
-}
-
-.field__input[type='number']::-webkit-outer-spin-button,
-.field__input[type='number']::-webkit-inner-spin-button {
-  appearance: none;
-  -webkit-appearance: none;
-  margin: 0;
-}
-
-/* ============================================================
-   Buttons - 9-sliced from the in-game button sprite
-   ============================================================ */
-
-/* Raised parchment, drawn in CSS. The brown button sprite is 35x35 and these
-   buttons are five times that wide, which flattened it into a plain dark box;
-   a bevel built from borders and shadows keeps its shape at any width. */
-.btn {
+/* One definition for every pressable face on the page. The toast's Undo button
+   is the same control as the ones in Settings and has no business drifting from
+   them, so it is styled here rather than restated under .toast. */
+.btn,
+.toast__action {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: var(--sp-2);
-  min-height: 40px;
-  padding: 0 var(--sp-4);
+  min-height: var(--control-height);
+  padding: var(--sp-1) var(--sp-4);
 
   font-family: var(--font-ui);
   font-size: var(--fs-md);
-  color: var(--c-ink-strong);
-  white-space: nowrap;
-
-  background-color: var(--c-parchment-dark);
-  background-image: linear-gradient(#d8c7a2, #a89771);
-  border: 2px solid var(--c-bevel-dark);
-  border-radius: var(--radius);
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 45%),
-    inset 0 -3px 0 rgb(43 33 21 / 22%),
-    0 1px 2px rgb(0 0 0 / 35%);
-
+  color: var(--c-text);
+  text-shadow: var(--shadow-text);
   cursor: pointer;
-  user-select: none;
-  transition: background-color var(--transition), transform var(--transition);
+
+  background: var(--c-widget);
+  border: var(--bd-control);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-raised);
+  transition: background var(--transition), color var(--transition);
 }
 
-.btn:hover:not(:disabled) {
-  background-image: linear-gradient(#e4d3ae, #b4a37d);
+.btn:hover:not(:disabled),
+.toast__action:hover {
+  background: var(--c-widget-hover);
+  color: var(--c-text-strong);
 }
 
-.btn:active:not(:disabled) {
-  transform: translateY(1px);
-  background-image: linear-gradient(#a89771, #cdbc97);
-  box-shadow: inset 0 2px 4px rgb(43 33 21 / 40%);
+.btn:active:not(:disabled),
+.toast__action:active {
+  /* Pressed: swap the light rim for a shadow so the face sinks. */
+  background: var(--c-widget-dark);
+  box-shadow: var(--shadow-sunken);
 }
 
 .btn:disabled {
+  color: var(--c-text-muted);
   cursor: not-allowed;
-  color: var(--c-ink-muted);
-  background-image: none;
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 20%);
-  opacity: 0.55;
+  opacity: 0.6;
 }
 
-/* The one call to action gets the welcome screen's red button, so it reads as
-   the primary action rather than another brown control. */
+/* The one action the page exists for, and so the one filled control on it.
+   As an outline it read as the odd one out rather than as the important one:
+   every other control on the page has a face, so the only button without one
+   looked disabled. Gold with dark ink is the single combination here that
+   appears on nothing you cannot click.
+
+   Wide enough that a three-letter label still looks deliberate. */
 .btn--primary {
-  color: var(--c-banner);
-  font-size: var(--fs-lg);
-  text-shadow: var(--shadow-on-stone);
-  background-color: #5a1a14;
-  background-image: none;
-  border: var(--border-primary) solid transparent;
-  border-image: var(--tex-button-primary) var(--slice-button-primary) fill stretch;
-  box-shadow: 0 1px 2px rgb(0 0 0 / 35%);
+  min-width: 6rem;
+  color: var(--c-sunken-deep);
+  /* The black drop shadow is there to lift light text off a dark face. On dark
+     ink over gold it only muddies the letters. */
+  text-shadow: none;
+  background: var(--c-gold);
+  border-color: var(--c-frame-dark);
 }
 
 .btn--primary:hover:not(:disabled) {
-  background-color: #6d2019;
-  filter: brightness(1.1);
+  color: var(--c-sunken-deep);
+  background: var(--c-yellow);
 }
 
 .btn--primary:active:not(:disabled) {
-  background-image: none;
-  box-shadow: 0 1px 2px rgb(0 0 0 / 35%);
-  filter: brightness(0.85);
+  background: var(--c-gold);
+  box-shadow: var(--shadow-sunken);
 }
 
-/* Same shape and weight as its neighbours so the row stays even, but clearly
-   marked: destructive actions should be recognisable, not hidden. */
 .btn--danger {
   color: var(--c-loss);
-  border-color: #5c1616;
 }
 
 .btn--danger:hover:not(:disabled) {
-  background-image: linear-gradient(#e8cdbd, #bd9d8b);
+  color: var(--c-text-strong);
+  background: var(--c-loss);
 }
 
 .btn__icon {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   flex: none;
+  object-fit: contain;
 }
 
-/* Only for flat outline sprites. The pack draws them white for dark interface
-   buttons, and these sit on light parchment, so knock them to ink. Never use
-   this on a shaded sprite: brightness(0) is a silhouette, which turns anything
-   with fill into a black blob. */
-.btn__icon--ink {
-  filter: brightness(0);
-  opacity: 0.75;
-}
+/* -------------------------------------------------------------- icon-only */
 
-/* Compact icon-only button used inside table rows.
-   The Grand Exchange button sprite gives it a dark, recessed body, which the
-   pale row icons need to read against the parchment. */
 .icon-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
+  width: 30px;
   height: 30px;
   padding: 0;
-
-  background-color: var(--c-stone-light);
-  border: var(--slice-icon-button) solid transparent;
-  border-image: var(--tex-icon-button) var(--slice-icon-button) fill stretch;
-  border-radius: var(--radius);
   cursor: pointer;
-  transition: filter var(--transition);
+
+  background: var(--c-widget-dark);
+  border: 1px solid var(--c-frame);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-raised);
+  transition: background var(--transition);
 }
 
 .icon-btn:hover:not(:disabled) {
-  border-image-source: var(--tex-icon-button-hover);
-  filter: brightness(1.15);
+  background: var(--c-widget-hover);
 }
 
 .icon-btn:active:not(:disabled) {
-  transform: translateY(1px);
-  filter: brightness(0.9);
+  box-shadow: var(--shadow-sunken);
 }
 
 .icon-btn:disabled {
   cursor: not-allowed;
-  filter: grayscale(0.7) brightness(0.75);
-  opacity: 0.5;
+  opacity: 0.4;
 }
 
 .icon-btn img {
   width: 18px;
   height: 18px;
+  object-fit: contain;
 }
 
-.icon-btn.is-busy {
-  animation: pulse 800ms ease-in-out infinite;
+/* Spun while that row's refresh is in flight. */
+.icon-btn.is-busy img {
+  animation: spin 900ms linear infinite;
 }
 
-@keyframes pulse {
-  50% {
-    opacity: 0.35;
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
   }
 }
 
-/* ============================================================
-   Scrollbars
-   ============================================================
-   The default OS scrollbar looks wrong against parchment. WebKit gets the
-   pack's thumb sprite, 9-sliced so its end caps stay crisp; Firefox has no
-   image support here, so it gets matching colours instead. */
-
-/* Firefox has no ::-webkit-scrollbar, so it gets matching colours instead.
-   These must NOT be set unconditionally: in Chromium, specifying the standard
-   `scrollbar-width` makes it ignore every ::-webkit-scrollbar rule, which
-   silently replaced the sprite with a 2px overlay bar. */
-@supports not selector(::-webkit-scrollbar) {
-  html {
-    scrollbar-width: thin;
-    scrollbar-color: var(--c-parchment-dark) var(--c-stone);
-  }
-
-  .suggestions {
-    scrollbar-width: thin;
-    scrollbar-color: var(--c-parchment-dark) var(--c-parchment-sunken);
+@media (prefers-reduced-motion: reduce) {
+  .icon-btn.is-busy img {
+    animation: none;
+    opacity: 0.5;
   }
 }
 
-::-webkit-scrollbar {
-  width: 14px;
-  height: 16px;
-}
-
-/* The page scroller sits on the stone surround, not on parchment. */
-::-webkit-scrollbar-track {
-  background: var(--c-stone);
-  box-shadow: inset 0 0 3px rgb(0 0 0 / 60%);
-}
-
-/* The table is sized to fit, so its scroller is a safety net only and its bar
-   is hidden: a scrollbar cutting across the parchment looks wrong. */
-.table-scroll::-webkit-scrollbar {
-  display: none;
-}
-
-.suggestions::-webkit-scrollbar-track {
-  background: var(--c-parchment-sunken);
-  box-shadow: inset 0 1px 3px rgb(43 33 21 / 40%);
-}
-
-::-webkit-scrollbar-thumb:vertical {
-  border: 5px solid transparent;
-  border-image: var(--tex-scroll-v) var(--slice-scroll-v) fill stretch;
-}
-
-::-webkit-scrollbar-thumb:horizontal {
-  border: 5px solid transparent;
-  border-image: var(--tex-scroll-h) var(--slice-scroll-h) fill stretch;
-}
-
-.suggestions::-webkit-scrollbar-thumb:vertical {
-  border: 5px solid transparent;
-  border-image: var(--tex-scroll-v) var(--slice-scroll-v) fill stretch;
-}
-
-/* ============================================================
-   Autocomplete
-   ============================================================ */
+/* ------------------------------------------------------------ suggestions */
 
 .suggestions {
   position: absolute;
@@ -385,18 +296,18 @@
   max-height: 320px;
   overflow-y: auto;
 
-  background-color: var(--c-parchment-light);
-  border: 2px solid var(--c-bevel-dark);
-  box-shadow: 0 8px 18px rgb(0 0 0 / 45%);
+  background: var(--c-sunken);
+  border: var(--bd-control);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-float);
 }
 
 .suggestion {
   display: flex;
   align-items: center;
-  gap: var(--sp-3);
-  padding: var(--sp-2) var(--sp-3);
+  gap: var(--sp-2);
+  padding: var(--sp-1) var(--sp-2);
   cursor: pointer;
-  color: var(--c-ink);
   border-bottom: 1px solid var(--c-rule);
 }
 
@@ -406,44 +317,43 @@
 
 .suggestion:hover,
 .suggestion.is-active {
-  background: var(--c-parchment-dark);
+  background: var(--c-widget);
 }
 
 .suggestion__icon {
-  width: 32px;
-  height: 32px;
+  width: 24px;
+  height: 24px;
   flex: none;
   object-fit: contain;
 }
 
+.suggestion__name {
+  flex: 1 1 auto;
+  min-width: 0;
+  color: var(--c-text);
+  overflow-wrap: anywhere;
+}
+
 .suggestion__meta {
-  margin-left: auto;
+  flex: none;
   font-size: var(--fs-xs);
-  color: var(--c-ink-muted);
-  white-space: nowrap;
+  color: var(--c-text-muted);
 }
 
-/* ============================================================
-   Stat cards
-   ============================================================ */
-
-.stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: var(--sp-4);
-}
+/* ------------------------------------------------------------- stat cards */
 
 .stat {
   display: flex;
   align-items: center;
   gap: var(--sp-3);
-  padding: var(--sp-1);
+  padding: var(--sp-3) var(--sp-4);
 }
 
 .stat__icon {
   width: 42px;
   height: 42px;
   flex: none;
+  object-fit: contain;
 }
 
 .stat__body {
@@ -451,139 +361,153 @@
 }
 
 .stat__label {
-  font-size: var(--fs-sm);
-  color: var(--c-ink-label);
+  font-size: var(--fs-xs);
+  color: var(--c-text-dim);
 }
 
+/* The headline figure. This is what the page is for, so it is the loudest
+   thing on it.
+
+   Yellow rather than green by default: only the profit card carries a
+   judgement, and it gets its colour from a tone class the view sets. Painting
+   the spend and the clock green too would say every figure is good news. */
 .stat__value {
-  font-size: var(--fs-xl);
-  color: var(--c-ink-strong);
+  font-size: var(--fs-2xl);
+  line-height: 1.1;
+  color: var(--c-text);
+  text-shadow: var(--shadow-text-lg);
   overflow-wrap: anywhere;
 }
 
+/* The notes are written with a newline between their two halves rather than a
+   separator glyph. pre-line honours that newline while still collapsing the
+   indentation the markup carries, which keeps the view setting plain text
+   instead of building elements for a line break.
+
+   Body colour, not muted: these are figures to read, and at this size the muted
+   tone only reached about 2.6:1 against the panel, which is under the 4.5:1
+   small text needs. This is a little over 6:1. */
 .stat__note {
   font-size: var(--fs-xs);
-  color: var(--c-ink-muted);
+  color: var(--c-text-body);
+  white-space: pre-line;
 }
 
-/* ============================================================
-   Notices, empty states, toasts
-   ============================================================ */
+/* ---------------------------------------------------------------- notices */
 
+/* Same widget construction as a panel and a toast; the tone lives in the
+   opening line rather than in a coloured edge. */
 .notice {
   display: flex;
   gap: var(--sp-3);
-  padding: var(--sp-3) var(--sp-4);
-  font-size: var(--fs-sm);
-  color: var(--c-ink);
-  text-shadow: none;
-  background: var(--c-parchment-light);
-  border: 2px solid var(--c-rule-strong);
-  border-left-width: 6px;
+  padding: var(--sp-3);
+  text-align: left;
+
+  background-color: var(--c-widget);
+  border: var(--bd-panel);
   border-radius: var(--radius);
+  box-shadow: var(--shadow-panel);
+  color: var(--c-text-body);
 }
 
-.notice--error {
-  border-left-color: var(--c-loss);
+.notice strong {
+  font-weight: normal;
+  text-shadow: var(--shadow-text);
 }
 
-.notice--warn {
-  border-left-color: var(--c-gold);
+.notice--error strong {
+  color: var(--c-red);
+}
+
+.notice--warn strong {
+  color: var(--c-accent);
 }
 
 .notice code {
+  padding: 0 var(--sp-1);
   font-family: var(--font-mono);
-  color: var(--c-link);
+  color: var(--c-text);
+  background: var(--c-sunken);
+  border-radius: var(--radius-sm);
 }
 
 .empty-state {
-  padding: var(--sp-6) var(--sp-4);
+  padding: var(--sp-6) var(--sp-3);
   text-align: center;
-  color: var(--c-ink-muted);
+  color: var(--c-text-muted);
 }
+
+/* ----------------------------------------------------------------- toasts */
 
 .toast-stack {
   position: fixed;
   right: var(--sp-4);
   bottom: var(--sp-4);
-  z-index: 60;
+  z-index: 200;
   display: flex;
   flex-direction: column;
   gap: var(--sp-2);
-  width: min(380px, calc(100vw - var(--sp-5)));
-  pointer-events: none;
+  width: min(380px, calc(100vw - var(--sp-6)));
 }
 
+/* Built exactly like a panel - same face, same frame, same inset-and-drop
+   shadow - because it is one: a small widget that happens to appear over the
+   page. It used to be a card with a coloured left edge, which is a web
+   convention and the only thing on the page not drawn as a game widget. */
 .toast {
   display: flex;
   align-items: center;
   gap: var(--sp-3);
-  padding: var(--sp-1) var(--sp-2);
-  pointer-events: auto;
-  color: var(--c-ink);
-  text-shadow: none;
+  padding: var(--sp-2) var(--sp-3);
+  text-align: left;
 
-  background-color: var(--c-parchment);
-  border: var(--border-panel) solid transparent;
-  border-image: var(--tex-panel) var(--slice-panel) fill stretch;
-  box-shadow: var(--shadow-panel);
-  animation: toast-in 160ms ease-out;
+  background-color: var(--c-widget);
+  border: var(--bd-panel);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-panel), var(--shadow-float);
+  color: var(--c-text-body);
 }
 
-/* A toast reads in plain ink whatever its tone. Colouring the whole message
-   made a success toast green throughout, which fought the one thing that is
-   meant to stand out. The tone classes stay on the element for scripting and
-   for anything that wants them later, but they paint nothing. */
+/* Tone is carried by the text, the way the client colours a line of chat:
+   green when something worked, red when it did not, chat yellow for the rest.
+   An item name inside keeps its own blue, because a rule that targets the span
+   beats a colour inherited from its parent. */
+.toast--success .toast__message {
+  color: var(--c-green);
+}
+
+.toast--error .toast__message {
+  color: var(--c-red);
+}
+
+.toast--info .toast__message {
+  color: var(--c-text);
+}
+
 .toast__message {
-  flex: 1;
-  font-size: var(--fs-sm);
+  flex: 1 1 auto;
   min-width: 0;
-  color: var(--c-ink);
+  font-size: var(--fs-sm);
+  text-shadow: var(--shadow-text);
+  overflow-wrap: anywhere;
 }
 
-/* The only colour in the sentence: which item it is about. */
+/* Item names are called out wherever they appear in running text. */
 .toast__name {
   color: var(--c-item-name);
 }
 
+/* The face, frame and hover come from the shared .btn rule above; this is only
+   what makes it the smaller of the two sizes. */
 .toast__action {
   flex: none;
+  min-height: 28px;
   padding: var(--sp-1) var(--sp-3);
-  min-height: 30px;
-  font-family: var(--font-ui);
   font-size: var(--fs-sm);
-  color: var(--c-ink-strong);
-  background: var(--c-parchment-light);
-  border: 2px solid var(--c-rule-strong);
-  border-radius: var(--radius);
-  cursor: pointer;
+  background: var(--c-widget-dark);
 }
 
-.toast__action:hover {
-  background: var(--c-parchment-dark);
-}
-
-@keyframes toast-in {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .toast {
-    animation: none;
-  }
-
-  .icon-btn.is-busy {
-    animation: none;
-    opacity: 0.5;
-  }
-}
-
-/* ============================================================
-   Inline value colouring
-   ============================================================ */
+/* ------------------------------------------------------------ value tones */
 
 .value-profit {
   color: var(--c-profit);
@@ -594,75 +518,17 @@
 }
 
 .value-muted {
-  color: var(--c-ink-muted);
+  color: var(--c-text-muted);
 }
 
 .value-gold {
-  color: var(--c-ink-label);
+  color: var(--c-accent);
 }
 
-/* ============================================================
-   Action bar
-   ============================================================
-   A ruled row of buttons under a panel's fields, so actions stop sharing a
-   line with the inputs. The destructive action is pushed to the far end. */
-
-.action-bar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--sp-3);
-  margin-top: var(--sp-4);
-  padding-top: var(--sp-4);
-  border-top: 1px solid var(--c-rule);
-}
-
-.action-bar__end {
-  margin-left: auto;
-}
-
-@media (width <= 900px) {
-  .action-bar__end {
-    margin-left: 0;
-  }
-
-  .action-bar .btn {
-    flex: 1 1 auto;
-  }
-}
-
-/* Small screens: the panel frame is the biggest single piece of chrome, and at
-   a quarter larger it was eating the width the cards need. The 9-slice simply
-   renders at half scale, which still reads as the same frame. */
-@media (width <= 900px) {
-  .panel {
-    --border-panel: 8px;
-    padding: var(--sp-1);
-  }
-
-  .panel__body {
-    padding: var(--sp-1) var(--sp-1) var(--sp-2);
-  }
-}
-
-/* The smallest phones still in use (320px) have 256px of room once everything
-   is a quarter larger. The frame gives way almost entirely so the numbers do
-   not have to. */
-@media (width <= 420px) {
-  .panel {
-    --border-panel: 6px;
-    padding: 0;
-  }
-
-  .panel__title {
-    padding-inline: var(--sp-2);
-  }
-
-  .panel__body {
-    padding: var(--sp-1) 0 var(--sp-2);
-  }
-
-  .panel__footer {
-    padding-inline: var(--sp-1);
+@media (width <= 700px) {
+  .toast-stack {
+    left: var(--sp-2);
+    right: var(--sp-2);
+    width: auto;
   }
 }

@@ -126,9 +126,13 @@ test('phones get stacked cards with every field labelled', { timeout: 90_000 }, 
 
 test('the table scroller shows no scrollbar', { timeout: 90_000 }, async () => {
   const page = await pageAt(768);
+  // The border is measured rather than assumed: it is a token, so its width can
+  // change without this test being about it.
   const thickness = await page.evaluate(`(() => {
     const s = document.querySelector('.table-scroll');
-    return s.offsetHeight - s.clientHeight - 2; // minus its 1px top and bottom border
+    const style = getComputedStyle(s);
+    const borders = parseFloat(style.borderTopWidth) + parseFloat(style.borderBottomWidth);
+    return s.offsetHeight - s.clientHeight - borders;
   })()`);
 
   assert.ok(thickness <= 0, `a scrollbar is taking ${thickness}px of layout`);
@@ -218,29 +222,44 @@ test('the sort chevron never wraps off the label line', { timeout: 90_000 }, asy
   await page.close();
 });
 
-test('the 9-sliced sprites load and are applied', { timeout: 90_000 }, async () => {
+test('every widget is painted and framed', { timeout: 90_000 }, async () => {
+  // The frames are flat borders rather than 9-sliced sprites, so what there is
+  // to check is that each surface actually has a face and an edge. A widget
+  // that loses either falls back to the backdrop and stops reading as a widget.
   const page = await pageAt(1400);
-  const result = await page.evaluate(`{
-    panel: getComputedStyle(document.querySelector('.panel')).borderImageSource,
-    titleBg: getComputedStyle(document.querySelector('.panel__title')).backgroundColor,
-    buttonBg: getComputedStyle(document.querySelector('.btn:not(.btn--primary)')).backgroundColor,
-    primary: getComputedStyle(document.querySelector('.btn--primary')).borderImageSource,
-    iconButton: getComputedStyle(document.querySelector('.icon-btn')).borderImageSource,
-    brokenImages: [...document.images]
-      .filter(img => img.src.startsWith(location.origin))
-      .filter(img => img.complete && img.naturalWidth === 0)
-      .map(img => img.src)
-  }`);
+  const result = await page.evaluate(`(() => {
+    const face = (selector) => {
+      const s = getComputedStyle(document.querySelector(selector));
+      return { bg: s.backgroundColor, border: parseFloat(s.borderTopWidth), color: s.borderTopColor };
+    };
+    return {
+      panel: face('.panel'),
+      button: face('.btn:not(.btn--primary)'),
+      primary: face('.btn--primary'),
+      iconButton: face('.icon-btn'),
+      well: face('.table-scroll'),
+      accent: getComputedStyle(document.documentElement).getPropertyValue('--c-accent').trim(),
+      brokenImages: [...document.images]
+        .filter(img => img.src.startsWith(location.origin))
+        .filter(img => img.complete && img.naturalWidth === 0)
+        .map(img => img.src)
+    };
+  })()`);
 
-  assert.match(result.panel, /panel_parchment\.png/);
-  // The title bar is drawn in CSS on purpose: a mottled sprite smears when
-  // stretched across a full-width bar. It only has to be a painted band.
-  assert.notEqual(result.titleBg, 'rgba(0, 0, 0, 0)');
-  // Standard buttons are drawn in CSS: the brown sprite is 35x35 and flattened
-  // into a plain box at five times that width. They only need a painted face.
-  assert.notEqual(result.buttonBg, 'rgba(0, 0, 0, 0)');
-  assert.match(result.primary, /button_primary\.png/);
-  assert.match(result.iconButton, /icon_button\.png/);
+  for (const [name, widget] of Object.entries(result)) {
+    if (name === 'brokenImages' || name === 'accent') continue;
+    assert.notEqual(widget.bg, 'rgba(0, 0, 0, 0)', `${name} has no painted face`);
+    assert.ok(widget.border > 0, `${name} has no frame`);
+  }
+
+  // The one action the page exists for carries the accent on its frame, which
+  // is what separates it from the buttons beside it.
+  assert.notEqual(
+    result.primary.color,
+    result.button.color,
+    'the primary button should not share the plain button frame',
+  );
+
   // Only local images: whether the wiki's CDN is reachable is not our bug.
   assert.deepEqual(result.brokenImages, [], 'some local images failed to load');
   await page.close();
@@ -255,8 +274,8 @@ test('no sprite with a baked-in border is tiled', { timeout: 90_000 }, async () 
       .map(el => ({ el, s: getComputedStyle(el) }))
       .filter(({ s }) =>
         s.backgroundImage !== 'none' &&
-        // stone_wall is the one seamless TEXTURE_* sprite.
-        !s.backgroundImage.includes('stone_wall') &&
+        // A gradient is seamless by construction; sprites are what this rule
+        // is about.
         !s.backgroundImage.includes('gradient') &&
         s.backgroundRepeat.startsWith('repeat'))
       .slice(0, 6)
@@ -267,23 +286,32 @@ test('no sprite with a baked-in border is tiled', { timeout: 90_000 }, async () 
   await page.close();
 });
 
-test('the parchment keeps text readable', { timeout: 90_000 }, async () => {
+test('the widget face keeps text readable', { timeout: 90_000 }, async () => {
   const page = await pageAt(1400);
   const result = await page.evaluate(`{
-    bodyText: getComputedStyle(document.querySelector('.cell-item__name')).color,
+    itemName: getComputedStyle(document.querySelector('.cell-item__name')).color,
+    figure: getComputedStyle(document.querySelector('[data-cell="costItems"]')).color,
     panelBg: getComputedStyle(document.querySelector('.panel')).backgroundColor,
     profit: getComputedStyle(document.querySelector('.value-profit')).color
   }`);
 
-  // Dark ink on light parchment: the ink must be substantially darker.
+  // Light text on a dark widget: everything written on the panel must be
+  // substantially lighter than the panel it is written on.
   const luminance = (rgb) => {
     const [r, g, b] = rgb.match(/\d+/g).map(Number);
     return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
   };
 
-  assert.ok(luminance(result.panelBg) > 0.5, `panel should be light, got ${result.panelBg}`);
-  assert.ok(luminance(result.bodyText) < 0.3, `text should be dark, got ${result.bodyText}`);
-  assert.ok(luminance(result.profit) < 0.5, `profit green must be dark enough on parchment, got ${result.profit}`);
+  const panel = luminance(result.panelBg);
+  assert.ok(panel < 0.5, `panel should be dark, got ${result.panelBg}`);
+
+  for (const [name, color] of Object.entries(result)) {
+    if (name === 'panelBg') continue;
+    assert.ok(
+      luminance(color) > panel + 0.15,
+      `${name} does not stand off the panel: ${color} on ${result.panelBg}`,
+    );
+  }
   await page.close();
 });
 
