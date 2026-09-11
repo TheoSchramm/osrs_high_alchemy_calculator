@@ -103,6 +103,12 @@ export function type(input, value) {
   input.dispatchEvent(new input.ownerDocument.defaultView.Event('input', { bubbles: true }));
 }
 
+/** Tick or clear a checkbox and fire the `change` listeners rely on. */
+export function toggle(checkbox, checked = !checkbox.checked) {
+  checkbox.checked = checked;
+  checkbox.dispatchEvent(new checkbox.ownerDocument.defaultView.Event('change', { bubbles: true }));
+}
+
 export function change(select, value) {
   select.value = value;
   select.dispatchEvent(new select.ownerDocument.defaultView.Event('change', { bubbles: true }));

@@ -82,9 +82,10 @@ a:focus-visible {
 
 /* The hidden attribute must win, whatever display a component rule sets.
    The UA rule for [hidden] is display:none at the lowest possible specificity,
-   so any class rule carrying a display silently beats it - which is how the
-   chain badge kept painting after being hidden, once it became a button with
-   display:inline-flex. */
+   so any class rule carrying a display silently beats it. That is how a badge
+   here once kept painting after being hidden, the moment its rule grew a
+   display:inline-flex; the same trap waits for the suggestion list and the
+   totals row, which are both shown and hidden through the attribute. */
 [hidden] {
   display: none !important;
 }

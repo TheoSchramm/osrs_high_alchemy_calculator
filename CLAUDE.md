@@ -36,8 +36,11 @@ Dependencies flow one way: `ui` → `state` → `data` → `core`.
   methods; they never mutate state and never talk to each other.
 - **Never overwrite something the user typed.** The buy price carries an
   `overrides.buyPrice` flag set by an inline edit, and `mergeSnapshot` skips
-  it for good: no refresh, manual or automatic, replaces it. Releasing it is a
-  separate deliberate act, `releaseOverride`, wired to the chain badge.
+  it for good: no refresh, manual or automatic, replaces it. Changing it is a
+  separate deliberate act — `setOverride`, wired to the Custom price column's
+  toggle, which both reports the state and sets it either way.
+  `releaseOverride` is the clearing half of that, and restores the last market
+  price.
 - **Know which fields are market data.** Only `buyPrice` moves with the market.
   `alchPrice` is a fixed game property: it is not in `EDITABLE_FIELDS`, its
   cell is plain rather than `contenteditable`, and `mergeSnapshot` fills it

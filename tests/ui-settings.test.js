@@ -161,6 +161,59 @@ test('refresh all updates every matched item in one request', async (t) => {
   assert.ok(toastMessages(ctx.document).some((m) => m.includes('Refreshed 2 items')));
 });
 
+test('update all prices refreshes the nature rune too', async (t) => {
+  const ctx = mountWith([{ ...PLATEBODY, buyPrice: 1 }]);
+  t.after(ctx.cleanup);
+
+  click(ctx.document.querySelector('#refreshAll'));
+  await flush();
+
+  // The rune is half the cost of every cast, so leaving it stale reports a
+  // profit worked out against an old cost.
+  assert.equal(ctx.store.getState().runePrice, 212);
+  assert.equal(ctx.document.querySelector('#runePrice').value, '212', 'the field follows');
+  assert.ok(toastMessages(ctx.document).some((m) => m.includes('Nature rune 212 gp')));
+
+  // Asked for in the same round of requests as the items, not by a separate
+  // call after the fact.
+  assert.equal(ctx.fetchImpl.callsMatching('/latest?id=561').length, 1);
+});
+
+test('a rune with no recent trades leaves the price alone', async (t) => {
+  // The fixture prices every item except the rune, so its snapshot comes back
+  // without a buy price.
+  const ctx = mountApp({
+    initialState: { items: [{ ...PLATEBODY, buyPrice: 1 }], runePrice: 175 },
+    fetch: createFakeFetch({
+      latest: { 1123: { high: 4200, highTime: 1, low: 4000, lowTime: 1 } },
+    }),
+  });
+  t.after(ctx.cleanup);
+
+  click(ctx.document.querySelector('#refreshAll'));
+  await flush();
+
+  assert.equal(ctx.store.getState().runePrice, 175, 'a missing price must not overwrite it');
+  assert.equal(ctx.store.getItem('plate').buyPrice, 4200, 'the items still update');
+});
+
+test('the rune button says so when nothing has traded', async (t) => {
+  const ctx = mountApp({
+    initialState: { items: [], runePrice: 175 },
+    fetch: createFakeFetch({ latest: {} }),
+  });
+  t.after(ctx.cleanup);
+
+  click(ctx.document.querySelector('#fetchRunePrice'));
+  await flush();
+
+  // Without the guard this wrote 9 gp - the rune's shop value, which the price
+  // client falls back to so an item row never shows 0 - and the message below
+  // could never appear.
+  assert.equal(ctx.store.getState().runePrice, 175);
+  assert.ok(toastMessages(ctx.document).some((m) => m.includes('No recent nature rune trades')));
+});
+
 test('refresh all with nothing to refresh says so', async (t) => {
   const ctx = mountWith([{ id: 'manual', name: 'Manual', buyPrice: 1, alchPrice: 1, quantity: 1 }]);
   t.after(ctx.cleanup);

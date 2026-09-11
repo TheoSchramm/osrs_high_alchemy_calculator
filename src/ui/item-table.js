@@ -90,14 +90,17 @@ export class ItemTableView {
 
   _bindBody() {
     // One listener per event type for the whole table, rather than per row.
-    this.teardown.push(on(this.body, 'click', (event) => {
-      const pin = event.target.closest('button[data-pin]');
-      if (pin) {
-        const pinnedId = pin.closest('tr')?.dataset.id;
-        if (pinnedId) this.handlers.onReleaseOverride?.(pinnedId, pin.dataset.pin);
-        return;
-      }
+    // The lock is a checkbox, so it reports through `change` rather than a
+    // click: that fires for the keyboard and for a label press too.
+    this.teardown.push(on(this.body, 'change', (event) => {
+      const box = event.target.closest?.('input[data-override]');
+      if (!box) return;
 
+      const id = box.closest('tr')?.dataset.id;
+      if (id) this.handlers.onToggleOverride?.(id, box.dataset.override, box.checked);
+    }));
+
+    this.teardown.push(on(this.body, 'click', (event) => {
       const button = event.target.closest('button[data-action]');
       if (!button) return;
 
@@ -233,26 +236,37 @@ export class ItemTableView {
       const cell = tr.querySelector(`[data-field="${field}"]`);
       if (!cell) continue;
 
-      const pinned = Boolean(overrides[field]);
-      cell.dataset.overridden = String(pinned);
+      const locked = Boolean(overrides[field]);
+      cell.dataset.overridden = String(locked);
 
-      const badge = tr.querySelector(`[data-pin="${field}"]`);
-      if (badge) badge.hidden = !pinned;
+      const box = tr.querySelector(`[data-override="${field}"]`);
+      if (box) {
+        // Never fight the box the user is in the middle of operating.
+        if (box.checked !== locked) box.checked = locked;
+        box.setAttribute('aria-label', `Lock the buy price for ${item.name}`);
+        // A row the API does not know is never refreshed, so a lock on it would
+        // hold off nothing.
+        box.disabled = !item.itemId;
+      }
 
-      if (!pinned) {
+      if (!locked) {
         cell.removeAttribute('title');
-        if (badge) badge.removeAttribute('title');
+        if (box) {
+          box.title = item.itemId
+            ? 'Hold this price, so refreshing prices leaves it alone'
+            : 'Added manually, so nothing refreshes it';
+        }
         continue;
       }
 
-      // Short enough to read at a glance: what the pin means, then the way
+      // Short enough to read at a glance: what the lock means, then the way
       // out of it.
       const market = Number.isFinite(item.marketBuyPrice) && item.marketBuyPrice > 0
         ? `\n(Current GE price: ${formatNumber(item.marketBuyPrice)} gp)`
         : '';
       const explanation = `Custom price enabled, this item will not be updated when refreshing prices.${market}`;
       cell.title = explanation;
-      if (badge) badge.title = explanation;
+      if (box) box.title = explanation;
     }
   }
 

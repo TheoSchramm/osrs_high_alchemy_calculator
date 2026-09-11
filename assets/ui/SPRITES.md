@@ -26,7 +26,6 @@ because the rule at the bottom is what makes a future use of it safe.
 | `guide_prices.png` | `button/equipment_guide_prices` | Total spend |
 | `chevron_up.png` | `chevron/green_up_single` | Sorted ascending |
 | `chevron_down.png` | `chevron/green_down_single` | Sorted descending |
-| `pinned.png` | `bank/placeholders_lock` | A buy price you typed |
 
 Three of the four **stat cards** deliberately keep the original icons from
 `assets/` (`coins`, `xp`, `giant_stopwatch`) rather than pack equivalents: they
@@ -125,10 +124,25 @@ in the text flow. In flow it is an atomic inline, so the browser may break it
 onto its own line once a header label wraps — and these labels do wrap, on
 purpose.
 
-The chain badge in the buy-price cell gets the opposite treatment: it is inline,
-nudged up 2px, because `vertical-align: middle` centres a box on the x-height
-and this font's x-height sits below the optical centre of its caps, so the badge
-otherwise reads low against the figure beside it.
+## The Custom price column
+
+No sprite. The column is a text heading over a column of toggles — one per row,
+ticked when that price is held against refreshes — and the toggle is drawn in
+CSS: a sunken square with a hard frame and a green tick, which is the shape the
+game uses for a switch.
+
+`pinned.png` (`bank/placeholders_lock`) was the badge this replaced, and then
+briefly the column's heading. It is kept in `assets/ui/` and used nowhere. Two
+things were wrong with the badge it came from: it could be cleared but never
+set, so nothing on screen said a row could be held in the first place, and on a
+phone card it had to be positioned by hand over a cell it did not belong to. A
+real cell is placed by the grid instead.
+
+A browser checkbox was tried in between. `accent-color` paints the tick but not
+the box, so it stayed a rounded platform widget on a panel that has no other
+rounded platform widgets. The tick is drawn on a `<span>` beside the input
+rather than on the input itself: generated content on a replaced element is not
+dependable, and the input keeps every behaviour while giving up its looks.
 
 ## Licence
 

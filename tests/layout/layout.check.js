@@ -117,10 +117,57 @@ test('phones get stacked cards with every field labelled', { timeout: 90_000 }, 
     headerTakesSpace: document.querySelector('#itemsTable thead').getBoundingClientRect().height > 2
   }`);
 
-  assert.equal(result.rowDisplay, 'block', 'rows should stack rather than lay out as a table row');
-  assert.equal(result.visibleCells, 10, 'stacking gives every column back');
+  // A grid, not a block: the card's heading row carries the name and the row's
+  // controls side by side, and everything below it stacks full width.
+  assert.equal(result.rowDisplay, 'grid', 'rows should stack rather than lay out as a table row');
+  assert.equal(result.visibleCells, 11, 'stacking gives every column back');
   assert.equal(result.labelled, true, 'each stacked cell shows its own label');
   assert.equal(result.headerTakesSpace, false, 'the column header row is out of the way');
+  await page.close();
+});
+
+test('a phone card puts the row controls on the name line', { timeout: 90_000 }, async () => {
+  // The lock, like the buttons, is a cell the grid places on the heading row.
+  // Geometry is the only thing that can say whether it landed there: the source
+  // reads the same either way.
+  const page = await pageAt(360);
+  const result = await page.evaluate(`(() => {
+    const row = [...document.querySelectorAll('#itemsBody tr')]
+      .find(r => r.querySelector('[data-override="buyPrice"]').checked);
+    const box = (selector) => {
+      const { top, bottom, left, right } = row.querySelector(selector).getBoundingClientRect();
+      return { top, bottom, left, right };
+    };
+    return {
+      name: box('td[data-column="name"]'),
+      pin: box('[data-override="buyPrice"]'),
+      buttons: box('.cell-actions'),
+      actions: box('td[data-column="actions"]'),
+      rowRight: row.getBoundingClientRect().right,
+    };
+  })()`);
+
+  const { name, pin, buttons, actions, rowRight } = result;
+
+  // Both sit within the vertical band of the name cell, not on a line below it.
+  for (const [label, control] of [['the lock', pin], ['the buttons', actions]]) {
+    assert.ok(
+      control.top >= name.top - 1 && control.bottom <= name.bottom + 1,
+      `${label} should sit on the name line (${control.top}-${control.bottom} against ${name.top}-${name.bottom})`,
+    );
+  }
+
+  // Ordered along the right edge: name, then lock, then buttons.
+  assert.ok(pin.left > name.left, 'the lock belongs on the right, not beside the icon');
+  assert.ok(pin.right <= buttons.left + 1, 'the lock should clear the buttons');
+  assert.ok(actions.right <= rowRight + 1, 'the buttons should stay inside the card');
+
+  // Nothing is stacked on the name: each control is a cell of its own, so the
+  // name's track ends where the lock's begins.
+  assert.ok(
+    name.right <= pin.left + 1,
+    `the lock overlaps the name cell (name ends ${name.right}, lock starts ${pin.left})`,
+  );
   await page.close();
 });
 
@@ -160,24 +207,24 @@ test('nothing carrying the hidden attribute is painted', { timeout: 90_000 }, as
   await page.close();
 });
 
-test('clicking the chain removes it from the page', { timeout: 90_000 }, async () => {
+test('clearing the lock box hands the row back to the market', { timeout: 90_000 }, async () => {
   const page = await pageAt(1400);
   const result = await page.evaluate(`(() => {
     const row = [...document.querySelectorAll('#itemsBody tr')]
-      .find(r => !r.querySelector('[data-pin="buyPrice"]').hidden);
-    const pin = row.querySelector('[data-pin="buyPrice"]');
+      .find(r => r.querySelector('[data-override="buyPrice"]').checked);
+    const box = row.querySelector('[data-override="buyPrice"]');
     const price = () => row.querySelector('[data-field="buyPrice"]').textContent;
 
-    const before = { price: price(), painted: pin.getBoundingClientRect().width > 0 };
-    pin.click();
+    const before = { price: price(), checked: box.checked };
+    box.click();
     return {
       before,
-      after: { price: price(), painted: pin.getBoundingClientRect().width > 0 },
+      after: { price: price(), checked: box.checked },
     };
   })()`);
 
-  assert.equal(result.before.painted, true, 'the fixture should start with a locked row');
-  assert.equal(result.after.painted, false, 'the chain must actually leave the page');
+  assert.equal(result.before.checked, true, 'the fixture should start with a locked row');
+  assert.equal(result.after.checked, false, 'the box must actually clear');
   assert.notEqual(result.after.price, result.before.price, 'and the market price comes back');
   await page.close();
 });

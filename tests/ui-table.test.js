@@ -13,6 +13,7 @@ import {
   text,
   toastMessages,
   click,
+  toggle,
   editCell,
   keydown,
   flush,
@@ -225,6 +226,42 @@ test('refreshing a row pulls a new buy price but leaves alch alone', async (t) =
   assert.ok(toastMessages(ctx.document).some((message) => message.includes('updated')));
 });
 
+test('a refresh can be undone from its toast', async (t) => {
+  const ctx = mountWith([{ ...PLATEBODY, buyPrice: 1, alchPrice: 9600 }]);
+  t.after(ctx.cleanup);
+
+  click(rows(ctx.document)[0].querySelector('[data-action="refresh"]'));
+  await flush();
+  assert.equal(ctx.store.getItem('plate').buyPrice, 4200, 'the market price landed');
+
+  click(ctx.document.querySelector('.toast__action'));
+
+  assert.equal(ctx.store.getItem('plate').buyPrice, 1, 'the price the row had before is back');
+});
+
+test('unlocking a price can be undone from its toast', (t) => {
+  const ctx = mountWith([{
+    ...PLATEBODY,
+    buyPrice: 3000,
+    overrides: { buyPrice: true },
+    marketBuyPrice: 4200,
+  }]);
+  t.after(ctx.cleanup);
+
+  toggle(rows(ctx.document)[0].querySelector('[data-override="buyPrice"]'), false);
+
+  assert.equal(ctx.store.getItem('plate').buyPrice, 4200, 'the market price comes back');
+  assert.equal(ctx.store.getItem('plate').overrides.buyPrice, false, 'and the row follows it again');
+
+  click(ctx.document.querySelector('.toast__action'));
+
+  const item = ctx.store.getItem('plate');
+  assert.equal(item.buyPrice, 3000, 'the price you typed is back');
+  // Restoring the number without the lock would leave the next refresh free to
+  // overwrite it, which is not what "undo" promised.
+  assert.equal(item.overrides.buyPrice, true, 'and it is locked again');
+});
+
 test('refreshing fills in an alch value the row never had', async (t) => {
   const ctx = mountWith([{ ...PLATEBODY, buyPrice: 1, alchPrice: 0 }]);
   t.after(ctx.cleanup);
@@ -413,7 +450,7 @@ test('an explicit row refresh keeps a hand-typed price', async (t) => {
   assert.equal(item.marketBuyPrice, 4200, 'while the market price is noted for later');
 });
 
-test('clicking the chain gives the row back to the market', async (t) => {
+test('clearing the lock gives the row back to the market', async (t) => {
   const ctx = mountWith([PLATEBODY]);
   t.after(ctx.cleanup);
 
@@ -421,12 +458,12 @@ test('clicking the chain gives the row back to the market', async (t) => {
   click(rows(ctx.document)[0].querySelector('[data-action="refresh"]'));
   await flush();
 
-  click(rows(ctx.document)[0].querySelector('[data-pin="buyPrice"]'));
+  toggle(rows(ctx.document)[0].querySelector('[data-override="buyPrice"]'), false);
 
   const item = ctx.store.getItem('plate');
   assert.equal(item.buyPrice, 4200, 'the market price returns');
   assert.equal(item.overrides.buyPrice, false);
-  assert.equal(rows(ctx.document)[0].querySelector('[data-pin="buyPrice"]').hidden, true);
+  assert.equal(rows(ctx.document)[0].querySelector('[data-override="buyPrice"]').checked, false);
 });
 
 test('a pinned cell is marked and explains itself', (t) => {
@@ -499,23 +536,45 @@ test('the alch cell still updates when the value is filled in', async (t) => {
   assert.equal(rowCells(rows(ctx.document)[0]).alchPrice, '5,760');
 });
 
-test('the chain badge appears only while the price is pinned', (t) => {
+test('the lock box reports whether the price is held', (t) => {
   const ctx = mountWith([PLATEBODY]);
   t.after(ctx.cleanup);
 
-  const badge = () => rows(ctx.document)[0].querySelector('[data-pin="buyPrice"]');
-  assert.ok(badge(), 'the badge exists in every row');
-  assert.equal(badge().hidden, true, 'and is hidden while the row tracks the market');
+  const box = () => rows(ctx.document)[0].querySelector('[data-override="buyPrice"]');
+  assert.ok(box(), 'every row carries the box, not just the held ones');
+  assert.equal(box().checked, false, 'clear while the row tracks the market');
+  assert.match(box().getAttribute('aria-label'), /Adamant platebody/);
 
   editCell(ctx.document.querySelector('[data-field="buyPrice"]'), '3,000');
 
-  assert.equal(badge().hidden, false, 'typing a price shows the chain');
-  assert.match(badge().title, /Custom price enabled/);
-  assert.match(badge().querySelector('img').alt, /custom price/i);
-  assert.equal(badge().tagName, 'BUTTON', 'the chain is the control that releases it');
+  assert.equal(box().checked, true, 'typing a price ticks it');
+  assert.match(box().title, /Custom price enabled/);
 });
 
-test('the chain survives an explicit refresh, like the price it marks', async (t) => {
+test('ticking the box holds a price that was never typed', (t) => {
+  const ctx = mountWith([PLATEBODY]);
+  t.after(ctx.cleanup);
+
+  // The badge could only ever be cleared: a price had to be typed before there
+  // was anything to release. A box can be set as well.
+  toggle(rows(ctx.document)[0].querySelector('[data-override="buyPrice"]'), true);
+
+  const item = ctx.store.getItem('plate');
+  assert.equal(item.overrides.buyPrice, true);
+  assert.equal(item.buyPrice, 4000, 'and it holds the price the row already had');
+  assert.deepEqual(toastMessages(ctx.document), [], 'locking is quiet: the tick says it');
+});
+
+test('a row the API does not know cannot be locked', (t) => {
+  const ctx = mountWith([{ ...PLATEBODY, itemId: null }]);
+  t.after(ctx.cleanup);
+
+  const box = rows(ctx.document)[0].querySelector('[data-override="buyPrice"]');
+  assert.equal(box.disabled, true, 'nothing refreshes it, so a lock holds off nothing');
+  assert.match(box.title, /Added manually/);
+});
+
+test('the lock survives an explicit refresh, like the price it marks', async (t) => {
   const ctx = mountWith([PLATEBODY]);
   t.after(ctx.cleanup);
 
@@ -523,17 +582,17 @@ test('the chain survives an explicit refresh, like the price it marks', async (t
   click(rows(ctx.document)[0].querySelector('[data-action="refresh"]'));
   await flush();
 
-  assert.equal(rows(ctx.document)[0].querySelector('[data-pin="buyPrice"]').hidden, false);
+  assert.equal(rows(ctx.document)[0].querySelector('[data-override="buyPrice"]').checked, true);
 });
 
-test('the chain survives a background poll, like the price it marks', async (t) => {
+test('the lock survives a background poll, like the price it marks', async (t) => {
   const ctx = mountWith([PLATEBODY]);
   t.after(ctx.cleanup);
 
   editCell(ctx.document.querySelector('[data-field="buyPrice"]'), '3,000');
   await ctx.app.refresher.poll();
 
-  assert.equal(rows(ctx.document)[0].querySelector('[data-pin="buyPrice"]').hidden, false);
+  assert.equal(rows(ctx.document)[0].querySelector('[data-override="buyPrice"]').checked, true);
 });
 
 /* ------------------------------------------------ item names in toasts --- */
@@ -567,7 +626,7 @@ test('every toast that names an item marks it', async (t) => {
   await flush();
   ctx.app.toaster.clear();
 
-  click(rows(ctx.document)[0].querySelector('[data-pin="buyPrice"]'));
+  toggle(rows(ctx.document)[0].querySelector('[data-override="buyPrice"]'), false);
   assert.equal(ctx.document.querySelector('.toast__name').textContent, 'Adamant platebody');
 });
 
@@ -597,14 +656,14 @@ test('clicking into a price cell and out does not lock it', (t) => {
   t.after(ctx.cleanup);
 
   const cell = ctx.document.querySelector('[data-field="buyPrice"]');
-  const badge = () => rows(ctx.document)[0].querySelector('[data-pin="buyPrice"]');
+  const box = () => rows(ctx.document)[0].querySelector('[data-override="buyPrice"]');
 
   // Focus and blur without typing, exactly as a stray click does.
   cell.focus();
   cell.dispatchEvent(new ctx.window.FocusEvent('focusout', { bubbles: true }));
 
   assert.equal(ctx.store.getItem('plate').overrides.buyPrice, false);
-  assert.equal(badge().hidden, true, 'no padlock for a click that changed nothing');
+  assert.equal(box().checked, false, 'no lock for a click that changed nothing');
 });
 
 test('unlocking always says so, even when the price does not move', (t) => {
@@ -615,17 +674,17 @@ test('unlocking always says so, even when the price does not move', (t) => {
   editCell(ctx.document.querySelector('[data-field="buyPrice"]'), '3,000');
   ctx.app.toaster.clear();
 
-  click(rows(ctx.document)[0].querySelector('[data-pin="buyPrice"]'));
+  toggle(rows(ctx.document)[0].querySelector('[data-override="buyPrice"]'), false);
 
   assert.equal(ctx.store.getItem('plate').overrides.buyPrice, false);
   assert.match(toastMessages(ctx.document).join(' '), /unlocked/);
 });
 
-test('clicking an unlocked row reports nothing', (t) => {
+test('clearing the box on an unlocked row reports nothing', (t) => {
   const ctx = mountWith([PLATEBODY]);
   t.after(ctx.cleanup);
 
-  ctx.app.views.table.handlers.onReleaseOverride('plate', 'buyPrice');
+  ctx.app.views.table.handlers.onToggleOverride('plate', 'buyPrice', false);
 
   assert.deepEqual(toastMessages(ctx.document), [], 'there was nothing to unlock');
 });

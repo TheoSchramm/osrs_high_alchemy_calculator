@@ -12,6 +12,7 @@ import {
   applyFieldEdit,
   mergeSnapshot,
   releaseOverride,
+  setOverride,
   createId,
 } from '../core/items.js';
 import { nextSortState } from '../core/sorting.js';
@@ -160,6 +161,16 @@ export class AppStore {
    */
   releaseOverride(id, field) {
     return this._replaceItem(id, (item) => releaseOverride(item, field));
+  }
+
+  /**
+   * Hold a field at its current value, or hand it back to the market.
+   * @param {string} id
+   * @param {string} field
+   * @param {boolean} locked
+   */
+  setOverride(id, field, locked) {
+    return this._replaceItem(id, (item) => setOverride(item, field, locked));
   }
 
   removeItem(id) {

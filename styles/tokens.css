@@ -120,6 +120,11 @@
 
   /* Controls must stay comfortably clickable; the game font is small. */
   --control-height: 34px;
+  /* The square icon-only buttons in a row's actions cell. */
+  --icon-btn: 30px;
+  /* The row's custom-price toggle. Sized as a control rather than a glyph: it
+     has to be comfortable under a thumb. */
+  --toggle-size: 28px;
 
   --transition: 120ms ease-out;
 }

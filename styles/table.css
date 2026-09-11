@@ -255,47 +255,96 @@
   color: var(--c-text-muted);
 }
 
-/* ---- The chain badge ----
-   A control, not decoration: clicking it gives the row back to the market.
-   Styled as bare as possible so it still reads as a marker. */
+/* ---- The custom-price toggle ----
+   The game's own switch rather than the platform's: a sunken square with a hard
+   frame, empty while the row follows the market and carrying a green tick when
+   the price is yours. A browser checkbox is a rounded widget drawn in the
+   operating system's colours, and there is nothing else like that on the page -
+   `accent-color` only reaches the tick, so the box itself stayed foreign.
 
-button.cell-pin {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 28px;
-  min-height: 28px;
-  padding: 0;
-  /* It sits before the value, so the gap belongs on the trailing edge. */
-  margin-inline-end: var(--sp-1);
-  background: none;
-  border: none;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  line-height: 0;
+   It is drawn on the span rather than on the input: generated content on an
+   `<input>` is not dependable across browsers, and a checkbox is a replaced
+   element. The input keeps every behaviour - click, keyboard, focus, the label
+   and the tooltip - and gives up only its appearance. */
 
-  /* vertical-align: middle centres on the x-height, and this font's x-height
-     sits below the optical centre of its caps, so the icon reads low against
-     the figure beside it. */
-  vertical-align: middle;
+.osrs-table th[data-column='customPrice'],
+.osrs-table td[data-column='customPrice'] {
+  /* Shrink to the control: this column is competing with nine others. */
+  width: 1%;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.cell-toggle {
   position: relative;
-  top: -2px;
+  display: inline-flex;
+  width: var(--toggle-size);
+  height: var(--toggle-size);
+  vertical-align: middle;
 }
 
-button.cell-pin:hover {
-  background: var(--c-row-hover);
+/* Invisible, but still the thing you click: it covers the box exactly. */
+.cell-toggle__input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
 }
 
-button.cell-pin img {
-  /* Sized by height with the width left to follow: the sprite is 17x21, and
-     forcing it square squashed it. */
-  height: 20px;
-  width: auto;
+.cell-toggle__box {
+  flex: 1;
+  /* Centres the tick on the box, whatever --toggle-size is. Placing it by hand
+     with top/left meant re-deriving two offsets every time either changed, and
+     the first pair put it high and to the left. */
+  display: grid;
+  place-content: center;
+  background: var(--c-sunken-deep);
+  border: var(--bd-control);
+  box-shadow: var(--shadow-sunken);
 }
 
-button.cell-pin:hover img,
-button.cell-pin:focus-visible img {
-  filter: brightness(1.3);
+.cell-toggle__input:hover:not(:disabled) + .cell-toggle__box {
+  border-color: var(--c-accent);
+}
+
+.cell-toggle__input:focus-visible + .cell-toggle__box {
+  outline: 2px solid var(--c-focus);
+  outline-offset: 1px;
+}
+
+/* The tick.
+
+   Cut out of a filled square rather than drawn as two borders of a rotated box.
+   That older trick leaves the ink lying on two edges of an element much bigger
+   than itself, so the shape sits off-centre inside its own box and has to be
+   nudged back by hand - and the nudge has to be re-measured whenever the tick
+   or the box changes size. Here the ink reaches all four edges of the element,
+   so centring the element centres the tick, and both scale with the box. */
+.cell-toggle__input:checked + .cell-toggle__box::after {
+  content: '';
+  /* Sized off the token, not in per cent: the grid track here is auto-sized, so
+     a percentage would be measuring itself and resolves to nothing. */
+  width: calc(var(--toggle-size) * 0.6);
+  height: calc(var(--toggle-size) * 0.6);
+  background: var(--c-green);
+
+  /* A stroke 15 units wide, laid along a centre line that runs (8,55) to the
+     elbow at (38,85) and up to (92,8). The points below are that line offset by
+     half the width to each side, mitred at the elbow - so to change the weight
+     of the tick, change the 15 and re-offset, rather than dragging vertices
+     about one at a time. */
+  clip-path: polygon(13% 50%, 3% 60%, 39% 97%, 98% 12%, 86% 4%, 37% 73%);
+}
+
+.cell-toggle__input:disabled {
+  cursor: not-allowed;
+}
+
+.cell-toggle__input:disabled + .cell-toggle__box {
+  opacity: 0.35;
 }
 
 /* ---- Narrow screens: shed columns so the table keeps fitting ----
@@ -438,6 +487,66 @@ button.cell-pin:focus-visible img {
   .osrs-table td[data-column='actions'] {
     justify-content: flex-end;
   }
+
+  /* ---- The card's heading row ----
+     The name on the left, and everything that acts on the whole row - the lock
+     and the two buttons - gathered at the right, where a thumb reaches them.
+     The row becomes a grid so those cells can sit beside the name instead of
+     stacking into labelled lines of their own.
+
+     Each of the three is a real cell, so the grid places all of them and the
+     name's track gives up exactly the width they take. Nothing is positioned by
+     hand and nothing can land on top of anything else. */
+
+  .osrs-table tbody tr {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+  }
+
+  .osrs-table tbody td[data-column='name'] {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .osrs-table tbody td[data-column='customPrice'] {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .osrs-table tbody td[data-column='actions'] {
+    grid-column: 3;
+    grid-row: 1;
+  }
+
+  .osrs-table tbody td[data-column='customPrice'],
+  .osrs-table tbody td[data-column='actions'] {
+    /* Top-aligned rather than centred: a name long enough to wrap would
+       otherwise drag the controls down the card with it. */
+    align-items: flex-start;
+    justify-content: flex-end;
+    width: auto;
+    padding: var(--sp-2) var(--sp-2);
+    /* The same band as the name cell, so the heading reads as one row. */
+    background: var(--c-widget-dark);
+    border-bottom: 1px solid var(--c-frame);
+  }
+
+  .osrs-table tbody td[data-column='actions'] {
+    padding-right: var(--sp-3);
+  }
+
+  /* Auto-placement would deal the remaining cells across the three columns;
+     each of them is a line of its own. */
+  .osrs-table tbody td[data-column]:not([data-column='name']):not([data-column='customPrice']):not([data-column='actions']) {
+    grid-column: 1 / -1;
+  }
+
+  /* The last stacked line closes the card, so the rule under it would draw
+     across the bottom edge. */
+  .osrs-table tbody td[data-column='updatedAt'] {
+    border-bottom: none;
+  }
+
 
   .osrs-table tfoot td[data-column='name'] {
     font-size: var(--fs-md);

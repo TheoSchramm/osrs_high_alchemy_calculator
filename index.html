@@ -94,6 +94,7 @@
             <tr>
               <th scope="col" data-sort="name" data-column="name">Item</th>
               <th scope="col" data-sort="buyPrice" data-column="buyPrice">Buy price</th>
+              <th scope="col" data-column="customPrice">Custom price</th>
               <th scope="col" data-sort="alchPrice" data-column="alchPrice">High alch</th>
               <th scope="col" data-sort="quantity" data-column="quantity">Qty</th>
               <th scope="col" data-sort="costItems" data-column="costItems">Spent on items</th>
@@ -109,6 +110,7 @@
             <tr>
               <td data-column="name">Total</td>
               <td data-column="buyPrice" data-label="Buy price"></td>
+              <td data-column="customPrice"></td>
               <td data-column="alchPrice" data-label="High alch"></td>
               <td data-column="quantity" data-label="Qty"></td>
               <td data-column="costItems" data-label="Spent on items" data-total="costItems">0</td>
@@ -247,12 +249,21 @@
         </div>
       </td>
       <td data-column="buyPrice" data-label="Buy price">
-        <!-- Shown when the price is your own, so no refresh moves it. Clicking
-             it hands the row back to the market. -->
-        <button class="cell-pin" data-pin="buyPrice" type="button" hidden>
-          <img src="assets/ui/pinned.png" alt="Custom price, click to use the market price">
-        </button>
         <span class="cell-edit" data-field="buyPrice" contenteditable="true" role="textbox" tabindex="0"></span>
+      </td>
+      <!-- Ticked, the price is yours and no refresh moves it. Typing a price
+           ticks it on its own; clearing it hands the row back to the market.
+           The box is a span rather than the input itself: generated content on
+           an <input> is not dependable, and the game's toggle is drawn, not
+           tinted. The view writes the label, which names the item. -->
+      <!-- No data-label: on a phone this sits in the card's heading row beside
+           the buttons, not in the stack, so a printed label would only crowd
+           the name. The toggle carries its own label for screen readers. -->
+      <td data-column="customPrice">
+        <label class="cell-toggle">
+          <input class="cell-toggle__input" type="checkbox" data-override="buyPrice">
+          <span class="cell-toggle__box" aria-hidden="true"></span>
+        </label>
       </td>
       <!-- Read-only: high alch is a constant the game assigns to the item. -->
       <td data-column="alchPrice" data-label="High alch" data-cell="alchPrice" title="Fixed by the game"></td>

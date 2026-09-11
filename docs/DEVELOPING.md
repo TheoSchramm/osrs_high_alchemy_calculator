@@ -177,8 +177,13 @@ sprite is tiled.
 - **Buy price basis** defaults to the Grand Exchange *instant-buy* price, which
   is what you actually pay. The old version used the instant-sell price, which
   understated cost. Switch it back in Settings if you prefer the optimistic view.
-- **Deletes are undoable.** The old `confirm()` dialogs are gone; removing a row
-  or clearing the list shows an Undo toast instead.
+- **Row actions are undoable rather than confirmed.** The old `confirm()`
+  dialogs are gone. Removing a row, clearing the list, unlocking a price and
+  refreshing one all take effect at once and put an Undo on the toast that
+  reports them: faster to use than a dialog in front of the click, and testable,
+  because jsdom has no working `confirm`. Undoing an unlock restores the lock as
+  well as the number — giving the price back without it would leave the next
+  refresh free to overwrite it.
 - **Old saves are migrated automatically.** v1 stored `alchItems` / `runePrice`
   with `vendor` and `alch` fields; those are read once and rewritten in the v2
   format under `osrs-alch:state:v2`.
@@ -199,11 +204,17 @@ sprite is tiled.
   row has no value yet, which is how a hand-added item picks one up after it is
   matched to the Grand Exchange. Editable fields are name, buy price and
   quantity.
-- **Typing a buy price pins it.** Auto-refresh will not touch it again: a timer
-  no refresh replaces it, manual or automatic. A chain icon next to the value
-  marks it as yours; click the chain to hand the row back to the market. The
-  market price is still fetched and recorded while the row ignores it, which is
-  what the chain offers back and what its tooltip shows.
+- **A held buy price is never overwritten.** The Custom price column holds one
+  toggle per row: ticked, the price is yours and no refresh replaces it,
+  manual or automatic. Typing a price ticks it for you; clearing the box hands
+  the row back to the market and reports it with an Undo. The market price is
+  still fetched and recorded while the row ignores it, which is what clearing
+  the box gives back and what the tooltip shows. Rows the API does not know are
+  never refreshed, so their toggle is disabled — holding a price there would
+  hold off nothing. It replaced a chain badge that could only ever be *cleared*:
+  nothing on screen said a row could be held in the first place. The toggle is
+  drawn in CSS rather than being a tinted browser checkbox; see
+  `../assets/ui/SPRITES.md`.
 - **The table never scrolls sideways.** Between 700px and 1150px it sheds
   columns, in order of how easily the number is recovered from the others.
   Below 700px it stops being a table: each row becomes a card with every field

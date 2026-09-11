@@ -133,6 +133,28 @@ export function applyFieldEdit(item, field, value) {
 }
 
 /**
+ * Hold a field at its current value, or hand it back to the market.
+ *
+ * Typing a price still locks it on its own - see {@link applyFieldEdit} - but
+ * this is what lets a row be locked deliberately, without retyping the number
+ * that is already there.
+ *
+ * @param {import('./alchemy.js').AlchItem} item
+ * @param {string} field
+ * @param {boolean} locked
+ * @returns {import('./alchemy.js').AlchItem} a new item; the input is untouched
+ */
+export function setOverride(item, field, locked) {
+  if (!OVERRIDABLE_FIELDS.includes(field)) return item;
+  if (!locked) return releaseOverride(item, field);
+
+  const overrides = normalizeOverrides(item.overrides);
+  if (overrides[field]) return item;
+
+  return { ...item, overrides: { ...overrides, [field]: true } };
+}
+
+/**
  * Hand a field back to the market: drop the override and take the last price
  * the Grand Exchange reported.
  *
