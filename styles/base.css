@@ -38,9 +38,12 @@ body {
      and buys nothing: the panels are what the eye should land on. */
   background-color: var(--c-page);
 
-  /* Set here and nowhere else. Cursor inherits, so the whole page picks it up,
-     and every control that means something different - a button, a text field,
-     an editable cell - says so in its own rule and wins on specificity. */
+  /* Set here, and it inherits, so the blade is the pointer
+     everywhere - over buttons too. The client does the same: one cursor for the
+     whole interface, and hover is what tells you a thing is live. Only the two
+     states the blade cannot say are allowed to override it, and both are about
+     typing or refusal rather than clicking: a caret in a field, and
+     not-allowed on a disabled control. */
   cursor: var(--cursor-blade);
 }
 
@@ -93,6 +96,24 @@ a:focus-visible {
    totals row, which are both shown and hidden through the attribute. */
 [hidden] {
   display: none !important;
+}
+
+/* Controls do not inherit the cursor on their own: the UA stylesheet gives each
+   of these one of its own - `default` on a form control or a label, `pointer`
+   on a link - and an author rule further up the tree never reaches them,
+   because there is nothing to inherit through. Taking `cursor: pointer` off the
+   buttons therefore handed them the browser's arrow rather than the blade,
+   which looked exactly like the bug it was meant to fix. The label matters as
+   much as the input: the Custom price toggle sits inside one, and the input was
+   inheriting `default` from it. */
+a,
+button,
+input,
+label,
+select,
+summary,
+textarea {
+  cursor: inherit;
 }
 
 img {

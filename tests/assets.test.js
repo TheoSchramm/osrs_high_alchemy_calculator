@@ -224,6 +224,28 @@ test('the cursor is set once, on the backdrop', () => {
   }
 });
 
+test('no control swaps the blade for a hand', () => {
+  // The client has one cursor for the whole interface and the hover state is
+  // what says a control is live, so cursor: pointer was taken off the buttons,
+  // the headers, the select, the suggestions and the toggle. The two values
+  // still allowed say something the blade cannot, and neither is about
+  // clicking: a caret over what you can type into, not-allowed over what you
+  // cannot use at all.
+  // `inherit` is how a form control gets the blade at all: the UA stylesheet
+  // gives every one of them a `default` that inheritance alone never overrides.
+  const allowed = new Set(['var(--cursor-blade)', 'inherit', 'text', 'not-allowed']);
+  const offenders = [];
+
+  for (const file of STYLE_FILES) {
+    for (const match of stripComments(read(file)).matchAll(/cursor:\s*([^;]+);/g)) {
+      const value = match[1].trim();
+      if (!allowed.has(value)) offenders.push(`${file}: cursor: ${value}`);
+    }
+  }
+
+  assert.deepEqual(offenders, []);
+});
+
 test('every colour is declared in tokens.css', () => {
   // The palette is the design. A hex dropped into a component stylesheet is a
   // colour nothing else can follow, which is how a theme drifts apart.

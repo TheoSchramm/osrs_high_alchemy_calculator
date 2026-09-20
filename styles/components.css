@@ -126,7 +126,6 @@
   /* The native arrow is drawn in the platform's own colours and looks pasted
      on; the field is wide enough to do without it. */
   appearance: none;
-  cursor: pointer;
 }
 
 .field__input {
@@ -164,7 +163,6 @@
   font-size: var(--fs-md);
   color: var(--c-text);
   text-shadow: var(--shadow-text);
-  cursor: pointer;
 
   background: var(--c-widget);
   border: var(--bd-control);
@@ -244,7 +242,6 @@
   width: var(--icon-btn);
   height: var(--icon-btn);
   padding: 0;
-  cursor: pointer;
 
   background: var(--c-widget-dark);
   border: 1px solid var(--c-frame);
@@ -312,7 +309,6 @@
   align-items: center;
   gap: var(--sp-2);
   padding: var(--sp-1) var(--sp-2);
-  cursor: pointer;
   border-bottom: 1px solid var(--c-rule);
 }
 

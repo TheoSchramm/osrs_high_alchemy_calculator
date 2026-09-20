@@ -77,7 +77,6 @@
 /* ---- Sortable headers ---- */
 
 .osrs-table th[data-sort] {
-  cursor: pointer;
   user-select: none;
 }
 
@@ -87,7 +86,7 @@
 }
 
 /* Only the column actually in use is marked. Unsorted headers show nothing:
-   the cursor and hover already say they are clickable, and a glyph on every
+   the hover highlight already says they are clickable, and a glyph on every
    column is noise.
 
    The chevron is taken out of the text flow and pinned to the right edge. In
@@ -292,7 +291,6 @@
   height: 100%;
   margin: 0;
   opacity: 0;
-  cursor: pointer;
 }
 
 .cell-toggle__box {

@@ -115,9 +115,9 @@ Two older sprites are kept in `assets/` as cautionary examples:
 ## Sort indicators
 
 Only the column actually in use is marked. Unsorted headers carry nothing: the
-pointer cursor and the hover highlight already say they are clickable, and an
-indicator on all eight columns competed with the one that mattered. Dropping it
-also gives the width back to a table that has to fit without a scrollbar.
+hover highlight already says they are clickable, and an indicator on all eight
+columns competed with the one that mattered. Dropping it also gives the width
+back to a table that has to fit without a scrollbar.
 
 The chevron is positioned absolutely against the header cell rather than sitting
 in the text flow. In flow it is an atomic inline, so the browser may break it
@@ -170,6 +170,19 @@ across, but it swaps the blade over: the edge, the bevel and the highlight are
 drawn on one particular side, and mirroring puts them on the wrong one. A
 quarter turn is lossless on pixel art and leaves the blade the way Jagex drew
 it. Note the side effect: the sprite is wider than it is tall, 29x26.
+
+The blade is the pointer over the whole page, controls included. Every
+`cursor: pointer` was removed to get there, which is the client's own behaviour
+- the interface has one cursor and the hover state is what says a thing is live,
+which every button, header and suggestion row here already has. Two overrides
+survive, and neither is about clicking: a caret over anything you can type into,
+and `not-allowed` over a disabled control, which nothing else on screen says.
+
+Removing `pointer` is only half of it. The UA stylesheet gives `button`,
+`input`, `select` and `textarea` a `cursor: default` of their own, so a control
+stripped of `pointer` shows the browser's arrow rather than inheriting the
+blade - the same bug wearing a different cursor. `base.css` sets
+`cursor: inherit` on those four elements, which is what actually reaches them.
 
 Hotlinking the wiki was the other option and is not one: the image is served
 behind hotlink rules, and a cursor whose image fails to load falls back to the
