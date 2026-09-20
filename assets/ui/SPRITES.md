@@ -158,8 +158,13 @@ Two limits make that the only safe option:
   platforms by Chrome. 26x29 clears it; scaling the image up does not fail
   loudly, it just silently restores the arrow.
 - The hotspot must land inside the image or Firefox voids the declaration. It
-  is `24 1`, the blade tip, which sits at the top right - so unlike an arrow the
-  artwork hangs down and to the *left* of the point being clicked.
+  is `1 1`, the blade tip.
+
+The file is mirrored from the wiki's, which draws the scimitar pointing up and
+to the right. Used as-is the tip was at the top right, so the blade hung down
+and to the *left* of the click point - the mirror of every arrow cursor, and it
+covered the cell you were reaching for. Flipped, it points the way a pointer is
+expected to.
 
 Hotlinking the wiki was the other option and is not one: the image is served
 behind hotlink rules, and a cursor whose image fails to load falls back to the
