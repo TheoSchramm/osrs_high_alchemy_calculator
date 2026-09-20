@@ -75,13 +75,15 @@
   --tex-chevron-down: url('../assets/ui/chevron_down.png');
 
   /* ---- Cursor ----
-   * The Dragon scimitar item icon, drawn at its native 26x29. It must never be
-   * scaled up: Firefox ignores a cursor larger than 32px square, and the only
-   * symptom is the arrow quietly coming back.
-   * The two numbers are the hotspot, on the blade tip. The image is mirrored
-   * from the wiki's so that the tip is at the top left and the blade falls away
-   * down and to the right, which is the way every arrow cursor points; drawn
-   * the original way round the blade covered what was to the left of it. A
+   * The Dragon scimitar item icon, at native size: 29x26, which is the wiki's
+   * 26x29 turned a quarter turn. It must never be scaled up - Firefox ignores a
+   * cursor larger than 32px square, and the only symptom is the arrow quietly
+   * coming back.
+   * The two numbers are the hotspot, on the blade tip. The sprite is rotated a
+   * quarter turn anticlockwise so the tip leads at the top left and the blade
+   * falls away down and to the right, the way every arrow cursor points; drawn
+   * the wiki's way round it covered what was to the left of it. Rotated and not
+   * mirrored, so the edge and the highlight stay on the side Jagex drew them. A
    * hotspot outside the image voids the whole declaration in Firefox. The
    * keyword after the comma is the fallback, which is required.
    */

@@ -146,7 +146,7 @@ dependable, and the input keeps every behaviour while giving up its looks.
 
 ## The cursor
 
-`cursor_scimitar.png` is the Dragon scimitar inventory icon, 26x29, taken from
+`cursor_scimitar.png` is the Dragon scimitar inventory icon, 29x26, taken from
 the [OSRS Wiki](https://oldschool.runescape.wiki/w/Dragon_scimitar). It is the
 one image here that is not a Jagex file lifted from the cache or the resource
 pack, so it carries its own licence - see below.
@@ -155,16 +155,21 @@ It is copied in at native size and `--cursor-blade` draws it at native size.
 Two limits make that the only safe option:
 
 - A cursor larger than 32px square is ignored outright by Firefox, and on some
-  platforms by Chrome. 26x29 clears it; scaling the image up does not fail
+  platforms by Chrome. 29x26 clears it; scaling the image up does not fail
   loudly, it just silently restores the arrow.
 - The hotspot must land inside the image or Firefox voids the declaration. It
   is `1 1`, the blade tip.
 
-The file is mirrored from the wiki's, which draws the scimitar pointing up and
-to the right. Used as-is the tip was at the top right, so the blade hung down
-and to the *left* of the click point - the mirror of every arrow cursor, and it
-covered the cell you were reaching for. Flipped, it points the way a pointer is
-expected to.
+The file is the wiki's, turned a quarter turn anticlockwise. The wiki draws the
+scimitar pointing up and to the right, so used as-is the tip was at the top
+right and the blade hung down and to the *left* of the click point - the mirror
+of every arrow cursor, and it covered the cell you were reaching for.
+
+It is rotated rather than flipped. A flip is the cheaper way to move the tip
+across, but it swaps the blade over: the edge, the bevel and the highlight are
+drawn on one particular side, and mirroring puts them on the wrong one. A
+quarter turn is lossless on pixel art and leaves the blade the way Jagex drew
+it. Note the side effect: the sprite is wider than it is tall, 29x26.
 
 Hotlinking the wiki was the other option and is not one: the image is served
 behind hotlink rules, and a cursor whose image fails to load falls back to the
