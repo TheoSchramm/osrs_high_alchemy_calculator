@@ -182,6 +182,7 @@
   display: inline-block;
   min-width: 4.5em;
   padding: 0 var(--sp-1);
+  cursor: text;
   border-radius: var(--radius-sm);
   transition: background var(--transition), box-shadow var(--transition);
 }

@@ -175,6 +175,55 @@ test('frames are flat borders built from tokens', () => {
   }
 });
 
+/**
+ * The scimitar cursor, and the two ways it fails silently.
+ *
+ * A cursor image over 32px square is ignored by Firefox, and a hotspot outside
+ * the image voids the declaration entirely. Neither throws: the arrow just
+ * comes back. See assets/ui/SPRITES.md.
+ */
+test('the cursor image stays inside the limits that make it draw at all', () => {
+  const declaration = /--cursor-blade:\s*([^;]+);/.exec(read('styles/tokens.css'));
+  assert.ok(declaration, 'no --cursor-blade token');
+
+  const value = declaration[1].trim();
+  const parsed = /^url\(['"]([^'"]+)['"]\)\s+(\d+)\s+(\d+)\s*,\s*(\w+)$/.exec(value);
+  assert.ok(parsed, `--cursor-blade must be url(...) <x> <y>, <keyword>, got "${value}"`);
+
+  const [, reference, x, y, fallback] = parsed;
+  assert.ok(
+    ['auto', 'default', 'pointer', 'crosshair'].includes(fallback),
+    'the keyword after the comma is the required fallback',
+  );
+
+  // Straight out of the PNG header: bytes 16-24 of an IHDR are width and height.
+  const file = fs.readFileSync(path.join(ROOT, resolveReference('styles/tokens.css', reference)));
+  const width = file.readUInt32BE(16);
+  const height = file.readUInt32BE(20);
+
+  assert.ok(width <= 32 && height <= 32, `a ${width}x${height} cursor is dropped by Firefox`);
+  assert.ok(Number(x) < width && Number(y) < height, `hotspot ${x} ${y} is outside the image`);
+});
+
+test('the cursor is set once, on the backdrop', () => {
+  // It inherits. Setting it anywhere else means two rules racing for the same
+  // pointer, and the controls that want a different one already say so.
+  const users = [];
+
+  for (const file of STYLE_FILES) {
+    for (const block of stripComments(read(file)).split('}')) {
+      if (!block.includes('var(--cursor-blade)')) continue;
+      users.push(`${file}: ${block.trim().split(/[\r\n]+/)[0].trim()}`);
+    }
+  }
+
+  assert.deepEqual(users, ['styles/base.css: body {']);
+  // And nothing bypasses the token with a raw image of its own.
+  for (const file of STYLE_FILES.filter((name) => !name.endsWith('tokens.css'))) {
+    assert.equal(/cursor:\s*url\(/.test(stripComments(read(file))), false, `${file} inlines a cursor image`);
+  }
+});
+
 test('every colour is declared in tokens.css', () => {
   // The palette is the design. A hex dropped into a component stylesheet is a
   // colour nothing else can follow, which is how a theme drifts apart.

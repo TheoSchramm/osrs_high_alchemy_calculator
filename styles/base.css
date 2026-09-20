@@ -37,6 +37,11 @@ body {
   /* Flat, deliberately. A texture here competes with the panels for attention
      and buys nothing: the panels are what the eye should land on. */
   background-color: var(--c-page);
+
+  /* Set here and nowhere else. Cursor inherits, so the whole page picks it up,
+     and every control that means something different - a button, a text field,
+     an editable cell - says so in its own rule and wins on specificity. */
+  cursor: var(--cursor-blade);
 }
 
 h1,

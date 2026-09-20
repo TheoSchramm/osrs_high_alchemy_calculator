@@ -129,6 +129,11 @@
   cursor: pointer;
 }
 
+.field__input {
+  /* A blade over a text field says nothing about what typing will do. */
+  cursor: text;
+}
+
 .field__input::placeholder {
   color: var(--c-text-muted);
   opacity: 1;

@@ -74,6 +74,17 @@
   --tex-chevron-up: url('../assets/ui/chevron_up.png');
   --tex-chevron-down: url('../assets/ui/chevron_down.png');
 
+  /* ---- Cursor ----
+   * The Dragon scimitar item icon, drawn at its native 26x29. It must never be
+   * scaled up: Firefox ignores a cursor larger than 32px square, and the only
+   * symptom is the arrow quietly coming back.
+   * The two numbers are the hotspot - the blade tip, which is at the top right,
+   * so the blade hangs down and to the left of the point you are clicking. A
+   * hotspot outside the image voids the whole declaration in Firefox. The
+   * keyword after the comma is the fallback, which is required.
+   */
+  --cursor-blade: url('../assets/ui/cursor_scimitar.png') 24 1, auto;
+
   /* ---- Frames ----
    * Flat borders rather than 9-sliced sprites: at this size the cache's widget
    * frames are a 35px image stretched across a 900px panel, which smears. Two

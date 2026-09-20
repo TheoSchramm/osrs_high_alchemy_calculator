@@ -144,8 +144,36 @@ rounded platform widgets. The tick is drawn on a `<span>` beside the input
 rather than on the input itself: generated content on a replaced element is not
 dependable, and the input keeps every behaviour while giving up its looks.
 
+## The cursor
+
+`cursor_scimitar.png` is the Dragon scimitar inventory icon, 26x29, taken from
+the [OSRS Wiki](https://oldschool.runescape.wiki/w/Dragon_scimitar). It is the
+one image here that is not a Jagex file lifted from the cache or the resource
+pack, so it carries its own licence - see below.
+
+It is copied in at native size and `--cursor-blade` draws it at native size.
+Two limits make that the only safe option:
+
+- A cursor larger than 32px square is ignored outright by Firefox, and on some
+  platforms by Chrome. 26x29 clears it; scaling the image up does not fail
+  loudly, it just silently restores the arrow.
+- The hotspot must land inside the image or Firefox voids the declaration. It
+  is `24 1`, the blade tip, which sits at the top right - so unlike an arrow the
+  artwork hangs down and to the *left* of the point being clicked.
+
+Hotlinking the wiki was the other option and is not one: the image is served
+behind hotlink rules, and a cursor whose image fails to load falls back to the
+keyword without saying anything.
+
+`tests/assets.test.js` reads the PNG header and fails the build if the file
+grows past 32px, or if the declaration loses its hotspot or its fallback.
+
 ## Licence
 
 RuneScape and Old School RuneScape are trademarks of Jagex Ltd. These sprites
 are Jagex assets used here for a fan-made calculator; they are not covered by
 this project's licence.
+
+`cursor_scimitar.png` comes from the OSRS Wiki, whose content is
+[CC BY-NC-SA 3.0](https://creativecommons.org/licenses/by-nc-sa/3.0/). This
+calculator is non-commercial, which is the condition that matters.
